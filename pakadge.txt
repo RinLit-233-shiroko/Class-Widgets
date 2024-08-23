@@ -1,0 +1,3 @@
+pyinstaller -D -w --name ClassWidgets --version-file version_info.txt -i img/favicon.ico main.py
+pyinstaller -D -w --name Settings --version-file version_info.txt -i img/favicon-settings.ico menu.py
+pyinstaller -D -w --name Exact_menu --version-file version_info.txt -i img/favicon-exmenu.ico exact_menu.py
