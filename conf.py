@@ -1,5 +1,6 @@
 import json
 import os
+import winreg
 import configparser as config
 from win32com.client import Dispatch
 path = 'config.ini'
@@ -136,8 +137,10 @@ def add_shortcut(file='', icon=''):
         icon_path = os.path.abspath(icon)  # 将相对路径转换为绝对路径
 
     # 获取桌面文件夹路径
-    desktop_folder = os.path.join(os.environ['USERPROFILE'], 'Desktop')
-
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders")
+    desktop_folder = winreg.QueryValueEx(key, "Desktop")[0]
+    winreg.CloseKey(key)
+    
     # 快捷方式文件名（使用文件名或自定义名称）
     name = os.path.splitext(os.path.basename(file_path))[0]  # 使用文件名作为快捷方式名称
     shortcut_path = os.path.join(desktop_folder, f'{name}.lnk')
