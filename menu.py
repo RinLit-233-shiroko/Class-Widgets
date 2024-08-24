@@ -87,6 +87,10 @@ class desktop_widget(FluentWindow):
         switch_startup.setChecked(int(conf.read_conf('General', 'auto_startup')))
         switch_startup.checkedChanged.connect(self.switch_startup)  # 开机自启
 
+        switch_auto_hide = self.findChild(SwitchButton, 'switch_auto_hide')
+        switch_auto_hide.setChecked(int(conf.read_conf('General', 'auto_hide')))
+        switch_auto_hide.checkedChanged.connect(self.switch_auto_hide)  # 自动隐藏
+
     def setup_schedule_edit(self):
         self.se_load_item()
         se_set_button = self.findChild(ToolButton, 'set_button')
@@ -174,6 +178,13 @@ class desktop_widget(FluentWindow):
         else:
             conf.write_conf('General', 'auto_startup', '0')
             conf.remove_from_startup()
+
+    def switch_auto_hide(self):
+        switch_auto_hide = self.findChild(SwitchButton, 'switch_auto_hide')
+        if switch_auto_hide.isChecked():
+            conf.write_conf('General', 'auto_hide', '1')
+        else:
+            conf.write_conf('General', 'auto_hide', '0')
 
     def ad_change_file(self):
         conf_combo = self.findChild(EditableComboBox, 'conf_combo')

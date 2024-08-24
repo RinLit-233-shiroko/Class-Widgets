@@ -61,6 +61,8 @@ subject_abbreviation = {
 # 获取当前根目录路径
 schedule_dir = os.path.join(os.getcwd(), 'config', 'schedule')
 
+window_width = [230, 200, 360, 290]
+
 class_activity = ['课程/活动', '课间']
 time = ['上午', '下午']
 class_kind = [
