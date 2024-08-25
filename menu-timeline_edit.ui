@@ -176,6 +176,12 @@ FluentLabelBase{color:#ff000000}</string>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::InternalMove</enum>
+     </property>
+     <property name="defaultDropAction">
+      <enum>Qt::MoveAction</enum>
+     </property>
     </widget>
    </item>
    <item>
@@ -240,6 +246,9 @@ FluentLabelBase{color:#ff000000}</string>
      </item>
      <item>
       <widget class="SpinBox" name="spin_time">
+       <property name="maximum">
+        <number>999</number>
+       </property>
        <property name="singleStep">
         <number>5</number>
        </property>
