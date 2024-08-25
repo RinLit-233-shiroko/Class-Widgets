@@ -205,7 +205,7 @@
           <item>
            <widget class="CaptionLabel" name="CaptionLabel_4">
             <property name="text">
-             <string>当上课时自动收起小组件，下课后展开</string>
+             <string>当上课时自动收起小组件，下课后展开    *将禁用“单击自动隐藏”</string>
             </property>
            </widget>
           </item>

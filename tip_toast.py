@@ -16,7 +16,7 @@ finish_class = 'audio/finish_class.wav'
 attend_class_p_color = '#ff8800'
 finish_class_p_color = '#5ADFAA'
 
-window_list = []
+window_list = []    # 窗口列表
 
 # 重写力
 class tip_toast(QWidget):

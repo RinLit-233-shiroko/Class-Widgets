@@ -9,9 +9,11 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QApplication
 from qfluentwidgets import FluentWindow, setTheme, Theme, FluentIcon as fIcon, setThemeColor, ComboBox, \
     PrimaryPushButton, Flyout, FlyoutAnimationType, InfoBarIcon, ListWidget, LineEdit, ToolButton, HyperlinkButton
+from win32 import win32api
 
 import conf
 import list
+import menu
 
 filename = conf.read_conf('General', 'schedule')
 current_week = dt.datetime.today().weekday()
@@ -45,7 +47,11 @@ class ExactMenu(FluentWindow):
         save_temp_conf.clicked.connect(self.save_temp_conf)
 
         redirect_to_settings = self.findChild(HyperlinkButton, 'redirect_to_settings')
-        redirect_to_settings.clicked.connect(lambda: subprocess.Popen(['Settings.exe']))
+        redirect_to_settings.clicked.connect(self.open_settings)
+
+    def open_settings(self):
+        self.menu = menu.desktop_widget()
+        self.menu.show()
 
     def save_temp_conf(self):
         if temp_schedule != {'schedule': {}}:
@@ -88,18 +94,22 @@ class ExactMenu(FluentWindow):
                     selected_item.setText(custom_class.text())
 
     def initUI(self):
-        screen_geometry = app.primaryScreen().availableGeometry()
-        screen_width = screen_geometry.width()  # 获得分辨率
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        screen_width = win32api.GetSystemMetrics(0)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         setTheme(Theme.AUTO)
-        setThemeColor('#36ABCF')
+
         self.resize(1000, 700)
         self.setWindowTitle('Class Widgets - 更多功能')
         self.setWindowIcon(QIcon('img/favicon.png'))
         self.move(int(screen_width/2-500), 150)  # 窗体居中，但不完全居中
 
         self.addSubInterface(self.interface, fIcon.INFO, '更多设置')
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
 
 
 if __name__ == '__main__':

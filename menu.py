@@ -356,21 +356,23 @@ class desktop_widget(FluentWindow):
         data_dict['timeline']['start_time_m'] = morning_st
         data_dict['timeline']['start_time_a'] = afternoon_st
         m = 0
+        counter = 0
         for i in range(te_timeline_list.count()):
             item_text = te_timeline_list.item(i).text()
             item_info = item_text.split('-')
             item_name = ''
             if item_info[0] == '课程/活动':
                 item_name += 'a'
+                counter += 1
             if item_info[0] == '课间':
                 item_name += 'f'
             if item_info[2] == '上午':
                 item_name += 'm'
                 m += 1
-                item_name += str(int(i / 2))
+                item_name += str(counter)
             if item_info[2] == '下午':
                 item_name += 'a'
-                item_name += str(int((i - m) / 2))
+                item_name += str(counter-m)
             if len(item_info[1]) == 4:
                 item_time = item_info[1][:2]
             else:
@@ -498,11 +500,14 @@ class desktop_widget(FluentWindow):
         self.navigationInterface.setCollapsible(False)
 
         setTheme(Theme.AUTO)
-        setThemeColor('#36ABCF')
 
         self.move(300, 110)
         self.setWindowTitle('Class Widgets - 设置')
         self.setWindowIcon(QIcon('img/favicon.png'))
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
 
 
 def sp_get_class_num():
