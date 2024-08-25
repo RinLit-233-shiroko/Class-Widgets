@@ -368,7 +368,8 @@ class desktop_widget(FluentWindow):
                 item_name += 'f'
             if item_info[2] == '上午':
                 item_name += 'm'
-                m += 1
+                if item_info[0] == '课程/活动':  # 修复 Bug
+                    m += 1
                 item_name += str(counter)
             if item_info[2] == '下午':
                 item_name += 'a'
