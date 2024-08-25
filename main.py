@@ -74,12 +74,12 @@ def get_current_lessons():
 
 
 # 获取倒计时、弹窗提示
-def get_countdown():
+def get_countdown(toast=False):
     current_dt = dt.datetime.combine(today, dt.datetime.strptime(current_time, '%H:%M:%S').time())  # 当前时间
     return_text = []
     if afternoon_st != 0 and current_dt > afternoon_st - dt.timedelta(minutes=30):
         c_time = afternoon_st  # 开始时间段
-        if current_dt == c_time:
+        if current_dt == c_time and toast:
             tip_toast.main(1)  # 上课
         if current_dt >= afternoon_st:
             for item_name, item_time in timeline_data.items():
@@ -88,7 +88,7 @@ def get_countdown():
                     add_time = int(item_time)
                     c_time += dt.timedelta(minutes=add_time)
                     # 判断时间是否上下课，发送通知
-                    if current_dt == c_time:
+                    if current_dt == c_time and toast:
                         if item_name.startswith('fa'):
                             tip_toast.main(1)  # 上课
                         else:
@@ -116,7 +116,7 @@ def get_countdown():
     # 上午
     elif morning_st != 0:
         c_time = morning_st  # 复制 morning_st 时间
-        if current_dt == c_time:
+        if current_dt == c_time and toast:
             tip_toast.main(1)  # 上课
         if current_dt >= morning_st:
             for item_name, item_time in timeline_data.items():
@@ -126,7 +126,7 @@ def get_countdown():
                     c_time += dt.timedelta(minutes=add_time)
 
                     # 判断时间是否上下课，发送通知
-                    if current_dt == c_time:
+                    if current_dt == c_time and toast:
                         if item_name.startswith('fm'):
                             tip_toast.main(1)  # 上课
                         else:
@@ -319,8 +319,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.update_data(1)
 
         self.timer = QTimer(self)
-        self.timer.setInterval(900)
-        self.timer.timeout.connect(self.update_data)
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(lambda: self.update_data(path=path))
         self.timer.start()
 
     def open_settings(self):
@@ -359,7 +359,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         #self.animation.finished.connect(self.show)
         self.animation.start()
 
-    def update_data(self, first_setup=0):
+    def update_data(self, first_setup=0, path=''):
         global current_time
         global current_week
         global filename
@@ -395,7 +395,10 @@ class DesktopWidget(QWidget):  # 主要小组件
         bkg = self.findChild(QLabel, 'label')
         bkg.setStyleSheet(f'background-color: rgba(242, 243, 245, {int(transparent)}); border-radius: 8px')  # 背景透明度
 
-        cd_list = get_countdown()
+        if path != 'widget-current-activity.ui':  # 不是当前活动组件
+            cd_list = get_countdown()
+        else:
+            cd_list = get_countdown(toast=True)
 
         # 说实在这到底是怎么跑起来的
         if hasattr(self, 'day_text'):
