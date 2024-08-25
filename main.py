@@ -319,7 +319,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.update_data(1)
 
         self.timer = QTimer(self)
-        self.timer.setInterval(800)
+        self.timer.setInterval(900)
         self.timer.timeout.connect(self.update_data)
         self.timer.start()
 

@@ -503,7 +503,7 @@ class desktop_widget(FluentWindow):
 
         self.move(300, 110)
         self.setWindowTitle('Class Widgets - 设置')
-        self.setWindowIcon(QIcon('img/favicon.png'))
+        self.setWindowIcon(QIcon('img/favicon-settings.ico'))
 
     def closeEvent(self, event):
         event.ignore()
