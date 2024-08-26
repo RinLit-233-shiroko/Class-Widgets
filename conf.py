@@ -184,6 +184,14 @@ def remove_from_startup():
         os.remove(shortcut_path)
 
 
+def get_time_offset():  # 获取时差偏移
+    time_offset = read_conf('General', 'time_offset')
+    if time_offset is None or time_offset == '' or time_offset == '0':
+        return 0
+    else:
+        return int(time_offset)
+
+
 # 示例使用
 test_data_dict = {
     "timeline": {

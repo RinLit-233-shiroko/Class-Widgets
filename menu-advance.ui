@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>721</width>
-    <height>658</height>
+    <height>764</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,317 +37,451 @@
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
-      <number>3</number>
+    <widget class="SmoothScrollArea" name="SmoothScrollArea">
+     <property name="styleSheet">
+      <string notr="true">background: transparent; border: none</string>
      </property>
-     <item>
-      <widget class="SubtitleLabel" name="SubtitleLabel">
-       <property name="text">
-        <string>外观</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="CardWidget" name="CardWidget">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>60</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>16</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>16</number>
-        </property>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="StrongBodyLabel" name="StrongBodyLabel_2">
-            <property name="text">
-             <string>置顶小组件</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="CaptionLabel" name="CaptionLabel_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>重启后生效</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="SwitchButton" name="switch_pin_button"/>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="CardWidget" name="CardWidget_2">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>60</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>16</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>16</number>
-        </property>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="StrongBodyLabel" name="StrongBodyLabel">
-            <property name="text">
-             <string>边距大小</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="CaptionLabel" name="CaptionLabel">
-            <property name="text">
-             <string>设定桌面组件离屏幕边缘的大小（单位：px）</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="SpinBox" name="margin_spin">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimum">
-           <number>-15</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="CardWidget" name="CardWidget_5">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>60</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <property name="spacing">
-         <number>16</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>16</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>16</number>
-        </property>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_8">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="StrongBodyLabel" name="StrongBodyLabel_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>上课时自动隐藏</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="CaptionLabel" name="CaptionLabel_4">
-            <property name="text">
-             <string>当上课时自动收起小组件，下课后展开    *将禁用“单击自动隐藏”</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="SwitchButton" name="switch_auto_hide"/>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QVBoxLayout" name="verticalLayout_5">
-     <item>
-      <widget class="SubtitleLabel" name="SubtitleLabel_3">
-       <property name="text">
-        <string>课程表</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="CardWidget" name="CardWidget_3">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>60</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>16</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>16</number>
-        </property>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="StrongBodyLabel" name="StrongBodyLabel_5">
-            <property name="text">
-             <string>选择课程表配置</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="CaptionLabel" name="CaptionLabel_2">
-            <property name="text">
-             <string>课程表配置将存储于 本软件根目录\config\schedule 下</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="EditableComboBox" name="conf_combo">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QVBoxLayout" name="verticalLayout_7">
-     <item>
-      <widget class="SubtitleLabel" name="SubtitleLabel_2">
-       <property name="text">
-        <string>启动</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="CardWidget" name="CardWidget_4">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>60</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>16</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>16</number>
-        </property>
-        <item>
-         <widget class="StrongBodyLabel" name="StrongBodyLabel_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>开机自启动</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="SwitchButton" name="switch_startup"/>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+     <property name="widgetResizable">
+      <bool>true</bool>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>673</width>
+        <height>659</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="SubtitleLabel" name="SubtitleLabel_3">
+           <property name="text">
+            <string>课程</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_6">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_6">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>启用上下课提醒</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_5">
+                <property name="text">
+                 <string>启用后将在上下课时置顶弹窗、发出提示音提醒</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SwitchButton" name="switch_enable_toast"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_7">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_7">
+                <property name="text">
+                 <string>时差偏移</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_6">
+                <property name="text">
+                 <string>修正系统时间与学校铃声的时差</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SpinBox" name="offset_spin">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimum">
+               <number>-99</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_5">
+                <property name="text">
+                 <string>选择课程表配置</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_2">
+                <property name="text">
+                 <string>课程表配置将存储于 本软件根目录\config\schedule 下</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="EditableComboBox" name="conf_combo">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <item>
+          <widget class="SubtitleLabel" name="SubtitleLabel">
+           <property name="text">
+            <string>外观</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_2">
+                <property name="text">
+                 <string>置顶小组件</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>重启后生效</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SwitchButton" name="switch_pin_button"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel">
+                <property name="text">
+                 <string>边距大小</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel">
+                <property name="text">
+                 <string>设定桌面组件离屏幕边缘的大小（单位：px）</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SpinBox" name="margin_spin">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimum">
+               <number>-15</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_5">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <property name="spacing">
+             <number>16</number>
+            </property>
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_8">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_4">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>上课时自动隐藏</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_4">
+                <property name="text">
+                 <string>当上课时自动收起小组件，下课后展开    *将禁用“单击自动隐藏”</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SwitchButton" name="switch_auto_hide"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <widget class="SubtitleLabel" name="SubtitleLabel_2">
+           <property name="text">
+            <string>启动</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_4">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <widget class="StrongBodyLabel" name="StrongBodyLabel_3">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>开机自启动</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="SwitchButton" name="switch_startup"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -365,6 +499,12 @@
   <customwidget>
    <class>CardWidget</class>
    <extends>QFrame</extends>
+   <header>qfluentwidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SmoothScrollArea</class>
+   <extends>QScrollArea</extends>
    <header>qfluentwidgets</header>
    <container>1</container>
   </customwidget>

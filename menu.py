@@ -91,6 +91,16 @@ class desktop_widget(FluentWindow):
         switch_auto_hide.setChecked(int(conf.read_conf('General', 'auto_hide')))
         switch_auto_hide.checkedChanged.connect(self.switch_auto_hide)  # 自动隐藏
 
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_toast')
+        switch_enable_toast.setChecked(int(conf.read_conf('General', 'enable_toast')))
+        switch_enable_toast.checkedChanged.connect(self.switch_enable_toast)  # 通知开关
+
+        offset_spin = self.findChild(SpinBox, 'offset_spin')
+        offset_spin.setValue(int(conf.read_conf('General', 'time_offset')))
+        offset_spin.valueChanged.connect(
+            lambda: conf.write_conf('General', 'time_offset', str(offset_spin.value()))
+        )  # 保存时差偏移
+
     def setup_schedule_edit(self):
         self.se_load_item()
         se_set_button = self.findChild(ToolButton, 'set_button')
@@ -185,6 +195,13 @@ class desktop_widget(FluentWindow):
             conf.write_conf('General', 'auto_hide', '1')
         else:
             conf.write_conf('General', 'auto_hide', '0')
+
+    def switch_enable_toast(self):
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_toast')
+        if switch_enable_toast.isChecked():
+            conf.write_conf('General', 'enable_toast', '1')
+        else:
+            conf.write_conf('General', 'enable_toast', '0')
 
     def ad_change_file(self):
         conf_combo = self.findChild(EditableComboBox, 'conf_combo')

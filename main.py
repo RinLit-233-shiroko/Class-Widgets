@@ -29,6 +29,7 @@ timeline_data = {}
 next_lessons = []
 
 bkg_opacity = 165  # 模糊label的透明度(0~255)
+time_offset = 0  # 时差偏移
 
 
 # 获取课程上下午开始时间
@@ -63,6 +64,7 @@ def get_current_lessons():
     for item_name, item_time in timeline.items():
         if item_name.startswith('am') or item_name.startswith('aa'):
             if schedule[str(current_week)]:
+
                 if schedule[str(current_week)][class_count] != '未添加':
                     current_lessons[item_name] = schedule[str(current_week)][class_count]
                 else:
@@ -78,10 +80,10 @@ def get_countdown(toast=False):
     current_dt = dt.datetime.combine(today, dt.datetime.strptime(current_time, '%H:%M:%S').time())  # 当前时间
     return_text = []
     if afternoon_st != 0 and current_dt > afternoon_st - dt.timedelta(minutes=30):
-        c_time = afternoon_st  # 开始时间段
+        c_time = afternoon_st + dt.timedelta(seconds=time_offset)  # 开始时间段
         if current_dt == c_time and toast:
             tip_toast.main(1)  # 上课
-        if current_dt >= afternoon_st:
+        if current_dt >= afternoon_st + dt.timedelta(seconds=time_offset):
             for item_name, item_time in timeline_data.items():
                 if item_name.startswith('aa') or item_name.startswith('fa'):
 
@@ -110,15 +112,15 @@ def get_countdown(toast=False):
             if not return_text:
                 return_text = ['今日课程已结束', f'00:00', 100]
         else:
-            time_diff = c_time - current_dt
+            time_diff = c_time + dt.timedelta(seconds=time_offset) - current_dt
             minute, sec = divmod(time_diff.seconds, 60)
             return_text = ['距离上课还有', f'{minute:02d}:{sec:02d}', 100]
     # 上午
     elif morning_st != 0:
-        c_time = morning_st  # 复制 morning_st 时间
-        if current_dt == c_time and toast:
+        c_time = morning_st + dt.timedelta(seconds=time_offset)  # 复制 morning_st 时间
+        if current_dt == c_time + dt.timedelta(seconds=time_offset) and toast:
             tip_toast.main(1)  # 上课
-        if current_dt >= morning_st:
+        if current_dt >= morning_st + dt.timedelta(seconds=time_offset):
             for item_name, item_time in timeline_data.items():
                 if item_name.startswith('am') or item_name.startswith('fm'):
 
@@ -148,7 +150,7 @@ def get_countdown(toast=False):
             if not return_text:
                 return_text = ['上午课程已结束', f'00:00', 100]
         else:
-            time_diff = c_time - current_dt
+            time_diff = c_time + dt.timedelta(seconds=time_offset) - current_dt
             minute, sec = divmod(time_diff.seconds, 60)
             return_text = ['距离上课还有', f'{minute:02d}:{sec:02d}', 100]
     return return_text
@@ -209,7 +211,7 @@ def get_current_state():
     is_changed = False
     # 下午
     if afternoon_st != 0 and current_dt > afternoon_st:
-        c_time = afternoon_st  # 开始时间段
+        c_time = afternoon_st + dt.timedelta(seconds=time_offset)  # 开始时间段
         for item_name, item_time in timeline_data.items():
             if item_name.startswith('aa') or item_name.startswith('fa'):
                 c_time += dt.timedelta(minutes=int(item_time))
@@ -223,7 +225,7 @@ def get_current_state():
                     break
     # 上午
     elif morning_st != 0 and current_dt > morning_st:
-        c_time = morning_st  # 复制 afternoon_st 时间
+        c_time = morning_st + dt.timedelta(seconds=time_offset)  # 复制 afternoon_st 时间
         for item_name, item_time in timeline_data.items():
             if item_name.startswith('am') or item_name.startswith('fm'):
                 add_time = int(item_time)
@@ -331,6 +333,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         if conf.read_conf('Temp', 'hide') != '1':  # 如果没有隐藏
             self.exmenu = exact_menu.ExactMenu()
             self.exmenu.show()
+        else:
+            conf.write_conf('Temp', 'hide', '0')
 
     def animate_window(self, target_pos):  # 窗口动画！
         # 创建位置动画
@@ -347,7 +351,6 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()))
         self.animation.setEndValue(QRect(self.x(), -self.height()+40, self.width(), self.height()))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
-        #self.animation.finished.connect(self.hide)
         self.animation.start()
 
     def animate_show(self):  # 显示窗口
@@ -356,17 +359,14 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()))
         self.animation.setEndValue(QRect(self.x(), int(conf.read_conf('General', 'margin')), self.width(), self.height()))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
-        #self.animation.finished.connect(self.show)
         self.animation.start()
 
     def update_data(self, first_setup=0, path=''):
-        global current_time
-        global current_week
-        global filename
-        global start_y
+        global current_time, current_week, filename, start_y, time_offset
 
         current_time = dt.datetime.now().strftime('%H:%M:%S')
         filename = conf.read_conf('General', 'schedule')
+        time_offset = conf.get_time_offset()
         get_start_time()
         get_current_lessons()
         get_current_state()
