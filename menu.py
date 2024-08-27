@@ -1,13 +1,16 @@
+import os
+
 from PyQt6 import uic
-from PyQt6.QtCore import Qt, QTime, QUrl
+from PyQt6.QtCore import Qt, QTime, QUrl, QDate
 import sys
 
-from PyQt6.QtGui import QIcon, QDesktopServices
-from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem
+from PyQt6.QtGui import QIcon, QDesktopServices, QPixmap
+from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, QSpacerItem
 from qfluentwidgets import (
-    Theme, setTheme, setThemeColor, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
+    Theme, setTheme, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
     SpinBox, TimePicker, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
-    FlyoutAnimationType, NavigationItemPosition, EditableComboBox, MessageBox, SubtitleLabel, PushButton, SwitchButton,
+    FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
+    CalendarPicker,
 )
 from copy import deepcopy
 import datetime as dt
@@ -27,6 +30,7 @@ current_week = 0
 filename = conf.read_conf('General', 'schedule')
 
 schedule_dict = {}  # 对应时间线的课程表
+schedule_even_dict = {}  # 对应时间线的课程表（双周）
 
 
 class desktop_widget(FluentWindow):
@@ -34,21 +38,25 @@ class desktop_widget(FluentWindow):
         super().__init__()
         # 设置窗口无边框和透明背景
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        try:
+            # 创建子页面
+            self.spInterface = uic.loadUi('menu-preview.ui')
+            self.spInterface.setObjectName("spInterface")
+            self.teInterface = uic.loadUi('menu-timeline_edit.ui')  # 时间线编辑
+            self.teInterface.setObjectName("teInterface")
+            self.seInterface = uic.loadUi('menu-schedule_edit.ui')  # 课程表编辑
+            self.seInterface.setObjectName("seInterface")
+            self.adInterface = uic.loadUi('menu-advance.ui')
+            self.adInterface.setObjectName("adInterface")
+            self.ifInterface = uic.loadUi('menu-about.ui')
+            self.ifInterface.setObjectName("ifInterface")
+            self.ctInterface = uic.loadUi('menu-custom.ui')
+            self.ctInterface.setObjectName("ctInterface")
 
-        # 创建子页面
-        self.spInterface = uic.loadUi('menu-preview.ui')
-        self.spInterface.setObjectName("spInterface")
-        self.teInterface = uic.loadUi('menu-timeline_edit.ui')  # 时间线编辑
-        self.teInterface.setObjectName("teInterface")
-        self.seInterface = uic.loadUi('menu-schedule_edit.ui')  # 课程表编辑
-        self.seInterface.setObjectName("seInterface")
-        self.adInterface = uic.loadUi('menu-advance.ui')
-        self.adInterface.setObjectName("adInterface")
-        self.ifInterface = uic.loadUi('menu-about.ui')
-        self.ifInterface.setObjectName("ifInterface")
-
-        self.init_nav()
-        self.init_window()
+            self.init_nav()
+            self.init_window()
+        except Exception as e:
+            print(f'初始化设置界面时发生错误：{e}')
 
     def load_all_item(self):
         self.setup_timeline_edit()
@@ -56,8 +64,33 @@ class desktop_widget(FluentWindow):
         self.setup_schedule_preview()
         self.setup_advance_interface()
         self.setup_about_interface()
+        self.setup_customization_interface()
 
     # 初始化界面
+    def setup_customization_interface(self):
+        self.ct_update_preview()
+
+        widgets_list = self.findChild(ListWidget, 'widgets_list')
+        widgets_list.addItems((list.widget_name[key] for key in list.get_widget_config()))
+
+        switch_countdown_custom = self.findChild(SwitchButton, 'switch_countdown_custom')
+        switch_countdown_custom.setChecked(conf.get_is_widget_in('widget-countdown-custom.ui'))
+        switch_countdown_custom.checkedChanged.connect(self.switch_countdown_custom)
+
+        save_config_button = self.findChild(PrimaryPushButton, 'save_config')
+        save_config_button.clicked.connect(self.ct_save_widget_config)
+
+        set_wcc_title = self.findChild(LineEdit, 'set_wcc_title')  # 倒计时标题
+        set_wcc_title.setText(conf.read_conf('Date', 'cd_text_custom'))
+        set_wcc_title.textChanged.connect(lambda: conf.write_conf('Date', 'cd_text_custom', set_wcc_title.text()))
+
+        set_countdown_date = self.findChild(CalendarPicker, 'set_countdown_date')  # 倒计时日期
+        set_countdown_date.setDate(QDate.fromString(conf.read_conf('Date', 'countdown_date'), 'yyyy-M-d'))
+        set_countdown_date.dateChanged.connect(
+            lambda: conf.write_conf(
+                'Date', 'countdown_date', set_countdown_date.date.toString('yyyy-M-d'))
+        )
+
     def setup_about_interface(self):
         github_page = self.findChild(PushButton, "button_github")
         github_page.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(
@@ -74,10 +107,14 @@ class desktop_widget(FluentWindow):
             lambda: conf.write_conf('General', 'margin', str(margin_spin.value()))
         )  # 保存边距设定
 
-        conf_combo = self.findChild(EditableComboBox, 'conf_combo')
+        conf_combo = self.findChild(ComboBox, 'conf_combo')
         conf_combo.addItems(list.get_schedule_config())
         conf_combo.setCurrentIndex(list.get_schedule_config().index(conf.read_conf('General', 'schedule')))
         conf_combo.currentIndexChanged.connect(self.ad_change_file)  # 切换配置文件
+
+        conf_name = self.findChild(LineEdit, 'conf_name')
+        conf_name.setText(filename[:-5])
+        conf_name.textChanged.connect(self.ad_change_file_name)
 
         switch_pin_button = self.findChild(SwitchButton, 'switch_pin_button')
         switch_pin_button.setChecked(int(conf.read_conf('General', 'pin_on_top')))
@@ -203,37 +240,106 @@ class desktop_widget(FluentWindow):
         else:
             conf.write_conf('General', 'enable_toast', '0')
 
-    def ad_change_file(self):
-        conf_combo = self.findChild(EditableComboBox, 'conf_combo')
-        # 添加新课表
-        if conf_combo.currentText() not in list.get_schedule_config():
-            if conf_combo.currentText().endswith('.json'):
-                list.create_new_profile(conf_combo.currentText())
-            else:
-                list.create_new_profile(f'{conf_combo.currentText()}.json')
-            if conf_combo.currentText().endswith('.json'):
-                conf.write_conf('General', 'schedule', conf_combo.currentText())
-            else:
-                conf.write_conf('General', 'schedule', f'{conf_combo.currentText()}.json')
-        # 添加新课表
-        elif conf_combo.currentText() == '添加新课表':
-            new_name = f'新课表 - {list.return_default_schedule_number() + 1}'
-            list.create_new_profile(f'{new_name}.json')
-            conf.write_conf('General', 'schedule', f'{new_name}.json')
+    def switch_countdown_custom(self):
+        widgets_list = self.findChild(ListWidget, 'widgets_list')
+        switch_countdown_custom = self.findChild(SwitchButton, 'switch_countdown_custom')
+        if switch_countdown_custom.isChecked():
+            widgets_list.addItem(list.widget_name['widget-countdown-custom.ui'])
         else:
-            if conf_combo.currentText().endswith('.json'):
-                conf.write_conf('General', 'schedule', conf_combo.currentText())
+            target = list.widget_name['widget-countdown-custom.ui']
+            items = [widgets_list.item(i).text() for i in range(widgets_list.count())]
+            if target in items:
+                row_to_remove = items.index(target)
+                widgets_list.takeItem(row_to_remove)
+
+    def switch_enable_alt_schedule(self):
+        switch_enable_alt_schedule = self.findChild(SwitchButton, 'switch_enable_alt_schedule')
+        week_type_combo = self.findChild(ComboBox, 'week_type_combo')
+        if switch_enable_alt_schedule.isChecked():
+            week_type_combo.setEnabled(True)
+            conf.save_data_to_json({'alt_schedule': '1'}, filename)
+        else:
+            week_type_combo.setEnabled(False)
+            conf.save_data_to_json({'alt_schedule': '0'}, filename)
+
+    def ct_save_widget_config(self):
+        widgets_list = self.findChild(ListWidget, 'widgets_list')
+        widget_config = {'widgets': []}
+        for i in range(widgets_list.count()):
+            widget_config['widgets'].append(list.widget_conf[widgets_list.item(i).text()])
+        if conf.save_widget_conf_to_json(widget_config):
+            self.ct_update_preview()
+            Flyout.create(
+                icon=InfoBarIcon.SUCCESS,
+                title='保存成功',
+                content=f"已保存至 ./config/widget.json",
+                target=self.findChild(PrimaryPushButton, 'save_config'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+
+    def ct_update_preview(self):
+        try:
+            widgets_preview = self.findChild(QHBoxLayout, 'widgets_preview')
+            # 获取配置列表
+            widget_config = list.get_widget_config()
+            while widgets_preview.count() > 0:  # 清空预览界面
+                item = widgets_preview.itemAt(0)
+                if item:
+                    widget = item.widget()
+                    if widget:
+                        widget.deleteLater()
+                    widgets_preview.removeItem(item)
+
+            left_spacer = QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+            widgets_preview.addItem(left_spacer)
+            for i in range(len(widget_config)):
+                widget_name = widget_config[i]
+                label = QLabel()
+                label.setPixmap(QPixmap(f'img/settings/{widget_name[:-3]}.png'))
+                widgets_preview.addWidget(label)
+                widget_config[i] = label
+            right_spacer = QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+            widgets_preview.addItem(right_spacer)
+        except Exception as e:
+            print(f'更新预览界面时发生错误：{e}')
+
+    def ad_change_file_name(self):
+        global filename
+        try:
+            conf_name = self.findChild(LineEdit, 'conf_name')
+            old_name = filename
+            new_name = conf_name.text()
+            os.rename(f'config/schedule/{old_name}', f'config/schedule/{new_name}.json')  # 重命名
+            conf.write_conf('General', 'schedule', f'{new_name}.json')
+            filename = new_name + '.json'
+        except Exception as e:
+            print(f'修改配置文件名称时发生错误：{e}')
+
+
+    def ad_change_file(self):
+        try:
+            conf_combo = self.findChild(ComboBox, 'conf_combo')
+            # 添加新课表
+            if conf_combo.currentText() == '添加新课表':
+                new_name = f'新课表 - {list.return_default_schedule_number() + 1}'
+                list.create_new_profile(f'{new_name}.json')
+                conf.write_conf('General', 'schedule', f'{new_name}.json')
             else:
-                conf.write_conf('General', 'schedule', f'{conf_combo.currentText()}.json')
+                if conf_combo.currentText().endswith('.json'):
+                    conf.write_conf('General', 'schedule', conf_combo.currentText())
+        except Exception as e:
+            print(f'切换配置文件时发生错误：{e}')
         alert = MessageBox('您已切换课程表的配置文件',
                            '软件将在您确认后关闭，\n'
                            '您需重新打开设置菜单以设置您切换的配置文件。', self)
         alert.cancelButton.hide()  # 隐藏取消按钮，必须重启
         alert.buttonLayout.insertStretch(0, 1)
         if alert.exec():
-            sys.exit()
+            self.hide()
 
-    def sp_fill_grid_row(self):
+    def sp_fill_grid_row(self):  # 填充预览表格
         schedule_view = self.findChild(TableWidget, 'schedule_view')
         for i in range(len(schedule_dict)):
             for j in range(len(schedule_dict[str(i)])):
@@ -390,7 +496,7 @@ class desktop_widget(FluentWindow):
                 item_name += str(counter)
             if item_info[2] == '下午':
                 item_name += 'a'
-                item_name += str(counter-m)
+                item_name += str(counter - m)
             if len(item_info[1]) == 4:
                 item_time = item_info[1][:2]
             else:
@@ -505,6 +611,7 @@ class desktop_widget(FluentWindow):
         self.addSubInterface(self.spInterface, fIcon.HOME, '课表预览')
         self.addSubInterface(self.teInterface, fIcon.DATE_TIME, '时间线编辑')
         self.addSubInterface(self.seInterface, fIcon.EDUCATION, '课程表编辑')
+        self.addSubInterface(self.ctInterface, fIcon.BRUSH, '自定义', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.adInterface, fIcon.SETTING, '高级选项', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.ifInterface, fIcon.INFO, '关于本产品', NavigationItemPosition.BOTTOM)
 

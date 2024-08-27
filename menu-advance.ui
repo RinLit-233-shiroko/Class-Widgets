@@ -56,6 +56,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="spacing">
+          <number>3</number>
+         </property>
          <item>
           <widget class="SubtitleLabel" name="SubtitleLabel_3">
            <property name="text">
@@ -112,7 +115,14 @@
              </layout>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_enable_toast"/>
+             <widget class="SwitchButton" name="switch_enable_toast">
+              <property name="onText">
+               <string>启用</string>
+              </property>
+              <property name="offText">
+               <string>禁用</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -218,7 +228,17 @@
              </layout>
             </item>
             <item>
-             <widget class="EditableComboBox" name="conf_combo">
+             <widget class="LineEdit" name="conf_name">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ComboBox" name="conf_combo">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -293,7 +313,14 @@
              </layout>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_pin_button"/>
+             <widget class="SwitchButton" name="switch_pin_button">
+              <property name="onText">
+               <string>置顶</string>
+              </property>
+              <property name="offText">
+               <string>不置顶</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -408,7 +435,14 @@
              </layout>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_auto_hide"/>
+             <widget class="SwitchButton" name="switch_auto_hide">
+              <property name="onText">
+               <string>启用</string>
+              </property>
+              <property name="offText">
+               <string>禁用</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -459,7 +493,14 @@
              </widget>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_startup"/>
+             <widget class="SwitchButton" name="switch_startup">
+              <property name="onText">
+               <string>启用</string>
+              </property>
+              <property name="offText">
+               <string>禁用</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -487,8 +528,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>EditableComboBox</class>
-   <extends>LineEdit</extends>
+   <class>ComboBox</class>
+   <extends>QPushButton</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

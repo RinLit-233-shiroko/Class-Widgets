@@ -251,7 +251,7 @@ class DesktopWidget(QWidget):  # 主要小组件
     def __init__(self, path='widget-time.ui', pos=(100, 50), enable_tray=False):
         super().__init__()
         init_config()
-        uic.loadUi(path, self)
+        uic.loadUi(f'ui/{theme}/{path}', self)
 
         setTheme(Theme.LIGHT)
         setThemeColor('#36ABCF')
@@ -314,6 +314,9 @@ class DesktopWidget(QWidget):  # 主要小组件
                 button.clicked.connect(self.open_exact_menu)
             case 'widget-next-activity.ui':  # 接下来的活动
                 self.nl_text = self.findChild(QLabel, 'next_lesson_text')
+            case 'widget-countdown-custom.ui':  # 自定义倒计时
+                self.custom_title = self.findChild(QLabel, 'countdown_custom_title')
+                self.custom_countdown = self.findChild(QLabel, 'custom_countdown')
 
         # 设置窗口位置
         self.animate_window(pos)
@@ -404,28 +407,27 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'day_text'):
             self.date_text.setText(f'{today.year} 年 {today.month} 月')
             self.day_text.setText(f'{today.day} 日 {list.week[today.weekday()]}')
-
         if hasattr(self, 'current_state_text'):
             # 实时活动
             self.current_state_text.setText(f'  {current_state}')
             self.current_state_text.setIcon(QIcon(list.get_subject_icon(current_state)))
-
             self.blur_effect.setBlurRadius(35)  # 模糊半径
             self.blur_effect_label.setStyleSheet(
                 f'background-color: rgba{list.subject_color(current_state)}, {bkg_opacity});'
             )
             self.blur_effect_label.setGraphicsEffect(self.blur_effect)
-
         if hasattr(self, 'next_lesson_text'):
             self.nl_text.setText(get_next_lessons_text())
-
         if hasattr(self, 'activity_countdown'):
             if cd_list:
                 self.activity_countdown.setText(cd_list[1])
                 self.ac_title.setText(cd_list[0])
                 self.countdown_progress_bar.setValue(cd_list[2])
+        if hasattr(self, 'countdown_custom_title'):
+            self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
+            self.custom_countdown.setText(conf.get_custom_countdown())
 
-# 点击自动隐藏
+    # 点击自动隐藏
     def mousePressEvent(self, event):
         if conf.read_conf('Temp', 'hide') == '0':  # 置顶
             conf.write_conf('Temp', 'hide', '1')
@@ -433,17 +435,16 @@ class DesktopWidget(QWidget):  # 主要小组件
             conf.write_conf('Temp', 'hide', '0')
 
 
-def init_config():
+def init_config():  # 重设配置文件
     conf.write_conf('Temp', 'set_week', '')
     conf.write_conf('Temp', 'hide', '0')
-    if conf.read_conf('General', 'temp_schedule'):
+    if conf.read_conf('Temp', 'temp_schedule') != '':  # 修复换课重置
         copy('config/schedule/backup.json', f'config/schedule/{filename}')
         conf.write_conf('Temp', 'temp_schedule', '')
 
 
 def show_window(path, pos, enable_tray=False):
     application = DesktopWidget(path, pos, enable_tray)
-    application.show()
     windows.append(application)  # 将窗口对象添加到列表
 
 
@@ -452,32 +453,40 @@ if __name__ == '__main__':
     if sys.platform == 'win32' and sys.getwindowsversion().build >= 22000:  # 修改在win11高版本阴影异常
         app.setStyle("Fusion")
 
+    theme = 'default'
+
     # 获取屏幕横向分辨率
     screen_geometry = app.primaryScreen().availableGeometry()
     screen_width = screen_geometry.width()
 
+    widgets = list.get_widget_config()
+
     # 所有组件窗口的宽度
     spacing = -5
-    total_width = sum(list.window_width, spacing * (len(list.window_width) - 1))
+    total_width = sum((list.widget_width[key] for key in widgets), spacing * (len(widgets) - 1))
 
     start_x = int((screen_width - total_width) / 2)
     start_y = int(conf.read_conf('General', 'margin'))
 
-
     def cal_start_width(num):
         width = 0
         for i in range(num):
-            width += list.window_width[i]
+            width += list.widget_width[widgets[i]]
         return int(start_x + spacing * num + width)
 
-    if conf.read_conf('Other', 'InitialStartUp'):  # 首次启动
+    if conf.read_conf('Other', 'initialstartup') == '1':  # 首次启动
         conf.add_shortcut('ClassWidgets.exe', 'img/favicon.ico')
         conf.add_shortcut_to_startmenu('ClassWidgets.exe', 'img/favicon.ico')
         conf.write_conf('Other', 'initialstartup', '')
 
-    show_window('widget-time.ui', (start_x, start_y))
-    show_window('widget-countdown.ui', (cal_start_width(1), start_y))
-    show_window('widget-current-activity.ui', (cal_start_width(2), start_y), True)
-    show_window('widget-next-activity.ui', (cal_start_width(3), start_y))
+    for w in range(len(widgets)):
+        if w == 0:
+            show_window(widgets[w], (cal_start_width(w), start_y), True)
+        else:
+            show_window(widgets[w], (cal_start_width(w), start_y))
+
+    for application in windows:  # 显示所有窗口
+        application.show()
+        app.processEvents()
 
     sys.exit(app.exec())

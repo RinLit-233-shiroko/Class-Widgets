@@ -1,7 +1,9 @@
+import json
 import os
 from shutil import copy
 
 week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+week_type = ['单周', '双周']
 
 subject = {
     '语文': '(255, 151, 135',  # 红
@@ -61,8 +63,6 @@ subject_abbreviation = {
 # 获取当前根目录路径
 schedule_dir = os.path.join(os.getcwd(), 'config', 'schedule')
 
-window_width = [230, 200, 360, 290]
-
 class_activity = ['课程/活动', '课间']
 time = ['上午', '下午']
 class_kind = [
@@ -85,6 +85,37 @@ class_kind = [
     '音乐',
     '信息技术'
 ]
+
+default_widgets = [
+    'widget-time.ui',
+    'widget-countdown.ui',
+    'widget-current-activity.ui',
+    'widget-next-activity.ui'
+]
+
+widget_width = {
+    'widget-time.ui': 230,
+    'widget-countdown.ui': 200,
+    'widget-current-activity.ui': 360,
+    'widget-next-activity.ui': 290,
+    'widget-countdown-custom.ui': 200,
+}
+
+widget_conf = {
+    '当前日期': 'widget-time.ui',
+    '活动倒计时': 'widget-countdown.ui',
+    '当前活动': 'widget-current-activity.ui',
+    '下一活动': 'widget-next-activity.ui',
+    '自定义倒计时': 'widget-countdown-custom.ui',
+}
+
+widget_name = {
+    'widget-time.ui': '当前日期',
+    'widget-countdown.ui': '活动倒计时',
+    'widget-current-activity.ui': '当前活动',
+    'widget-next-activity.ui': '下一活动',
+    'widget-countdown-custom.ui': '自定义倒计时',
+}
 
 
 def get_subject_abbreviation(key):
@@ -115,7 +146,7 @@ def get_schedule_config():
     # 遍历目标目录下的所有文件
     for file_name in os.listdir(schedule_dir):
         # 找json
-        if file_name.endswith('.json'):
+        if file_name.endswith('.json') and file_name != 'backup.json':
             # 将文件路径添加到列表
             schedule_config.append(file_name)
     schedule_config.append('添加新课表')
@@ -133,6 +164,17 @@ def return_default_schedule_number():
 
 def create_new_profile(filename):
     copy('config/default.json', f'config/schedule/{filename}')
+
+
+def get_widget_config():
+    try:
+        with open(f'config/widget.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            c = data
+        return c['widgets']
+    except Exception as e:
+        print(f'ReadWidgetConfigFAILD: {e}')
+        return default_widgets
 
 
 if __name__ == '__main__':

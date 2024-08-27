@@ -2,9 +2,14 @@ import json
 import os
 import configparser as config
 from win32com.client import Dispatch
+from datetime import datetime, timedelta
+
+import list
+
 path = 'config.ini'
 conf = config.ConfigParser()
 name = 'Class Widgets'
+
 
 # CONFIG
 # 读取config
@@ -64,7 +69,7 @@ def save_data_to_json(new_data, filename):
     try:
         with open(f'config/schedule/{filename}', 'w', encoding='utf-8') as file:
             json.dump(data_dict, file, ensure_ascii=False, indent=4)
-        return (f"数据已成功保存到 config/schedule/{filename}")
+        return f"数据已成功保存到 config/schedule/{filename}"
     except Exception as e:
         print(f"保存数据时出错: {e}")
 
@@ -99,56 +104,64 @@ def is_temp_schedule():
 
 
 def add_shortcut_to_startmenu(file='', icon=''):
-    if file == "":
-        file_path = os.path.realpath(__file__)
-    else:
-        file_path = os.path.abspath(file)  # 将相对路径转换为绝对路径
+    try:
+        if file == "":
+            file_path = os.path.realpath(__file__)
+        else:
+            file_path = os.path.abspath(file)  # 将相对路径转换为绝对路径
 
-    if icon == "":
-        icon_path = file_path  # 如果未指定图标路径，则使用程序路径
-    else:
-        icon_path = os.path.abspath(icon)  # 将相对路径转换为绝对路径
+        if icon == "":
+            icon_path = file_path  # 如果未指定图标路径，则使用程序路径
+        else:
+            icon_path = os.path.abspath(icon)  # 将相对路径转换为绝对路径
 
-    # 获取开始菜单文件夹路径
-    menu_folder = os.path.join(os.getenv('APPDATA'), 'Microsoft', 'Windows', 'Start Menu', 'Programs')
+        # 获取开始菜单文件夹路径
+        menu_folder = os.path.join(os.getenv('APPDATA'), 'Microsoft', 'Windows', 'Start Menu', 'Programs')
 
-    # 快捷方式文件名（使用文件名或自定义名称）
-    name = os.path.splitext(os.path.basename(file_path))[0]  # 使用文件名作为快捷方式名称
-    shortcut_path = os.path.join(menu_folder, f'{name}.lnk')
+        # 快捷方式文件名（使用文件名或自定义名称）
+        name = os.path.splitext(os.path.basename(file_path))[0]  # 使用文件名作为快捷方式名称
+        shortcut_path = os.path.join(menu_folder, f'{name}.lnk')
 
-    # 创建快捷方式
-    shell = Dispatch('WScript.Shell')
-    shortcut = shell.CreateShortCut(shortcut_path)
-    shortcut.Targetpath = file_path
-    shortcut.WorkingDirectory = os.path.dirname(file_path)
-    shortcut.IconLocation = icon_path  # 设置图标路径
-    shortcut.save()
+        # 创建快捷方式
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut.Targetpath = file_path
+        shortcut.WorkingDirectory = os.path.dirname(file_path)
+        shortcut.IconLocation = icon_path  # 设置图标路径
+        shortcut.save()
+    except Exception as e:
+        print(f"创建开始菜单快捷方式时出错: {e}")
+
 
 def add_shortcut(file='', icon=''):
-    if file == "":
-        file_path = os.path.realpath(__file__)
-    else:
-        file_path = os.path.abspath(file)  # 将相对路径转换为绝对路径
+    try:
+        if file == "":
+            file_path = os.path.realpath(__file__)
+        else:
+            file_path = os.path.abspath(file)
 
-    if icon == "":
-        icon_path = file_path  # 如果未指定图标路径，则使用程序路径
-    else:
-        icon_path = os.path.abspath(icon)  # 将相对路径转换为绝对路径
+        if icon == "":
+            icon_path = file_path
+        else:
+            icon_path = os.path.abspath(icon)
 
-    # 获取桌面文件夹路径
-    desktop_folder = os.path.join(os.environ['USERPROFILE'], 'Desktop')
+        # 获取桌面文件夹路径
+        desktop_folder = os.path.join(os.environ['USERPROFILE'], 'Desktop')
 
-    # 快捷方式文件名（使用文件名或自定义名称）
-    name = os.path.splitext(os.path.basename(file_path))[0]  # 使用文件名作为快捷方式名称
-    shortcut_path = os.path.join(desktop_folder, f'{name}.lnk')
+        # 快捷方式文件名（使用文件名或自定义名称）
+        name = os.path.splitext(os.path.basename(file_path))[0]  # 使用文件名作为快捷方式名称
+        shortcut_path = os.path.join(desktop_folder, f'{name}.lnk')
 
-    # 创建快捷方式
-    shell = Dispatch('WScript.Shell')
-    shortcut = shell.CreateShortCut(shortcut_path)
-    shortcut.Targetpath = file_path
-    shortcut.WorkingDirectory = os.path.dirname(file_path)
-    shortcut.IconLocation = icon_path  # 设置图标路径
-    shortcut.save()
+        # 创建快捷方式
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut.Targetpath = file_path
+        shortcut.WorkingDirectory = os.path.dirname(file_path)
+        shortcut.IconLocation = icon_path  # 设置图标路径
+        shortcut.save()
+    except Exception as e:
+        print(f"创建桌面快捷方式时出错: {e}")
+
 
 def add_to_startup(file_path='', icon_path=''):  # 注册到开机启动
     if file_path == "":
@@ -192,6 +205,50 @@ def get_time_offset():  # 获取时差偏移
         return int(time_offset)
 
 
+def get_custom_countdown():  # 获取自定义倒计时
+    custom_countdown = read_conf('Date', 'countdown_date')
+    if custom_countdown is None or custom_countdown == '':
+        return '未设置'
+    else:
+        custom_countdown = datetime.strptime(custom_countdown, '%Y-%m-%d')
+        if custom_countdown < datetime.now():
+            return '0 天'
+        else:
+            cd_text = custom_countdown - datetime.now()
+            return f'{cd_text.days} 天'
+            # return (
+            #     f"{cd_text.days} 天 {cd_text.seconds // 3600} 小时 {cd_text.seconds // 60 % 60} 分"
+            # )
+
+
+def get_is_widget_in(widget='example.ui'):
+    widgets_list = list.get_widget_config()
+    if widget in widgets_list:
+        return True
+    else:
+        return False
+
+
+def save_widget_conf_to_json(new_data):
+    # 初始化 data_dict 为一个空字典
+    data_dict = {}
+    if os.path.exists(f'config/widget.json'):
+        try:
+            with open(f'config/widget.json', 'r', encoding='utf-8') as file:
+                data_dict = json.load(file)
+        except Exception as e:
+            print(f"读取现有数据时出错: {e}")
+            return e
+    data_dict.update(new_data)
+    try:
+        with open(f'config/widget.json', 'w', encoding='utf-8') as file:
+            json.dump(data_dict, file, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        print(f"保存数据时出错: {e}")
+        return e
+
+
 # 示例使用
 test_data_dict = {
     "timeline": {
@@ -218,7 +275,8 @@ test_data_dict = {
 }
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    print('AL_1S')
     # save_data_to_json(test_data_dict, 'schedule-1.json')
     # loaded_data = load_from_json('schedule-1.json')
     # print(loaded_data)
