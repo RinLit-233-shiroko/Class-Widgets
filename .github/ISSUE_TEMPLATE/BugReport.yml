@@ -96,9 +96,9 @@ body:
   - type: dropdown
     id: virus
     attributes:
-      label: 您是否遇见过这样的事情？
+      label: 不要乱下载别人发的文件，特别是名字是fix.zip的文件。您是否遇见过这样的文件？
       options:
         - 是
         - 否
     validations:
-      required: false
+      required: true
