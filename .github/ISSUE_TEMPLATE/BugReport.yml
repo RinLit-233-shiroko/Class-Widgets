@@ -1,0 +1,104 @@
+name: Bug 反馈
+description: 在使用 Class Widgets 的过程中遇到了 Bug。
+title: （清空本段文字并起一个能够清晰描述您的问题的标题）
+labels: ["Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您进行 Bug 反馈。请在上面的⬆️文本框清空，并起一个能够清晰描述您的问题的标题，便于开发者解决您的问题。
+        
+        > [!important]
+        > 重要：如果要提出**多个 Bug**，请为每一个 Bug 开一个单独的 issue。
+        >
+        > 如果您不知道如何有效、精准地表述，我们建议您先阅读《提问的智慧》（[链接](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)）。
+        
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单
+      description: 在开始反馈这个问题之前，请先检查：
+      options:
+        - label: 我已更新到最新版 ![GitHub Release](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?include_prereleases) ，并看过[最新提交](https://github.com/RinLit-233-shiroko/Class-Widgets/commits/main/)，确认这一 Bug 还没有修复。
+          required: true
+        - label: 我已在 [Issues](https://github.com/RinLit-233-shiroko/Class-Widgets/issues?q=label%3ABug) 中检索，确认这一 Bug 未被提交过。
+          required: true
+        - label: 我已知晓并同意，此处仅用于汇报程序中存在的问题（关于其他非程序本身的问题应当在 Discussion 板块提出）。
+          required: true
+  - type: markdown
+    attributes: 
+      value: |
+        ### Bug 信息
+
+        描述您遇到的 Bug。您可以附上截图、录屏、堆栈跟踪、日志等材料，便于开发者追踪问题。
+  - type: textarea
+    id: excepted
+    attributes:
+      label: 期望的行为
+      description: 详细的描述你期望发生的行为，突出与目前（可能不正确的）行为的不同。
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 实际结果
+      description: 实际发生的行为。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce-steps
+    attributes:
+      label: 重现步骤
+      description: |
+        详细描述要怎么操作才能再次触发这个 Bug。
+      placeholder: |
+        1. 首先……
+        2. 然后……
+        3. ……
+    validations:
+      required: true
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: 堆栈跟踪（可选）
+      description: 如果在遇到这个 Bug 时发生了崩溃（弹出崩溃提示），或者产生了错误日志，请将产生的堆栈跟踪信息粘贴到此处，便于开发者定位 Bug。
+      render: shell
+  - type: input
+    id: app_version
+    attributes:
+      label: 应用版本
+      description: 您当前使用的 Class Widgets 版本号，可以在【设置】->【关于本产品】中查看。
+      placeholder: 如：1.1.4
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: 操作系统版本
+      description: |
+        您当前使用的 Windows 操作系统版本，可以运行 `winver.exe` 查看。
+        如果您不能肯定此 Bug 与操作系统无关，请填写此项。
+      placeholder: 如：10.0.22000.0
+  - type: checkboxes
+    id: revision
+    attributes:
+      label: 最后一步
+      description: 回顾您的回答
+      options:
+        - label: 我认为上述的描述已经足以详细，以允许开发人员能复现该问题。如果我的 issue 没有按照上述的要求填写，可能会被无条件关闭。
+          required: true
+  - type: markdown
+    attributes: 
+      value: |
+        ### 紧急通知：不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
+
+        已经有数人被此感染，如果看见这样的评论，请及时联系删除！
+  - type: dropdown
+    id: virus
+    attributes:
+      label: 不要乱下载别人发的文件，特别是名字是fix.zip的文件。您是否遇见过这样的文件？
+      options:
+        - 是
+        - 否
+    validations:
+      required: true

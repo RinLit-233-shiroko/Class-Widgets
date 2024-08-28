@@ -1,0 +1,63 @@
+name: 功能请求
+description: 提出一项新的功能。
+title: （在这里输入你的标题）
+labels: ["新功能"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您贡献您的想法。请在上面的文本框⬆️起一个能够清晰概括此功能的标题，便于开发者了解您的想法。
+        
+        > [!important]
+        > 重要：如果您想要提出 **多项功能**，请为每一个功能开一个单独的 issue。
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单
+      description: 在开始反馈这个问题之前，请先检查：
+      options:
+        - label: 我已更新到最新版 ![最新的版本号](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?include_releases&style=flat-square&label=) ，并看过[最新提交](https://github.com/RinLit-233-shiroko/Class-Widgets/commits/main/)，确认我想要的功能还没有实现。
+          required: true
+        - label: 我已在 [Issues](https://github.com/RinLit-233-shiroko/Class-Widgets/issues?q=label%3ABug) 中检索，确认这一 Bug 未被提交过。
+          required: true
+        - label: 我认为我想要的功能是用户广泛需要的，插件不能替代的，且没有超出 **软件本来** 的开发目标，而非 **添加与课表及教学辅助无关的内容** 。
+          required: true
+        - label: 我已知晓由于开发者时间精力有限，我提交的功能请求可能需要比较久的时间才能实现。
+          required: true
+  - type: textarea
+    id: back
+    attributes:
+      label: 背景与动机
+      description: 添加此功能的理由。
+    validations:
+      required: true
+  - type: textarea
+    id: req
+    attributes:
+      label: 想要实现或优化的功能
+      description: 详细地描述一下你想要的功能，描述的越具体，采纳的可能性越高。
+    validations:
+      required: true
+  - type: checkboxes
+    id: revision
+    attributes:
+      label: 最后一步
+      description: 回顾您的回答
+      options:
+        - label: 我认为上述的描述已经足以详细，以便开发人员理解您想要的功能。如果我的 issue 没有按照上述的要求填写，可能会被无条件关闭。
+          required: true
+  - type: markdown
+    attributes: 
+      value: |
+        ### 紧急通知：不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
+
+        已经有数人被此感染，如果看见这样的评论，请及时联系删除！
+  - type: dropdown
+    id: virus
+    attributes:
+      label: 不要乱下载别人发的文件，特别是名字是fix.zip的文件。您是否遇见过这样的文件？
+      options:
+        - 是
+        - 否
+    validations:
+      required: true
