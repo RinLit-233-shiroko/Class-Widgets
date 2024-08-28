@@ -91,6 +91,8 @@ body:
     attributes: 
       value: |
         ### 紧急通知：不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
+
+        已经有数人被此感染，如果看见这样的评论，请及时联系删除！
   - type: dropdown
     id: virus
     attributes:
