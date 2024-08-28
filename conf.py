@@ -3,6 +3,7 @@ import os
 import configparser as config
 from win32com.client import Dispatch
 from datetime import datetime, timedelta
+from loguru import logger
 
 import list
 
@@ -20,7 +21,8 @@ def read_conf(section='General', key=''):
             data.read_file(configfile)
     except FileNotFoundError:
         return None
-    except Exception:
+    except Exception as e:
+        logger.error(f'读取配置文件时出错: {e}')
         return None
 
     if section in data and key in data[section]:
@@ -37,8 +39,9 @@ def write_conf(section, key, value):
             data.read_file(configfile)
     except FileNotFoundError:
         pass
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        logger.error(f'读取配置文件时出错: {e}')
+        return None
 
     if section not in data:
         data.add_section(section)
@@ -60,7 +63,7 @@ def save_data_to_json(new_data, filename):
             with open(f'config/schedule/{filename}', 'r', encoding='utf-8') as file:
                 data_dict = json.load(file)
         except Exception as e:
-            print(f"读取现有数据时出错: {e}")
+            logger.error(f"读取现有数据时出错: {e}")
 
     # 更新 data_dict，添加或覆盖新的数据
     data_dict.update(new_data)
@@ -71,7 +74,7 @@ def save_data_to_json(new_data, filename):
             json.dump(data_dict, file, ensure_ascii=False, indent=4)
         return f"数据已成功保存到 config/schedule/{filename}"
     except Exception as e:
-        print(f"保存数据时出错: {e}")
+        logger.error(f"保存数据时出错: {e}")
 
 
 def load_from_json(filename):
@@ -85,7 +88,7 @@ def load_from_json(filename):
             data = json.load(file)
             return data
     except Exception as e:
-        print(f"加载数据时出错: {e}")
+        logger.error(f"加载数据时出错: {e}")
         return None
 
 
@@ -130,7 +133,7 @@ def add_shortcut_to_startmenu(file='', icon=''):
         shortcut.IconLocation = icon_path  # 设置图标路径
         shortcut.save()
     except Exception as e:
-        print(f"创建开始菜单快捷方式时出错: {e}")
+        logger.error(f"创建开始菜单快捷方式时出错: {e}")
 
 
 def add_shortcut(file='', icon=''):
@@ -160,7 +163,7 @@ def add_shortcut(file='', icon=''):
         shortcut.IconLocation = icon_path  # 设置图标路径
         shortcut.save()
     except Exception as e:
-        print(f"创建桌面快捷方式时出错: {e}")
+        logger.error(f"创建桌面快捷方式时出错: {e}")
 
 
 def add_to_startup(file_path='', icon_path=''):  # 注册到开机启动
@@ -221,6 +224,20 @@ def get_custom_countdown():  # 获取自定义倒计时
             # )
 
 
+def get_week_type():  # 获取单双周
+    if read_conf('Date', 'start_date') != '':
+        start_date = read_conf('Date', 'start_date')
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        today = datetime.now()
+        week_num = (today - start_date).days // 7 + 1
+        if week_num % 2 == 0:
+            return 1  # 双周
+        else:
+            return 0  # 单周
+    else:
+        return 0  # 默认单周
+
+
 def get_is_widget_in(widget='example.ui'):
     widgets_list = list.get_widget_config()
     if widget in widgets_list:
@@ -277,6 +294,7 @@ test_data_dict = {
 
 if __name__ == '__main__':
     print('AL_1S')
+    print(get_week_type())
     # save_data_to_json(test_data_dict, 'schedule-1.json')
     # loaded_data = load_from_json('schedule-1.json')
     # print(loaded_data)

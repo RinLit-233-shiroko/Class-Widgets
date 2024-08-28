@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QParallelA
 from playsound import playsound
 from qfluentwidgets import setThemeColor
 from win32 import win32api
+from loguru import logger
 
 import conf
 import list
@@ -17,6 +18,8 @@ attend_class_p_color = '#ff8800'
 finish_class_p_color = '#5ADFAA'
 
 window_list = []    # 窗口列表
+logger.add("log/ClassWidgets_Ringtone.log", rotation="1 MB", encoding="utf-8", retention="1 hours")
+
 
 # 重写力
 class tip_toast(QWidget):
@@ -33,10 +36,12 @@ class tip_toast(QWidget):
         title = self.findChild(QPushButton, 'alert')
 
         if state:
+            logger.info('上课铃声显示')
             title.setText('  上课')
             playsound(attend_class, block=False)
             setThemeColor(attend_class_p_color)  # 主题色
         else:
+            logger.info('下课铃声显示')
             title.setText('  下课')
             playsound(finish_class, block=False)
             setThemeColor(finish_class_p_color)
@@ -62,7 +67,7 @@ class tip_toast(QWidget):
 
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
-        self.timer.setInterval(1200)
+        self.timer.setInterval(2500)
         self.timer.timeout.connect(self.close_window)
 
         # 放大效果
@@ -117,15 +122,19 @@ class tip_toast(QWidget):
 def main(state=1):
     global start_x, start_y, total_width
 
-    screen_width = win32api.GetSystemMetrics(0)
-    spacing = -5
-    total_width = sum(list.window_width, spacing * (len(list.window_width) - 1))
-    start_x = int((screen_width - total_width) / 2)
-    start_y = int(conf.read_conf('General', 'margin'))
+    if conf.read_conf('General', 'enable_toast') == '1':
+        screen_width = win32api.GetSystemMetrics(0)
+        spacing = -5
+        widgets = list.get_widget_config()
+        total_width = total_width = sum((list.widget_width[key] for key in widgets), spacing * (len(widgets) - 1))
+        start_x = int((screen_width - total_width) / 2)
+        start_y = int(conf.read_conf('General', 'margin'))
 
-    window = tip_toast((start_x, start_y), total_width, state)
-    window.show()
-    window_list.append(window)
+        window = tip_toast((start_x, start_y), total_width, state)
+        window.show()
+        window_list.append(window)
+    else:
+        return
 
 
 if __name__ == '__main__':

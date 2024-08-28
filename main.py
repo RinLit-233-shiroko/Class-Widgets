@@ -4,8 +4,9 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphi
     QGraphicsDropShadowEffect, QSystemTrayIcon, QMenu
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve
 from PyQt6.QtGui import QColor, QIcon
+from loguru import logger
 import sys
-from qfluentwidgets import Theme, setTheme, setThemeColor
+from qfluentwidgets import Theme, setTheme, setThemeColor, MessageBox, Dialog
 import datetime as dt
 import list
 import conf
@@ -31,6 +32,8 @@ next_lessons = []
 bkg_opacity = 165  # 模糊label的透明度(0~255)
 time_offset = 0  # 时差偏移
 
+logger.add("log/ClassWidgets_main_{time}.log", rotation="10 MB", encoding="utf-8", retention="1 hour")
+
 
 # 获取课程上下午开始时间
 def get_start_time():
@@ -41,34 +44,52 @@ def get_start_time():
     timeline = loaded_data.get('timeline')
 
     for item_name, item_time in timeline.items():
-        if item_name == 'start_time_m':
-            if timeline[item_name]:
-                h, m = timeline[item_name]
-                morning_st = dt.datetime.combine(today, dt.time(h, m))
-        elif item_name == 'start_time_a':
-            if timeline[item_name]:
-                h, m = timeline[item_name]
-                afternoon_st = dt.datetime.combine(today, dt.time(h, m))
-        else:
-            timeline_data[item_name] = item_time
+        try:
+            if item_name == 'start_time_m':
+                if timeline[item_name]:
+                    h, m = timeline[item_name]
+                    morning_st = dt.datetime.combine(today, dt.time(h, m))
+            elif item_name == 'start_time_a':
+                if timeline[item_name]:
+                    h, m = timeline[item_name]
+                    afternoon_st = dt.datetime.combine(today, dt.time(h, m))
+            else:
+                timeline_data[item_name] = item_time
+        except Exception as e:
+            logger.error(f'加载课程表文件[起始时间]出错：{e}')
 
 
 # 获取当前活动
-def get_current_lessons():
+def get_current_lessons():  # 获取今日课程
     global current_lessons
-
     loaded_data = conf.load_from_json(filename)
     timeline = loaded_data.get('timeline')
-    schedule = loaded_data.get('schedule')
+    if conf.read_conf('General', 'enable_alt_schedule') == '1':
+        try:
+            if conf.get_week_type():
+                schedule = loaded_data.get('schedule_even')
+            else:
+                schedule = loaded_data.get('schedule')
+        except Exception as e:
+            logger.error(f'加载课程表文件[单双周]出错：{e}')
+            schedule = loaded_data.get('schedule')
+    else:
+        logger.info('获取单周课程')
+        schedule = loaded_data.get('schedule')
     class_count = 0
     for item_name, item_time in timeline.items():
         if item_name.startswith('am') or item_name.startswith('aa'):
             if schedule[str(current_week)]:
-
-                if schedule[str(current_week)][class_count] != '未添加':
-                    current_lessons[item_name] = schedule[str(current_week)][class_count]
-                else:
+                try:
+                    if schedule[str(current_week)][class_count] != '未添加':
+                        current_lessons[item_name] = schedule[str(current_week)][class_count]
+                    else:
+                        current_lessons[item_name] = '暂无课程'
+                except IndexError:
                     current_lessons[item_name] = '暂无课程'
+                except Exception as e:
+                    current_lessons[item_name] = '暂无课程'
+                    logger.debug(f'加载课程表文件出错：{e}')
                 class_count += 1
             else:
                 current_lessons[item_name] = '暂无课程'
@@ -94,7 +115,7 @@ def get_countdown(toast=False):
                         if item_name.startswith('fa'):
                             tip_toast.main(1)  # 上课
                         else:
-                            tip_toast.main(0)  # 下课`
+                            tip_toast.main(0)  # 下课
 
                     if c_time >= current_dt:
                         # 根据所在时间段使用不同标语
@@ -163,7 +184,7 @@ def get_next_lessons():
     next_lessons = []
     current_dt = dt.datetime.combine(today, dt.datetime.strptime(current_time, '%H:%M:%S').time())  # 当前时间
 
-    if afternoon_st != 0 and current_dt > afternoon_st - dt.timedelta(minutes=30):
+    if afternoon_st != 0 and current_dt > afternoon_st - dt.timedelta(minutes=30):  # 提前30min获取下午课程
         c_time = afternoon_st  # 开始时间段
         for item_name, item_time in timeline_data.items():
             if item_name.startswith('aa') or item_name.startswith('fa'):
@@ -255,7 +276,8 @@ class DesktopWidget(QWidget):  # 主要小组件
 
         setTheme(Theme.LIGHT)
         setThemeColor('#36ABCF')
-        self.isHidden = False  # 窗口是否隐藏
+        self.menu = None
+        self.exmenu = None
 
         # 设置窗口无边框和透明背景
         if int(conf.read_conf('General', 'pin_on_top')):  # 置顶
@@ -329,13 +351,22 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.timer.start()
 
     def open_settings(self):
-        self.menu = menu.desktop_widget()
-        self.menu.show()
+        if self.menu is None or not self.menu.isVisible():  # 防多开
+            self.menu = menu.desktop_widget()
+            self.menu.show()
+            logger.info('打开“设置”')
+        else:
+            self.menu.raise_()
+            self.menu.activateWindow()
 
     def open_exact_menu(self):
         if conf.read_conf('Temp', 'hide') != '1':  # 如果没有隐藏
-            self.exmenu = exact_menu.ExactMenu()
-            self.exmenu.show()
+            if self.exmenu is None or not self.exmenu.isVisible():  # 防多开
+                self.exmenu = exact_menu.ExactMenu()
+                self.exmenu.show()
+            else:
+                self.exmenu.raise_()
+                self.exmenu.activateWindow()
         else:
             conf.write_conf('Temp', 'hide', '0')
 
@@ -475,9 +506,12 @@ if __name__ == '__main__':
         return int(start_x + spacing * num + width)
 
     if conf.read_conf('Other', 'initialstartup') == '1':  # 首次启动
-        conf.add_shortcut('ClassWidgets.exe', 'img/favicon.ico')
-        conf.add_shortcut_to_startmenu('ClassWidgets.exe', 'img/favicon.ico')
-        conf.write_conf('Other', 'initialstartup', '')
+        try:
+            conf.add_shortcut('ClassWidgets.exe', 'img/favicon.ico')
+            conf.add_shortcut_to_startmenu('ClassWidgets.exe', 'img/favicon.ico')
+            conf.write_conf('Other', 'initialstartup', '')
+        except Exception as e:
+            logger.error(f'添加快捷方式失败：{e}')
 
     for w in range(len(widgets)):
         if w == 0:
@@ -486,6 +520,7 @@ if __name__ == '__main__':
             show_window(widgets[w], (cal_start_width(w), start_y))
 
     for application in windows:  # 显示所有窗口
+        logger.info(f'显示窗口：{application.windowTitle()}')
         application.show()
         app.processEvents()
 

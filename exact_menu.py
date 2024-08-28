@@ -1,13 +1,13 @@
-import subprocess
 import sys
 import datetime as dt
+import sys
 from shutil import copy
 
 from PyQt6 import uic
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QWidget, QApplication
-from qfluentwidgets import FluentWindow, setTheme, Theme, FluentIcon as fIcon, setThemeColor, ComboBox, \
+from PyQt6.QtWidgets import QApplication
+from qfluentwidgets import FluentWindow, setTheme, Theme, FluentIcon as fIcon, ComboBox, \
     PrimaryPushButton, Flyout, FlyoutAnimationType, InfoBarIcon, ListWidget, LineEdit, ToolButton, HyperlinkButton
 from win32 import win32api
 

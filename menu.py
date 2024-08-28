@@ -13,6 +13,7 @@ from qfluentwidgets import (
     CalendarPicker,
 )
 from copy import deepcopy
+from loguru import logger
 import datetime as dt
 import list
 import conf
@@ -31,6 +32,8 @@ filename = conf.read_conf('General', 'schedule')
 
 schedule_dict = {}  # 对应时间线的课程表
 schedule_even_dict = {}  # 对应时间线的课程表（双周）
+
+logger.add("log/ClassWidgets_menu_{time}.log", rotation="10 MB", encoding="utf-8", retention="1 hour")
 
 
 class desktop_widget(FluentWindow):
@@ -56,6 +59,7 @@ class desktop_widget(FluentWindow):
             self.init_nav()
             self.init_window()
         except Exception as e:
+            logger.error(f'初始化设置界面时发生错误：{e}')
             print(f'初始化设置界面时发生错误：{e}')
 
     def load_all_item(self):
@@ -85,7 +89,8 @@ class desktop_widget(FluentWindow):
         set_wcc_title.textChanged.connect(lambda: conf.write_conf('Date', 'cd_text_custom', set_wcc_title.text()))
 
         set_countdown_date = self.findChild(CalendarPicker, 'set_countdown_date')  # 倒计时日期
-        set_countdown_date.setDate(QDate.fromString(conf.read_conf('Date', 'countdown_date'), 'yyyy-M-d'))
+        if conf.read_conf('Date', 'countdown_date') != '':
+            set_countdown_date.setDate(QDate.fromString(conf.read_conf('Date', 'countdown_date'), 'yyyy-M-d'))
         set_countdown_date.dateChanged.connect(
             lambda: conf.write_conf(
                 'Date', 'countdown_date', set_countdown_date.date.toString('yyyy-M-d'))
@@ -132,11 +137,22 @@ class desktop_widget(FluentWindow):
         switch_enable_toast.setChecked(int(conf.read_conf('General', 'enable_toast')))
         switch_enable_toast.checkedChanged.connect(self.switch_enable_toast)  # 通知开关
 
+        switch_enable_alt_schedule = self.findChild(SwitchButton, 'switch_enable_alt_schedule')
+        switch_enable_alt_schedule.setChecked(int(conf.read_conf('General', 'enable_alt_schedule')))
+        switch_enable_alt_schedule.checkedChanged.connect(self.switch_enable_alt_schedule)  # 单双周开关
+
+        set_start_date = self.findChild(CalendarPicker, 'set_start_date')  # 倒计时日期
+        if conf.read_conf('Date', 'start_date') != '':
+            set_start_date.setDate(QDate.fromString(conf.read_conf('Date', 'start_date'), 'yyyy-M-d'))
+        set_start_date.dateChanged.connect(
+            lambda: conf.write_conf('Date', 'start_date', set_start_date.date.toString('yyyy-M-d')))  # 开学日期
+
         offset_spin = self.findChild(SpinBox, 'offset_spin')
         offset_spin.setValue(int(conf.read_conf('General', 'time_offset')))
         offset_spin.valueChanged.connect(
             lambda: conf.write_conf('General', 'time_offset', str(offset_spin.value()))
         )  # 保存时差偏移
+
 
     def setup_schedule_edit(self):
         self.se_load_item()
@@ -163,6 +179,15 @@ class desktop_widget(FluentWindow):
 
         se_save_button = self.findChild(PrimaryPushButton, 'save_schedule')
         se_save_button.clicked.connect(self.se_save_item)
+
+        se_week_type_combo = self.findChild(ComboBox, 'week_type_combo')
+        se_week_type_combo.addItems(list.week_type)
+        se_week_type_combo.currentIndexChanged.connect(self.se_upload_list)
+
+        se_copy_schedule_button = self.findChild(PushButton, 'copy_schedule')
+        se_copy_schedule_button.hide()
+        se_copy_schedule_button.clicked.connect(self.se_copy_odd_schedule)
+
 
     def setup_timeline_edit(self):
         # teInterface
@@ -201,10 +226,13 @@ class desktop_widget(FluentWindow):
         subtitle = self.findChild(SubtitleLabel, 'subtitle_file')
         subtitle.setText(f'预览  -  {filename[:-5]}')
 
+        sp_week_type_combo = self.findChild(ComboBox, 'pre_week_type_combo')
+        sp_week_type_combo.addItems(list.week_type)
+        sp_week_type_combo.currentIndexChanged.connect(self.sp_fill_grid_row)
+
         # 设置表格
         schedule_view.setColumnCount(7)
         schedule_view.setHorizontalHeaderLabels(list.week[0:7])
-        schedule_view.setRowCount(sp_get_class_num())
         schedule_view.setBorderVisible(True)
         schedule_view.verticalHeader().hide()
         schedule_view.setBorderRadius(8)
@@ -254,13 +282,10 @@ class desktop_widget(FluentWindow):
 
     def switch_enable_alt_schedule(self):
         switch_enable_alt_schedule = self.findChild(SwitchButton, 'switch_enable_alt_schedule')
-        week_type_combo = self.findChild(ComboBox, 'week_type_combo')
         if switch_enable_alt_schedule.isChecked():
-            week_type_combo.setEnabled(True)
-            conf.save_data_to_json({'alt_schedule': '1'}, filename)
+            conf.write_conf('General', 'enable_alt_schedule', '1')
         else:
-            week_type_combo.setEnabled(False)
-            conf.save_data_to_json({'alt_schedule': '0'}, filename)
+            conf.write_conf('General', 'enable_alt_schedule', '0')
 
     def ct_save_widget_config(self):
         widgets_list = self.findChild(ListWidget, 'widgets_list')
@@ -304,6 +329,7 @@ class desktop_widget(FluentWindow):
             widgets_preview.addItem(right_spacer)
         except Exception as e:
             print(f'更新预览界面时发生错误：{e}')
+            logger.error(f'更新预览界面时发生错误：{e}')
 
     def ad_change_file_name(self):
         global filename
@@ -316,6 +342,7 @@ class desktop_widget(FluentWindow):
             filename = new_name + '.json'
         except Exception as e:
             print(f'修改配置文件名称时发生错误：{e}')
+            logger.error(f'修改配置文件名称时发生错误：{e}')
 
 
     def ad_change_file(self):
@@ -331,19 +358,26 @@ class desktop_widget(FluentWindow):
                     conf.write_conf('General', 'schedule', conf_combo.currentText())
         except Exception as e:
             print(f'切换配置文件时发生错误：{e}')
+            logger.error(f'切换配置文件时发生错误：{e}')
         alert = MessageBox('您已切换课程表的配置文件',
                            '软件将在您确认后关闭，\n'
                            '您需重新打开设置菜单以设置您切换的配置文件。', self)
         alert.cancelButton.hide()  # 隐藏取消按钮，必须重启
         alert.buttonLayout.insertStretch(0, 1)
         if alert.exec():
-            self.hide()
+            self.close()
 
     def sp_fill_grid_row(self):  # 填充预览表格
+        sp_week_type_combo = self.findChild(ComboBox, 'pre_week_type_combo')
         schedule_view = self.findChild(TableWidget, 'schedule_view')
-        for i in range(len(schedule_dict)):
-            for j in range(len(schedule_dict[str(i)])):
-                item_text = schedule_dict[str(i)][j].split('-')[0]
+        schedule_view.setRowCount(sp_get_class_num())
+        if sp_week_type_combo.currentIndex() == 1:
+            schedule_dict_sp = schedule_even_dict
+        else:
+            schedule_dict_sp = schedule_dict
+        for i in range(len(schedule_dict_sp)):
+            for j in range(len(schedule_dict_sp[str(i)])):
+                item_text = schedule_dict_sp[str(i)][j].split('-')[0]
                 if item_text != '未添加':
                     item = QTableWidgetItem(item_text)
                 else:
@@ -399,17 +433,19 @@ class desktop_widget(FluentWindow):
     # 加载课表
     def se_load_item(self, file=filename):
         global schedule_dict
+        global schedule_even_dict
         loaded_data = conf.load_from_json(file)
         loaded_data_timeline = conf.load_from_json(file)
         timeline = loaded_data_timeline.get('timeline')
         schedule = loaded_data.get('schedule')
+        schedule_even = loaded_data.get('schedule_even')
         for week, item in schedule.items():
             all_class = []
             morning_count = 0
             for item_name, item_time in timeline.items():
                 if item_name.startswith('am'):
                     try:
-                        prefix = item[int(item_name[-1])]
+                        prefix = item[int(item_name[-1])-1]
                         period = '上午'
                         all_class.append(f'{prefix}-{period}')
                     except Exception as e:
@@ -419,7 +455,7 @@ class desktop_widget(FluentWindow):
                     morning_count += 1
                 elif item_name.startswith('aa'):
                     try:
-                        prefix = item[int(item_name[-1]) + morning_count]
+                        prefix = item[int(item_name[-1]) + morning_count-1]
                         period = '下午'
                         all_class.append(f'{prefix}-{period}')
                     except Exception as e:
@@ -427,48 +463,115 @@ class desktop_widget(FluentWindow):
                         period = '下午'
                         all_class.append(f'{prefix}-{period}')
             schedule_dict[week] = all_class
+        for week, item in schedule_even.items():
+            all_class = []
+            morning_count = 0
+            for item_name, item_time in timeline.items():
+                if item_name.startswith('am'):
+                    try:
+                        prefix = item[int(item_name[-1]) - 1]
+                        period = '上午'
+                        all_class.append(f'{prefix}-{period}')
+                    except Exception as e:
+                        prefix = '未添加'
+                        period = '上午'
+                        all_class.append(f'{prefix}-{period}')
+                    morning_count += 1
+                elif item_name.startswith('aa'):
+                    try:
+                        prefix = item[int(item_name[-1]) + morning_count - 1]
+                        period = '下午'
+                        all_class.append(f'{prefix}-{period}')
+                    except Exception as e:
+                        prefix = '未添加'
+                        period = '下午'
+                        all_class.append(f'{prefix}-{period}')
+            schedule_even_dict[week] = all_class
+
+    def se_copy_odd_schedule(self):
+        logger.info('复制单周课表')
+        global schedule_dict, schedule_even_dict
+        schedule_even_dict = deepcopy(schedule_dict)
+        self.se_upload_list()
 
     # 上传课表到列表组件
     def se_upload_list(self):
+        logger.info('更新列表：课程表编辑')
         se_schedule_list = self.findChild(ListWidget, 'schedule_list')
         se_schedule_list.clearSelection()
         se_week_combo = self.findChild(ComboBox, 'week_combo')
+        se_week_type_combo = self.findChild(ComboBox, 'week_type_combo')
+        se_copy_schedule_button = self.findChild(PushButton, 'copy_schedule')
         global current_week
-        current_week = se_week_combo.currentIndex()
-        se_schedule_list.clear()
-        se_schedule_list.addItems(schedule_dict[str(current_week)])
+        if se_week_type_combo.currentIndex() == 1:
+            se_copy_schedule_button.show()
+            current_week = se_week_combo.currentIndex()
+            se_schedule_list.clear()
+            se_schedule_list.addItems(schedule_even_dict[str(current_week)])
+        else:
+            se_copy_schedule_button.hide()
+            current_week = se_week_combo.currentIndex()
+            se_schedule_list.clear()
+            se_schedule_list.addItems(schedule_dict[str(current_week)])
 
     def se_upload_item(self):
         se_schedule_list = self.findChild(ListWidget, 'schedule_list')
-        global schedule_dict
-        cache_list = []
-        for i in range(se_schedule_list.count()):
-            item_text = se_schedule_list.item(i).text()
-            cache_list.append(item_text)
-        schedule_dict[str(current_week)][:] = cache_list
+        se_week_type_combo = self.findChild(ComboBox, 'week_type_combo')
+        if se_week_type_combo.currentIndex() == 1:
+            global schedule_even_dict
+            try:
+                cache_list = []
+                for i in range(se_schedule_list.count()):
+                    item_text = se_schedule_list.item(i).text()
+                    cache_list.append(item_text)
+                schedule_even_dict[str(current_week)][:] = cache_list
+            except Exception as e:
+                print(f'上传双周课表时发生错误：{e}')
+        else:
+            global schedule_dict
+            cache_list = []
+            for i in range(se_schedule_list.count()):
+                item_text = se_schedule_list.item(i).text()
+                cache_list.append(item_text)
+            schedule_dict[str(current_week)][:] = cache_list
 
     # 保存课表
     def se_save_item(self):
-        data_dict = deepcopy(schedule_dict)
-        for week, item in data_dict.items():
-            cache_list = item
-            replace_list = []
-            for activity_num in range(len(cache_list)):
-                item_info = cache_list[int(activity_num)].split('-')
-                replace_list.append(item_info[0])
-            data_dict[str(week)] = replace_list
-        data_dict = {"schedule": data_dict}
-        conf.save_data_to_json(data_dict, filename)
-        Flyout.create(
-            icon=InfoBarIcon.SUCCESS,
-            title='保存成功',
-            content=f"已保存至 ./config/schedule/{filename}",
-            target=self.findChild(PrimaryPushButton, 'save_schedule'),
-            parent=self,
-            isClosable=True,
-            aniType=FlyoutAnimationType.PULL_UP
-        )
-        self.sp_fill_grid_row()
+        try:
+            data_dict = deepcopy(schedule_dict)
+            data_dict_even = deepcopy(schedule_even_dict)  #单双周保存
+            for week, item in data_dict.items():
+                cache_list = item
+                replace_list = []
+                for activity_num in range(len(cache_list)):
+                    item_info = cache_list[int(activity_num)].split('-')
+                    replace_list.append(item_info[0])
+                data_dict[str(week)] = replace_list
+            for week, item in data_dict_even.items():
+                cache_list = item
+                replace_list = []
+                for activity_num in range(len(cache_list)):
+                    item_info = cache_list[int(activity_num)].split('-')
+                    replace_list.append(item_info[0])
+                data_dict_even[str(week)] = replace_list
+            # 写入
+            data_dict_even = {"schedule_even": data_dict_even}
+            conf.save_data_to_json(data_dict_even, filename)
+            data_dict = {"schedule": data_dict}
+            conf.save_data_to_json(data_dict, filename)
+            Flyout.create(
+                icon=InfoBarIcon.SUCCESS,
+                title='保存成功',
+                content=f"已保存至 ./config/schedule/{filename}",
+                target=self.findChild(PrimaryPushButton, 'save_schedule'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+            self.sp_fill_grid_row()
+        except Exception as e:
+            logger.error(f'保存课表时发生错误: {e}')
+
 
     # 保存时间线
     def te_save_item(self, file=filename):
@@ -497,10 +600,8 @@ class desktop_widget(FluentWindow):
             if item_info[2] == '下午':
                 item_name += 'a'
                 item_name += str(counter - m)
-            if len(item_info[1]) == 4:
-                item_time = item_info[1][:2]
-            else:
-                item_time = item_info[1][:1]
+            # 修复 3 位数保存 Bug
+            item_time = item_info[1][0:len(item_info[1]) - 2]
             data_dict['timeline'][item_name] = item_time
         conf.save_data_to_json(data_dict, file)
         self.se_load_item()

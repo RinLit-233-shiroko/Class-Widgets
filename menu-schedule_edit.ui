@@ -82,7 +82,7 @@
         <item>
          <widget class="StrongBodyLabel" name="StrongBodyLabel">
           <property name="text">
-           <string>设定星期</string>
+           <string>选择星期</string>
           </property>
          </widget>
         </item>
@@ -93,6 +93,67 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="CardWidget" name="CardWidget_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>60</height>
+        </size>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="leftMargin">
+         <number>16</number>
+        </property>
+        <property name="topMargin">
+         <number>16</number>
+        </property>
+        <property name="rightMargin">
+         <number>16</number>
+        </property>
+        <property name="bottomMargin">
+         <number>16</number>
+        </property>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="StrongBodyLabel" name="StrongBodyLabel_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>选择单/双周课表</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="CaptionLabel" name="CaptionLabel">
+            <property name="text">
+             <string>若要启用双周课表，请在“高级选项”中 启用单双周课表和设置开学日期</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="ComboBox" name="week_type_combo"/>
+        </item>
+        <item>
+         <widget class="PushButton" name="copy_schedule">
+          <property name="text">
+           <string>复制单周课表</string>
           </property>
          </widget>
         </item>
@@ -243,6 +304,11 @@
    <extends>QFrame</extends>
    <header>qfluentwidgets</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CaptionLabel</class>
+   <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>
    <class>BodyLabel</class>

@@ -104,7 +104,7 @@
      <item>
       <widget class="BodyLabel" name="BodyLabel">
        <property name="text">
-        <string>版本：1.1.4</string>
+        <string>版本：1.1.5</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

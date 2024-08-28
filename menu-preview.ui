@@ -40,10 +40,19 @@
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="SubtitleLabel" name="subtitle_file">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>预览</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="ComboBox" name="pre_week_type_combo"/>
      </item>
     </layout>
    </item>
@@ -186,6 +195,11 @@ QTableCornerButton::section:pressed {
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QPushButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
   <customwidget>
    <class>SubtitleLabel</class>
    <extends>QLabel</extends>
