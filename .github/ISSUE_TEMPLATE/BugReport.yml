@@ -88,6 +88,15 @@ body:
         - label: 我认为上述的描述已经足以详细，以允许开发人员能复现该问题。如果我的 issue 没有按照上述的要求填写，可能会被无条件关闭。
           required: true
   - type: markdown
-    attributes:
+    attributes: 
       value: |
-        ### 不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
+        ### 紧急通知：不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
+  - type: dropdown
+    id: virus
+    attributes:
+      label: 您是否遇见过这样的事情？
+      options:
+        - 是
+        - 否
+    validations:
+      required: false
