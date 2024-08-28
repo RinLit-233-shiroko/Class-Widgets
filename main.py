@@ -32,7 +32,7 @@ next_lessons = []
 bkg_opacity = 165  # 模糊label的透明度(0~255)
 time_offset = 0  # 时差偏移
 
-logger.add("log/ClassWidgets_main_{time}.log", rotation="10 MB", encoding="utf-8", retention="1 hour")
+logger.add("log/ClassWidgets_main_{time}.log", rotation="10 MB", encoding="utf-8", retention="2 days")
 
 
 # 获取课程上下午开始时间

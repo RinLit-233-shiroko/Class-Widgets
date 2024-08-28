@@ -33,8 +33,6 @@ filename = conf.read_conf('General', 'schedule')
 schedule_dict = {}  # 对应时间线的课程表
 schedule_even_dict = {}  # 对应时间线的课程表（双周）
 
-logger.add("log/ClassWidgets_menu_{time}.log", rotation="10 MB", encoding="utf-8", retention="1 hour")
-
 
 class desktop_widget(FluentWindow):
     def __init__(self):
