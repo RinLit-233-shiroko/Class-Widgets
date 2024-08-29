@@ -18,7 +18,6 @@ attend_class_p_color = '#ff8800'
 finish_class_p_color = '#5ADFAA'
 
 window_list = []    # 窗口列表
-logger.add("log/ClassWidgets_Ringtone.log", rotation="1 MB", encoding="utf-8", retention="1 hours")
 
 
 # 重写力
@@ -123,10 +122,12 @@ def main(state=1):
     global start_x, start_y, total_width
 
     if conf.read_conf('General', 'enable_toast') == '1':
-        screen_width = win32api.GetSystemMetrics(0)
+        screen_geometry = QApplication.primaryScreen().geometry()
+        screen_width = screen_geometry.width()
         spacing = -5
         widgets = list.get_widget_config()
         total_width = total_width = sum((list.widget_width[key] for key in widgets), spacing * (len(widgets) - 1))
+
         start_x = int((screen_width - total_width) / 2)
         start_y = int(conf.read_conf('General', 'margin'))
 
