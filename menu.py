@@ -438,7 +438,7 @@ class desktop_widget(FluentWindow):
         schedule = loaded_data.get('schedule')
         schedule_even = loaded_data.get('schedule_even')
         if schedule is None:
-            schedule_even = schedule
+            schedule_even = deepcopy(schedule)
             self.se_save_item()
         for week, item in schedule.items():
             all_class = []
