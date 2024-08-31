@@ -437,6 +437,9 @@ class desktop_widget(FluentWindow):
         timeline = loaded_data_timeline.get('timeline')
         schedule = loaded_data.get('schedule')
         schedule_even = loaded_data.get('schedule_even')
+        if schedule is None:
+            schedule_even = schedule
+            self.se_save_item()
         for week, item in schedule.items():
             all_class = []
             morning_count = 0
