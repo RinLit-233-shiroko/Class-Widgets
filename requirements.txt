@@ -1,3 +1,5 @@
+configparser==7.0.0
+loguru==0.7.2
 playsound==1.2.2
+PyQt6==6.7.1
 PyQt6-Fluent-Widgets == 1.6.2
-PyQt6 >= 6.7.1
