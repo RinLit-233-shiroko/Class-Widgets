@@ -1,16 +1,18 @@
 import os
 
+import requests
 from PyQt6 import uic
-from PyQt6.QtCore import Qt, QTime, QUrl, QDate
+from PyQt6.QtCore import Qt, QTime, QUrl, QDate, QThread, pyqtSignal
 import sys
 
 from PyQt6.QtGui import QIcon, QDesktopServices, QPixmap
-from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, QSpacerItem
+from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, QSpacerItem, \
+    QFileDialog
 from qfluentwidgets import (
     Theme, setTheme, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
     SpinBox, TimePicker, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
-    CalendarPicker,
+    CalendarPicker, BodyLabel
 )
 from copy import deepcopy
 from loguru import logger
@@ -34,6 +36,29 @@ schedule_dict = {}  # 对应时间线的课程表
 schedule_even_dict = {}  # 对应时间线的课程表（双周）
 
 
+class VersionThread(QThread):  # 获取最新版本号
+    version_signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        version = self.get_latest_version()
+        self.version_signal.emit(version)
+
+    def get_latest_version(self):
+        url = "https://api.github.com/repos/RinLit-233-shiroko/Class-Widgets/releases/latest"
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("tag_name")
+            else:
+                return f"无法获取版本信息 错误代码：{response.status_code}"
+        except requests.exceptions.RequestException as e:
+            return f"请求失败: {e}"
+
+
 class desktop_widget(FluentWindow):
     def __init__(self):
         super().__init__()
@@ -53,6 +78,8 @@ class desktop_widget(FluentWindow):
             self.ifInterface.setObjectName("ifInterface")
             self.ctInterface = uic.loadUi('menu-custom.ui')
             self.ctInterface.setObjectName("ctInterface")
+            self.cfInterface = uic.loadUi('menu-configs.ui')
+            self.cfInterface.setObjectName("cfInterface")
 
             self.init_nav()
             self.init_window()
@@ -67,8 +94,15 @@ class desktop_widget(FluentWindow):
         self.setup_advance_interface()
         self.setup_about_interface()
         self.setup_customization_interface()
+        self.setup_configs_interface()
 
     # 初始化界面
+    def setup_configs_interface(self):
+        cf_import_schedule = self.findChild(PushButton, 'im_schedule')
+        cf_import_schedule.clicked.connect(self.cf_import_schedule)  # 导入课程表
+        cf_export_schedule = self.findChild(PushButton, 'ex_schedule')
+        cf_export_schedule.clicked.connect(self.cf_export_schedule)  # 导出课程表
+
     def setup_customization_interface(self):
         self.ct_update_preview()
 
@@ -95,6 +129,13 @@ class desktop_widget(FluentWindow):
         )
 
     def setup_about_interface(self):
+        self.version = self.findChild(BodyLabel, 'version')
+        self.version.setText(f'当前版本：{conf.read_conf("Other", "version")}\n正在检查最新版本…')
+
+        self.version_thread = VersionThread()
+        self.version_thread.version_signal.connect(self.ab_check_update)
+        self.version_thread.start()
+
         github_page = self.findChild(PushButton, "button_github")
         github_page.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(
             'https://github.com/RinLit-233-shiroko/Class-Widgets')))
@@ -139,6 +180,10 @@ class desktop_widget(FluentWindow):
         switch_enable_alt_schedule.setChecked(int(conf.read_conf('General', 'enable_alt_schedule')))
         switch_enable_alt_schedule.checkedChanged.connect(self.switch_enable_alt_schedule)  # 单双周开关
 
+        switch_enable_multiple_programs = self.findChild(SwitchButton, 'switch_multiple_programs')
+        switch_enable_multiple_programs.setChecked(int(conf.read_conf('Other', 'multiple_programs')))
+        switch_enable_multiple_programs.checkedChanged.connect(self.switch_enable_multiple_programs)  # 多开
+
         set_start_date = self.findChild(CalendarPicker, 'set_start_date')  # 倒计时日期
         if conf.read_conf('Date', 'start_date') != '':
             set_start_date.setDate(QDate.fromString(conf.read_conf('Date', 'start_date'), 'yyyy-M-d'))
@@ -151,7 +196,6 @@ class desktop_widget(FluentWindow):
             lambda: conf.write_conf('General', 'time_offset', str(offset_spin.value()))
         )  # 保存时差偏移
 
-
     def setup_schedule_edit(self):
         self.se_load_item()
         se_set_button = self.findChild(ToolButton, 'set_button')
@@ -161,8 +205,6 @@ class desktop_widget(FluentWindow):
         se_clear_button = self.findChild(ToolButton, 'clear_button')
         se_clear_button.setIcon(fIcon.DELETE)
         se_clear_button.clicked.connect(self.se_delete_item)
-
-        se_custom_class_text = self.findChild(LineEdit, 'custom_class')
 
         se_class_kind_combo = self.findChild(ComboBox, 'class_combo')  # 课程类型
         se_class_kind_combo.addItems(list.class_kind)
@@ -185,7 +227,6 @@ class desktop_widget(FluentWindow):
         se_copy_schedule_button = self.findChild(PushButton, 'copy_schedule')
         se_copy_schedule_button.hide()
         se_copy_schedule_button.clicked.connect(self.se_copy_odd_schedule)
-
 
     def setup_timeline_edit(self):
         # teInterface
@@ -285,6 +326,62 @@ class desktop_widget(FluentWindow):
         else:
             conf.write_conf('General', 'enable_alt_schedule', '0')
 
+    def switch_enable_multiple_programs(self):
+        switch_enable_multiple_programs = self.findChild(SwitchButton, 'switch_multiple_programs')
+        if switch_enable_multiple_programs.isChecked():
+            conf.write_conf('Other', 'multiple_programs', '1')
+        else:
+            conf.write_conf('Other', 'multiple_programs', '0')
+
+    def cf_export_schedule(self):  # 导出课程表
+        file_path, _ = QFileDialog.getSaveFileName(self, "保存文件", filename, "Json 配置文件 (*.json)")
+        if file_path:
+            if list.export_schedule(file_path, filename):
+                alert = MessageBox('您已成功导出课程表配置文件',
+                                   f'文件将导出于{file_path}', self)
+                alert.cancelButton.hide()
+                alert.buttonLayout.insertStretch(0, 1)
+                if alert.exec():
+                    return 0
+            else:
+                print('导出失败！')
+                alert = MessageBox('导出失败！',
+                                   '课程表文件导出失败，\n'
+                                   '可能为文件损坏，请将此情况反馈给开发者。', self)
+                alert.cancelButton.hide()
+                alert.buttonLayout.insertStretch(0, 1)
+                if alert.exec():
+                    return 0
+
+    def ab_check_update(self, version):  # 检查更新
+        if version == conf.read_conf("Other", "version"):
+            self.version.setText(f'当前版本：{version}\n当前为最新版本')
+        else:
+            self.version.setText(f'当前版本：{conf.read_conf("Other", "version")}\n最新版本：{version}')
+
+    def cf_import_schedule(self):  # 导入课程表
+        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "Json 配置文件 (*.json)")
+        if file_path:
+            file_name = file_path.split("/")[-1]
+            if list.import_schedule(file_path, file_name):
+                alert = MessageBox('您已成功导入课程表配置文件',
+                                   '软件将在您确认后关闭，\n'
+                                   '您需重新打开设置菜单以设置您切换的配置文件。', self)
+                alert.cancelButton.hide()  # 隐藏取消按钮，必须重启
+                alert.buttonLayout.insertStretch(0, 1)
+                if alert.exec():
+                    self.close()
+            else:
+                print('导入失败！')
+                alert = MessageBox('导入失败！',
+                                   '课程表文件导入失败！\n'
+                                   '可能为格式错误或文件损坏，请检查此文件是否为 Class Widgets 课程表文件。\n'
+                                   '详情请查看Log日志，日志位于./log/下。', self)
+                alert.cancelButton.hide()  # 隐藏取消按钮
+                alert.buttonLayout.insertStretch(0, 1)
+                if alert.exec():
+                    return 0
+
     def ct_save_widget_config(self):
         widgets_list = self.findChild(ListWidget, 'widgets_list')
         widget_config = {'widgets': []}
@@ -342,7 +439,6 @@ class desktop_widget(FluentWindow):
             print(f'修改配置文件名称时发生错误：{e}')
             logger.error(f'修改配置文件名称时发生错误：{e}')
 
-
     def ad_change_file(self):
         try:
             conf_combo = self.findChild(ComboBox, 'conf_combo')
@@ -363,6 +459,8 @@ class desktop_widget(FluentWindow):
         alert.cancelButton.hide()  # 隐藏取消按钮，必须重启
         alert.buttonLayout.insertStretch(0, 1)
         if alert.exec():
+            global filename
+            filename = conf.read_conf('General', 'schedule')
             self.close()
 
     def sp_fill_grid_row(self):  # 填充预览表格
@@ -443,7 +541,7 @@ class desktop_widget(FluentWindow):
             for item_name, item_time in timeline.items():
                 if item_name.startswith('am'):
                     try:
-                        prefix = item[int(item_name[-1])-1]
+                        prefix = item[int(item_name[-1]) - 1]
                         period = '上午'
                         all_class.append(f'{prefix}-{period}')
                     except Exception as e:
@@ -453,7 +551,7 @@ class desktop_widget(FluentWindow):
                     morning_count += 1
                 elif item_name.startswith('aa'):
                     try:
-                        prefix = item[int(item_name[-1]) + morning_count-1]
+                        prefix = item[int(item_name[-1]) + morning_count - 1]
                         period = '下午'
                         all_class.append(f'{prefix}-{period}')
                     except Exception as e:
@@ -537,7 +635,7 @@ class desktop_widget(FluentWindow):
     def se_save_item(self):
         try:
             data_dict = deepcopy(schedule_dict)
-            data_dict_even = deepcopy(schedule_even_dict)  #单双周保存
+            data_dict_even = deepcopy(schedule_even_dict)  # 单双周保存
             for week, item in data_dict.items():
                 cache_list = item
                 replace_list = []
@@ -570,9 +668,8 @@ class desktop_widget(FluentWindow):
         except Exception as e:
             logger.error(f'保存课表时发生错误: {e}')
 
-
     # 保存时间线
-    def te_save_item(self, file=filename):
+    def te_save_item(self):
         file = filename
         te_timeline_list = self.findChild(ListWidget, 'timeline_list')
         data_dict = {"timeline": {}}
@@ -672,6 +769,7 @@ class desktop_widget(FluentWindow):
                     selected_item.setText(
                         f'{se_custom_class_text.text()}-{name_list[1]}'
                     )
+                    se_class_combo.addItem(se_custom_class_text.text())
 
     def te_delete_item(self):
         te_timeline_list = self.findChild(ListWidget, 'timeline_list')
@@ -710,6 +808,7 @@ class desktop_widget(FluentWindow):
         self.addSubInterface(self.spInterface, fIcon.HOME, '课表预览')
         self.addSubInterface(self.teInterface, fIcon.DATE_TIME, '时间线编辑')
         self.addSubInterface(self.seInterface, fIcon.EDUCATION, '课程表编辑')
+        self.addSubInterface(self.cfInterface, fIcon.FOLDER, '配置文件')
         self.addSubInterface(self.ctInterface, fIcon.BRUSH, '自定义', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.adInterface, fIcon.SETTING, '高级选项', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.ifInterface, fIcon.INFO, '关于本产品', NavigationItemPosition.BOTTOM)
@@ -722,17 +821,18 @@ class desktop_widget(FluentWindow):
         self.setMinimumHeight(500)
         self.navigationInterface.setExpandWidth(250)
         self.navigationInterface.setCollapsible(False)
+        screen_geometry = QApplication.primaryScreen().geometry()
+        screen_width = screen_geometry.width()
 
         setTheme(Theme.AUTO)
 
-        self.move(300, 110)
+        self.move(int(screen_width/2-width/2), 150)
         self.setWindowTitle('Class Widgets - 设置')
         self.setWindowIcon(QIcon('img/favicon-settings.ico'))
 
     def closeEvent(self, event):
         event.ignore()
         self.hide()
-
 
 def sp_get_class_num():
     file = filename

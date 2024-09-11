@@ -70,7 +70,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>14</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -101,7 +101,7 @@ font-weight: bold;</string>
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>22</pointsize>
      <weight>75</weight>
      <bold>true</bold>

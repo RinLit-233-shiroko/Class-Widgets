@@ -1,8 +1,10 @@
 import json
 import os
 import configparser as config
+from shutil import copy
+
 from win32com.client import Dispatch
-from datetime import datetime, timedelta
+from datetime import datetime
 from loguru import logger
 
 import list
@@ -10,6 +12,41 @@ import list
 path = 'config.ini'
 conf = config.ConfigParser()
 name = 'Class Widgets'
+
+
+def check_config():
+    conf = config.ConfigParser()
+    with open(f'config/default_config.json', 'r', encoding='utf-8') as file:  # 加载默认配置
+        default_conf = json.load(file)
+
+    if not os.path.exists('config.ini'):  # 如果配置文件不存在，则copy默认配置文件
+        conf.read_dict(default_conf)
+        with open(path, 'w', encoding='utf-8') as configfile:
+            conf.write(configfile)
+        logger.info("配置文件不存在，已创建并写入默认配置。")
+    else:
+        with open(path, 'r', encoding='utf-8') as configfile:
+            conf.read_file(configfile)
+
+        if conf['Other']['version'] != default_conf['Other']['version']:  # 如果配置文件版本不同，则更新配置文件
+            logger.info(f"配置文件版本不同，将重新适配")
+            try:
+                for section, options in default_conf.items():
+                    if section not in conf:
+                        conf[section] = options
+                    else:
+                        for key, value in options.items():
+                            if key not in conf[section]:
+                                conf[section][key] = str(value)
+                conf.set('Other', 'version', '1.1.6')
+                with open(path, 'w', encoding='utf-8') as configfile:
+                    conf.write(configfile)
+                logger.info(f"配置文件已更新")
+            except Exception as e:
+                logger.error(f"配置文件更新失败: {e}")
+
+
+check_config()
 
 
 # CONFIG

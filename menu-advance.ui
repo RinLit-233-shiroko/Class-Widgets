@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>853</height>
+    <width>745</width>
+    <height>1172</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -49,8 +55,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>673</width>
-        <height>748</height>
+        <width>697</width>
+        <height>1067</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -71,7 +77,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -132,7 +138,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -190,7 +196,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -255,7 +261,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -299,7 +305,14 @@
              </layout>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_enable_alt_schedule"/>
+             <widget class="SwitchButton" name="switch_enable_alt_schedule">
+              <property name="onText">
+               <string>启用</string>
+              </property>
+              <property name="offText">
+               <string>关闭</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -309,7 +322,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -381,7 +394,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout">
@@ -442,7 +455,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -500,7 +513,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -575,7 +588,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -611,6 +624,81 @@
               </property>
               <property name="offText">
                <string>禁用</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_14">
+         <item>
+          <widget class="SubtitleLabel" name="SubtitleLabel_4">
+           <property name="text">
+            <string>其他</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardWidget" name="CardWidget_10">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>16</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_15">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="StrongBodyLabel" name="StrongBodyLabel_10">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>允许程序多开</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="CaptionLabel" name="CaptionLabel_9">
+                <property name="text">
+                 <string>程序多开后可能出现未知的问题，请谨慎使用。</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="SwitchButton" name="switch_multiple_programs">
+              <property name="text">
+               <string>不允许</string>
+              </property>
+              <property name="onText">
+               <string>允许</string>
+              </property>
+              <property name="offText">
+               <string>不允许</string>
               </property>
              </widget>
             </item>

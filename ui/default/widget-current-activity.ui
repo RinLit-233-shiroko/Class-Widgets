@@ -36,7 +36,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>22</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -45,14 +45,14 @@
    <property name="styleSheet">
     <string notr="true">border: none;
 color: rgba(37, 37, 37, 255);
-font-weight: bold</string>
+font-weight: bold;</string>
    </property>
    <property name="text">
     <string>  测试</string>
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>img/it.svg</normaloff>img/it.svg</iconset>
+     <normaloff>../../img/it.svg</normaloff>../../img/it.svg</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -89,7 +89,7 @@ border-radius:20px</string>
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>14</pointsize>
      <weight>75</weight>
      <bold>true</bold>

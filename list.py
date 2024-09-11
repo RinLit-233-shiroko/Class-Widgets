@@ -2,6 +2,10 @@ import json
 import os
 from shutil import copy
 
+from loguru import logger
+
+import conf
+
 week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 week_type = ['单周', '双周']
 
@@ -164,6 +168,45 @@ def return_default_schedule_number():
 
 def create_new_profile(filename):
     copy('config/default.json', f'config/schedule/{filename}')
+
+
+def import_schedule(filepath, filename):  # 导入课表
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            check_data = json.load(file)
+    except Exception as e:
+        logger.error(f"加载数据时出错: {e}")
+        return False
+    # 校验课程表
+    if check_data is None:
+        logger.warning('此文件为空')
+        return False
+    elif not check_data.get('timeline') and not check_data.get('schedule'):
+        logger.warning('此文件不是课程表文件')
+        return False
+    # 转换为标准格式
+    if not check_data.get('schedule_even'):
+        logger.warning('此课程表格式不支持单双周')
+        check_data['schedule_even'] = {str(i): [] for i in range(0, 6)}
+
+    # 保存文件
+    try:
+        copy(filepath, f'config/schedule/{filename}')
+        conf.save_data_to_json(check_data, filename)
+        conf.write_conf('General', 'schedule', filename)
+        return True
+    except Exception as e:
+        logger.error(f"保存数据时出错: {e}")
+        return e
+
+
+def export_schedule(filepath, filename):  # 导出课表
+    try:
+        copy(f'config/schedule/{filename}', filepath)
+        return True
+    except Exception as e:
+        logger.error(f"导出文件时出错: {e}")
+        return e
 
 
 def get_widget_config():

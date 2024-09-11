@@ -54,6 +54,16 @@
     </layout>
    </item>
    <item>
+    <widget class="CaptionLabel" name="CaptionLabel_3">
+     <property name="text">
+      <string>*对小组件的显示、隐藏和拖拽操作将在重启后生效。</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="SmoothScrollArea" name="SmoothScrollArea">
      <property name="styleSheet">
       <string notr="true">background: transparent; border: none</string>
@@ -67,17 +77,10 @@
         <x>0</x>
         <y>0</y>
         <width>853</width>
-        <height>526</height>
+        <height>491</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
-       <item>
-        <widget class="CaptionLabel" name="CaptionLabel_3">
-         <property name="text">
-          <string>*对小组件的显示、隐藏和拖拽操作将在重启后生效。</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="ListWidget" name="widgets_list">
          <property name="sizePolicy">
@@ -117,7 +120,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -164,7 +167,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout">
@@ -222,7 +225,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>60</height>
+             <height>70</height>
             </size>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_5">

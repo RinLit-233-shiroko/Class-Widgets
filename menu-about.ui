@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>821</width>
-    <height>635</height>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,12 +102,15 @@
       </widget>
      </item>
      <item>
-      <widget class="BodyLabel" name="BodyLabel">
+      <widget class="BodyLabel" name="version">
        <property name="text">
-        <string>版本：1.1.5</string>
+        <string>版本：1.1.5.6</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

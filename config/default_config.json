@@ -1,0 +1,32 @@
+{
+  "General": {
+    "schedule": "新课表 - 1.json",
+    "pin_on_top": 1,
+    "margin": 10,
+    "time_offset": 0,
+    "transparent": 240,
+    "auto_startup": 0,
+    "auto_hide": 0,
+    "enable_toast": 1,
+    "enable_alt_schedule": 0
+  },
+  "Date": {
+    "start_date": "",
+    "cd_text_custom": "自定义",
+    "countdown_date": ""
+  },
+  "Audio": {
+    "attend_class": "audio/attend_class.wav",
+    "finish_class": "audio/finish_class.wav"
+  },
+  "Temp": {
+    "set_week": "",
+    "temp_schedule": "",
+    "hide": 0
+  },
+  "Other": {
+    "initialstartup": "1",
+    "multiple_programs": "0",
+    "version": "1.1.6"
+  }
+}

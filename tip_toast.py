@@ -1,7 +1,7 @@
 import sys
 
 from PyQt6 import uic
-from PyQt6.QtWidgets import QWidget, QApplication, QPushButton
+from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QFrame
 from PyQt6.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QParallelAnimationGroup, QTimer
 from playsound import playsound
 from qfluentwidgets import setThemeColor
@@ -17,12 +17,12 @@ finish_class = 'audio/finish_class.wav'
 attend_class_p_color = '#ff8800'
 finish_class_p_color = '#5ADFAA'
 
-window_list = []    # 窗口列表
+window_list = []  # 窗口列表
 
 
 # 重写力
 class tip_toast(QWidget):
-    def __init__(self, pos, width, state=1):
+    def __init__(self, pos, width, state=1, lesson_name=''):
         super().__init__()
         uic.loadUi("widget-toast-bar.ui", self)
 
@@ -32,41 +32,55 @@ class tip_toast(QWidget):
         self.resize(width, 125)
 
         # 标题
-        title = self.findChild(QPushButton, 'alert')
+        title = self.findChild(QLabel, 'title')
+        backgnd = self.findChild(QFrame, 'backgnd')
+        lesson = self.findChild(QLabel, 'lesson')
+        subtitle = self.findChild(QLabel, 'subtitle')
 
-        if state:
+        if state == 1:
             logger.info('上课铃声显示')
-            title.setText('  上课')
+            title.setText('上课')
+            subtitle.setText('当前课程')
+            lesson.setText(lesson_name)  # 课程名
             playsound(attend_class, block=False)
             setThemeColor(attend_class_p_color)  # 主题色
-        else:
+        elif state == 0:
             logger.info('下课铃声显示')
-            title.setText('  下课')
+            title.setText('下课')
+            subtitle.setText('下一节')
+            lesson.setText(lesson_name)  # 课程名
+            playsound(finish_class, block=False)
+            setThemeColor(finish_class_p_color)
+        else:
+            logger.info('放学铃声显示')
+            title.setText('放学')
+            subtitle.setText('当前课程已结束')
+            lesson.setText('')  # 课程名
             playsound(finish_class, block=False)
             setThemeColor(finish_class_p_color)
 
         # 设置样式表
-        if state:
-            title.setStyleSheet('border: none; color: rgba(255, 255, 255, 255); font-weight: bold; border-radius: 8px; '
-                                'background-color: qlineargradient('
-                                'spread:pad, x1:0, y1:0, x2:1, y2:1,'
-                                ' stop:0 rgba(255, 200, 150, 255), stop:1 rgba(217, 147, 107, 255)'
-                                ');'
-                                )
+        if state == 1:
+            backgnd.setStyleSheet('font-weight: bold; border-radius: 8px; '
+                                  'background-color: qlineargradient('
+                                  'spread:pad, x1:0, y1:0, x2:1, y2:1,'
+                                  ' stop:0 rgba(255, 200, 150, 255), stop:1 rgba(217, 147, 107, 255)'
+                                  ');'
+                                  )
         else:
-            title.setStyleSheet('border: none; color: rgba(255, 255, 255, 255); font-weight: bold; border-radius: 8px; '
-                                'background-color: qlineargradient('
-                                'spread:pad, x1:0, y1:0, x2:1, y2:1,'
-                                ' stop:0 rgba(166, 200, 140, 255), stop:1 rgba(107, 217, 170, 255)'
-                                ');'
-                                )
+            backgnd.setStyleSheet('font-weight: bold; border-radius: 8px; '
+                                  'background-color: qlineargradient('
+                                  'spread:pad, x1:0, y1:0, x2:1, y2:1,'
+                                  ' stop:0 rgba(166, 200, 140, 255), stop:1 rgba(107, 217, 170, 255)'
+                                  ');'
+                                  )
         # 设置窗口初始大小
         mini_size_x = 120
         mini_size_y = 20
 
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
-        self.timer.setInterval(2500)
+        self.timer.setInterval(2000)
         self.timer.timeout.connect(self.close_window)
 
         # 放大效果
@@ -118,7 +132,7 @@ class tip_toast(QWidget):
         self.animation_group_close.start()
 
 
-def main(state=1):
+def main(state=1, lesson_name=''):
     global start_x, start_y, total_width
 
     if conf.read_conf('General', 'enable_toast') == '1':
@@ -131,7 +145,7 @@ def main(state=1):
         start_x = int((screen_width - total_width) / 2)
         start_y = int(conf.read_conf('General', 'margin'))
 
-        window = tip_toast((start_x, start_y), total_width, state)
+        window = tip_toast((start_x, start_y), total_width, state, lesson_name)
         window.show()
         window_list.append(window)
     else:
@@ -140,5 +154,5 @@ def main(state=1):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main(0)
+    main(0, '测试课程')
     sys.exit(app.exec())

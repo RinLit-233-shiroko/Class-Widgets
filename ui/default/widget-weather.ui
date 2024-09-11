@@ -25,12 +25,12 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLabel" name="date_text">
+  <widget class="QLabel" name="activity_countdown_title">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>20</x>
      <y>20</y>
-     <width>161</width>
+     <width>191</width>
      <height>31</height>
     </rect>
    </property>
@@ -47,28 +47,28 @@
 font-weight: bold;</string>
    </property>
    <property name="text">
-    <string>2025 年  13 月</string>
+    <string>当前城市</string>
    </property>
    <property name="textFormat">
     <enum>Qt::PlainText</enum>
    </property>
    <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="day_text">
+  <widget class="QLabel" name="activity_countdown">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>100</x>
      <y>40</y>
-     <width>151</width>
+     <width>111</width>
      <height>51</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Microsoft YaHei UI</family>
-     <pointsize>21</pointsize>
+     <pointsize>22</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -79,13 +79,13 @@ color: rgba(37, 37, 37, 255);
 font-weight: bold</string>
    </property>
    <property name="text">
-    <string>32 日 周二</string>
+    <string>114℉</string>
    </property>
    <property name="textFormat">
     <enum>Qt::PlainText</enum>
    </property>
    <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -105,9 +105,23 @@ border-radius: 8px</string>
     <string/>
    </property>
   </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>50</y>
+     <width>31</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>IMG</string>
+   </property>
+  </widget>
   <zorder>label</zorder>
-  <zorder>date_text</zorder>
-  <zorder>day_text</zorder>
+  <zorder>activity_countdown_title</zorder>
+  <zorder>activity_countdown</zorder>
+  <zorder>label_2</zorder>
  </widget>
  <resources/>
  <connections/>

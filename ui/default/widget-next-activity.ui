@@ -36,7 +36,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>14</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -61,13 +61,13 @@ font-weight: bold;</string>
     <rect>
      <x>40</x>
      <y>40</y>
-     <width>211</width>
+     <width>221</width>
      <height>51</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <family>Microsoft YaHei</family>
+     <family>Microsoft YaHei UI</family>
      <pointsize>21</pointsize>
      <weight>75</weight>
      <bold>true</bold>

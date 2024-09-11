@@ -7,6 +7,7 @@ from PyQt6 import uic
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
+from loguru import logger
 from qfluentwidgets import FluentWindow, setTheme, Theme, FluentIcon as fIcon, ComboBox, \
     PrimaryPushButton, Flyout, FlyoutAnimationType, InfoBarIcon, ListWidget, LineEdit, ToolButton, HyperlinkButton
 from win32 import win32api
@@ -17,12 +18,13 @@ import menu
 
 filename = conf.read_conf('General', 'schedule')
 current_week = dt.datetime.today().weekday()
-temp_schedule = {'schedule': {}}
+temp_schedule = {'schedule': {}, 'schedule_even': {}}
 
 
 class ExactMenu(FluentWindow):
     def __init__(self):
         super().__init__()
+        self.menu = None
         self.interface = uic.loadUi('exact_menu.ui')
         self.initUI()
         self.init_interface()
@@ -31,9 +33,10 @@ class ExactMenu(FluentWindow):
         select_temp_week = self.findChild(ComboBox, 'select_temp_week')  # 选择替换日期
         select_temp_week.addItems(list.week)
         select_temp_week.setCurrentIndex(current_week)
+        select_temp_week.currentIndexChanged.connect(self.refresh_schedule_list)  # 日期选择变化
 
         tmp_schedule_list = self.findChild(ListWidget, 'schedule_list')  # 换课列表
-        tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule'][str(current_week)])
+        tmp_schedule_list.addItems(self.load_schedule())
         tmp_schedule_list.itemChanged.connect(self.upload_item)
 
         class_kind_combo = self.findChild(ComboBox, 'class_combo')  # 课程类型
@@ -50,34 +53,75 @@ class ExactMenu(FluentWindow):
         redirect_to_settings.clicked.connect(self.open_settings)
 
     def open_settings(self):
-        self.menu = menu.desktop_widget()
-        self.menu.show()
+        if self.menu is None or not self.menu.isVisible():  # 防多开
+            self.menu = menu.desktop_widget()
+            self.menu.show()
+        else:
+            self.menu.raise_()
+            self.menu.activateWindow()
+
+    def load_schedule(self):
+        global filename
+        if conf.read_conf('Temp', 'temp_schedule') == '':
+            filename = conf.read_conf('General', 'schedule')
+        else:
+            filename = 'backup.json'
+        if conf.get_week_type():
+            return conf.load_from_json(filename)['schedule_even'][str(current_week)]
+        else:
+            return conf.load_from_json(filename)['schedule'][str(current_week)]
 
     def save_temp_conf(self):
-        if temp_schedule != {'schedule': {}}:
-            copy(f'config/schedule/{filename}', f'config/schedule/backup.json')  # 备份课表配置
-            conf.write_conf('Temp', 'temp_schedule', filename)
-            conf.save_data_to_json(temp_schedule, filename)
-        temp_week = self.findChild(ComboBox, 'select_temp_week')
-        conf.write_conf('Temp', 'set_week', str(temp_week.currentIndex()))
-        Flyout.create(
-            icon=InfoBarIcon.SUCCESS,
-            title='保存成功',
-            content=f"已保存至 ./config.ini \n重启后失效。",
-            target=self.findChild(PrimaryPushButton, 'save_temp_conf'),
-            parent=self,
-            isClosable=True,
-            aniType=FlyoutAnimationType.PULL_UP
-        )
+        try:
+            temp_week = self.findChild(ComboBox, 'select_temp_week')
+            if temp_schedule != {'schedule': {}, 'schedule_even': {}}:
+                if conf.read_conf('Temp', 'temp_schedule') == '':  # 备份检测
+                    copy(f'config/schedule/{filename}', f'config/schedule/backup.json')  # 备份课表配置
+                    logger.info(f'备份课表配置成功：已将 {filename} -备份至-> backup.json')
+                conf.write_conf('Temp', 'temp_schedule', filename)
+                conf.save_data_to_json(temp_schedule, filename)
+            conf.write_conf('Temp', 'set_week', str(temp_week.currentIndex()))
+            Flyout.create(
+                icon=InfoBarIcon.SUCCESS,
+                title='保存成功',
+                content=f"已保存至 ./config.ini \n重启后失效。",
+                target=self.findChild(PrimaryPushButton, 'save_temp_conf'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+        except Exception as e:
+            Flyout.create(
+                icon=InfoBarIcon.ERROR,
+                title='保存失败',
+                content=f"错误信息：{e}",
+                target=self.findChild(PrimaryPushButton, 'save_temp_conf'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+
+    def refresh_schedule_list(self):
+        global current_week
+        current_week = self.findChild(ComboBox, 'select_temp_week').currentIndex()
+        tmp_schedule_list = self.findChild(ListWidget, 'schedule_list')  # 换课列表
+        tmp_schedule_list.clear()
+        if conf.get_week_type():
+            tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule_even'][str(current_week)])
+        else:
+            tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule'][str(current_week)])
 
     def upload_item(self):
         global temp_schedule
         se_schedule_list = self.findChild(ListWidget, 'schedule_list')
         cache_list = []
-        for i in range(se_schedule_list.count()):
+        for i in range(se_schedule_list.count()):  # 缓存ListWidget数据至列表
             item_text = se_schedule_list.item(i).text()
             cache_list.append(item_text)
-        temp_schedule['schedule'][str(current_week)] = cache_list
+        if conf.get_week_type():
+            temp_schedule['schedule_even'][str(current_week)] = cache_list
+        else:
+            temp_schedule['schedule'][str(current_week)] = cache_list
 
     def edit_item(self):
         tmp_schedule_list = self.findChild(ListWidget, 'schedule_list')
@@ -94,8 +138,8 @@ class ExactMenu(FluentWindow):
                     selected_item.setText(custom_class.text())
 
     def initUI(self):
-        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        screen_width = win32api.GetSystemMetrics(0)
+        screen_geometry = QApplication.primaryScreen().geometry()
+        screen_width = screen_geometry.width()
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         setTheme(Theme.AUTO)
