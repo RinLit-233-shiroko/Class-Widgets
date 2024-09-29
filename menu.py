@@ -66,19 +66,19 @@ class desktop_widget(FluentWindow):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         try:
             # 创建子页面
-            self.spInterface = uic.loadUi('menu-preview.ui')
+            self.spInterface = uic.loadUi('ui/menu/preview.ui')
             self.spInterface.setObjectName("spInterface")
-            self.teInterface = uic.loadUi('menu-timeline_edit.ui')  # 时间线编辑
+            self.teInterface = uic.loadUi('ui/menu/timeline_edit.ui')  # 时间线编辑
             self.teInterface.setObjectName("teInterface")
-            self.seInterface = uic.loadUi('menu-schedule_edit.ui')  # 课程表编辑
+            self.seInterface = uic.loadUi('ui/menu/schedule_edit.ui')  # 课程表编辑
             self.seInterface.setObjectName("seInterface")
-            self.adInterface = uic.loadUi('menu-advance.ui')
+            self.adInterface = uic.loadUi('ui/menu/advance.ui')
             self.adInterface.setObjectName("adInterface")
-            self.ifInterface = uic.loadUi('menu-about.ui')
+            self.ifInterface = uic.loadUi('ui/menu/about.ui')
             self.ifInterface.setObjectName("ifInterface")
-            self.ctInterface = uic.loadUi('menu-custom.ui')
+            self.ctInterface = uic.loadUi('ui/menu/custom.ui')
             self.ctInterface.setObjectName("ctInterface")
-            self.cfInterface = uic.loadUi('menu-configs.ui')
+            self.cfInterface = uic.loadUi('ui/menu/configs.ui')
             self.cfInterface.setObjectName("cfInterface")
 
             self.init_nav()
