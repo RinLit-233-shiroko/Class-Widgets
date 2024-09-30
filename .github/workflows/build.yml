@@ -1,0 +1,49 @@
+name: Python Package and Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.10'
+
+      - name: Create virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install requests
+          pip install pyinstaller
+
+      - name: Package application with PyInstaller
+        run: |
+          source venv/bin/activate
+          pyinstaller main.py -w -i ./img/favicon.ico -n Class-Widgets
+
+      - name: Copy dependencies and resources
+        run: |
+          cp -r ./config/ ./dist/Class-Widgets/
+          cp -r ./ui/ ./dist/Class-Widgets/
+          cp -r ./img/ ./dist/Class-Widgets/
+          cp -r ./audio/ ./dist/Class-Widgets/
+          cp *.ui ./dist/Class-Widgets/
+
+      - name: Archive the build output
+        uses: actions/upload-artifact@v2
+        with:
+          name: Class-Widgets
+          path: ./dist/Class-Widgets/
