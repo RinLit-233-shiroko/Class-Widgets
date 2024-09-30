@@ -315,30 +315,32 @@ class DesktopWidget(QWidget):  # 主要小组件
             # 显示托盘图标
             self.tray_icon.show()
 
-        match path:
-            case 'widget-time.ui':  # 日期显示
-                self.date_text = self.findChild(QLabel, 'date_text')
-                self.date_text.setText(f'{today.year} 年 {today.month} 月')
-                self.day_text = self.findChild(QLabel, 'day_text')
-                self.day_text.setText(f'{today.day}日  {list.week[today.weekday()]}')
+        if path == 'widget-time.ui':  # 日期显示
+            self.date_text = self.findChild(QLabel, 'date_text')
+            self.date_text.setText(f'{today.year} 年 {today.month} 月')
+            self.day_text = self.findChild(QLabel, 'day_text')
+            self.day_text.setText(f'{today.day}日  {list.week[today.weekday()]}')
 
-            case 'widget-countdown.ui':  # 活动倒计时
-                self.countdown_progress_bar = self.findChild(QProgressBar, 'progressBar')
-                self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
-                self.ac_title = self.findChild(QLabel, 'activity_countdown_title')
+        elif path == 'widget-countdown.ui':  # 活动倒计时
+            self.countdown_progress_bar = self.findChild(QProgressBar, 'progressBar')
+            self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
+            self.ac_title = self.findChild(QLabel, 'activity_countdown_title')
 
-            case 'widget-current-activity.ui':  # 当前活动
-                self.current_state_text = self.findChild(QPushButton, 'subject')
-                self.blur_effect_label = self.findChild(QLabel, 'blurEffect')
-                # 模糊效果
-                self.blur_effect = QGraphicsBlurEffect()
-                button = self.findChild(QPushButton, 'subject')
-                button.clicked.connect(self.open_exact_menu)
-            case 'widget-next-activity.ui':  # 接下来的活动
-                self.nl_text = self.findChild(QLabel, 'next_lesson_text')
-            case 'widget-countdown-custom.ui':  # 自定义倒计时
-                self.custom_title = self.findChild(QLabel, 'countdown_custom_title')
-                self.custom_countdown = self.findChild(QLabel, 'custom_countdown')
+        elif path == 'widget-current-activity.ui':  # 当前活动
+            self.current_state_text = self.findChild(QPushButton, 'subject')
+            self.blur_effect_label = self.findChild(QLabel, 'blurEffect')
+            # 模糊效果
+            self.blur_effect = QGraphicsBlurEffect()
+            button = self.findChild(QPushButton, 'subject')
+            button.clicked.connect(self.open_exact_menu)
+
+        elif path == 'widget-next-activity.ui':  # 接下来的活动
+            self.nl_text = self.findChild(QLabel, 'next_lesson_text')
+
+        elif path == 'widget-countdown-custom.ui':  # 自定义倒计时
+            self.custom_title = self.findChild(QLabel, 'countdown_custom_title')
+            self.custom_countdown = self.findChild(QLabel, 'custom_countdown')
+
 
         # 设置窗口位置
         self.animate_window(pos)

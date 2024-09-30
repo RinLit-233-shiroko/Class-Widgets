@@ -29,26 +29,26 @@ jobs:
       - name: Create virtual environment
         run: |
           python -m venv venv
-          source venv/bin/activate
+          .\venv\Scripts\activate
           pip install -r requirements.txt
           pip install requests
           pip install pyinstaller
 
       - name: Package application with PyInstaller
         run: |
-          source venv/bin/activate
+          .\venv\Scripts\activate
           pyinstaller main.py -w -i ./img/favicon.ico -n Class-Widgets
 
       - name: Copy dependencies and resources
         run: |
-          cp -r ./config/ ./dist/Class-Widgets/
-          cp -r ./ui/ ./dist/Class-Widgets/
-          cp -r ./img/ ./dist/Class-Widgets/
-          cp -r ./audio/ ./dist/Class-Widgets/
-          cp *.ui ./dist/Class-Widgets/
+          xcopy /E /I config .\dist\Class-Widgets\config
+          xcopy /E /I ui .\dist\Class-Widgets\ui
+          xcopy /E /I img .\dist\Class-Widgets\img
+          xcopy /E /I audio .\dist\Class-Widgets\audio
+          copy *.ui .\dist\Class-Widgets\
 
       - name: Archive the build output
         uses: actions/upload-artifact@v2
         with:
-          name: Class-Widgets
+          name: Windows-amd64
           path: ./dist/Class-Widgets/
