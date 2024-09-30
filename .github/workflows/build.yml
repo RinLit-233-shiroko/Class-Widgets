@@ -48,7 +48,7 @@ jobs:
           copy *.ui .\dist\Class-Widgets\
 
       - name: Archive the build output
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Windows-amd64
           path: ./dist/Class-Widgets/
