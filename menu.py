@@ -89,8 +89,6 @@ class desktop_widget(FluentWindow):
         
         self.setStyleSheet("""QLabel {
             font: 'Microsoft YaHei';
-            background-color: transparent;
-            color: white;
         }""")
 
     def load_all_item(self):
