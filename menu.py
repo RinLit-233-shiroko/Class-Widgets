@@ -86,6 +86,10 @@ class desktop_widget(FluentWindow):
         except Exception as e:
             logger.error(f'初始化设置界面时发生错误：{e}')
             print(f'初始化设置界面时发生错误：{e}')
+        
+        self.setStyleSheet("""QLabel {
+            font: 'Microsoft YaHei';
+        }""")
 
     def load_all_item(self):
         self.setup_timeline_edit()

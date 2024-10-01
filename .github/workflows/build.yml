@@ -1,0 +1,54 @@
+name: Python Package and Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+ 
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.10'
+
+      - name: Create virtual environment
+        run: |
+          python -m venv venv
+          .\venv\Scripts\activate
+          pip install -r requirements.txt
+          pip install requests
+          pip install pyinstaller
+
+      - name: Package application with PyInstaller
+        run: |
+          .\venv\Scripts\activate
+          pyinstaller main.py -w -i ./img/favicon.ico -n Class-Widgets
+
+      - name: Copy dependencies and resources
+        run: |
+          xcopy /E /I config .\dist\Class-Widgets\config
+          xcopy /E /I ui .\dist\Class-Widgets\ui
+          xcopy /E /I img .\dist\Class-Widgets\img
+          xcopy /E /I audio .\dist\Class-Widgets\audio
+          copy *.ui .\dist\Class-Widgets\
+
+      - name: Archive the build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-amd64
+          path: ./dist/Class-Widgets/
