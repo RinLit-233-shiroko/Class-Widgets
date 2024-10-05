@@ -1,8 +1,8 @@
 {
     "widgets": [
-        "widget-time.ui",
-        "widget-countdown-custom.ui",
+        "widget-weather.ui",
         "widget-countdown.ui",
+        "widget-countdown-custom.ui",
         "widget-current-activity.ui",
         "widget-next-activity.ui"
     ]

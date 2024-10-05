@@ -1,13 +1,60 @@
 import json
 import os
+from copy import deepcopy
 from shutil import copy
 
 from loguru import logger
 
 import conf
 
+try:
+    subject_info = json.load(open('config/data/subject.json', 'r', encoding='utf-8'))
+    subject_icon = subject_info['subject_icon']
+    subject_abbreviation = subject_info['subject_abbreviation']
+    theme_folder = [f for f in os.listdir('ui/') if os.path.isdir(os.path.join('ui/', f))]
+    theme_names = []
+except Exception as e:
+    logger.error(f'加载课程/主题配置文件发生错误，使用默认配置：{e}')
+    subject_icon = {
+        '语文': 'chinese',
+        '数学': 'math',
+        '英语': 'abc',
+        '生物': 'biology',
+        '地理': 'geography',
+        '政治': 'chinese',
+        '历史': 'history',
+        '物理': 'physics',
+        '化学': 'chemistry',
+        '美术': 'art',
+        '音乐': 'music',
+        '体育': 'pe',
+        '信息技术': 'it',
+        '电脑': 'it',
+        '课程表未加载': 'xmark',
+
+        '班会': 'meeting',
+        '自习': 'self_study',
+        '课间': 'break',
+        '大课间': 'pe',
+        '放学': 'after_school',
+        '暂无课程': 'break',
+    }
+    # 简称
+    subject_abbreviation = {
+        '历史': '史'
+    }
+
+for folder in theme_folder:
+    try:
+        json_file = json.load(open(f'ui/{folder}/theme.json', 'r', encoding='utf-8'))
+        theme_names.append(json_file['name'])
+    except Exception as e:
+        logger.error(f'加载主题文件 theme.json {folder} 发生错误，跳过：{e}')
+
 week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 week_type = ['单周', '双周']
+color_mode = ['浅色', '深色', '跟随系统']
+hide_mode = ['无', '上课时自动隐藏', '窗口最大化时隐藏']
 
 subject = {
     '语文': '(255, 151, 135',  # 红
@@ -34,41 +81,11 @@ subject = {
     '暂无课程': '(84, 255, 101',  # 绿
 }
 
-subject_icon = {
-    '语文': 'chinese',
-    '数学': 'math',
-    '英语': 'abc',
-    '生物': 'biology',
-    '地理': 'geography',
-    '政治': 'chinese',
-    '历史': 'history',
-    '物理': 'physics',
-    '化学': 'chemistry',
-    '美术': 'art',
-    '音乐': 'music',
-    '体育': 'pe',
-    '信息技术': 'it',
-    '电脑': 'it',
-    '课程表未加载': 'xmark',
-
-    '班会': 'meeting',
-    '自习': 'self_study',
-    '课间': 'break',
-    '大课间': 'pe',
-    '放学': 'after_school',
-    '暂无课程': 'break',
-}
-
-# 简称
-subject_abbreviation = {
-    '历史': '史'
-}
-
 # 获取当前根目录路径
 schedule_dir = os.path.join(os.getcwd(), 'config', 'schedule')
 
-class_activity = ['课程/活动', '课间']
-time = ['上午', '下午']
+class_activity = ['课程', '课间']
+time = ['上午', '下午', '晚修']
 class_kind = [
     '自定义',
     '语文',
@@ -87,6 +104,7 @@ class_kind = [
     '大课间',
     '美术',
     '音乐',
+    '心理',
     '信息技术'
 ]
 
@@ -97,29 +115,59 @@ default_widgets = [
     'widget-next-activity.ui'
 ]
 
-widget_width = {
-    'widget-time.ui': 230,
+widget_width = {  # 默认宽度
+    'widget-time.ui': 210,
     'widget-countdown.ui': 200,
     'widget-current-activity.ui': 360,
     'widget-next-activity.ui': 290,
     'widget-countdown-custom.ui': 200,
+    'widget-weather.ui': 200
 }
 
 widget_conf = {
     '当前日期': 'widget-time.ui',
     '活动倒计时': 'widget-countdown.ui',
     '当前活动': 'widget-current-activity.ui',
-    '下一活动': 'widget-next-activity.ui',
+    '更多活动': 'widget-next-activity.ui',
     '自定义倒计时': 'widget-countdown-custom.ui',
+    '天气': 'widget-weather.ui'
 }
 
 widget_name = {
     'widget-time.ui': '当前日期',
     'widget-countdown.ui': '活动倒计时',
     'widget-current-activity.ui': '当前活动',
-    'widget-next-activity.ui': '下一活动',
+    'widget-next-activity.ui': '更多活动',
     'widget-countdown-custom.ui': '自定义倒计时',
+    'widget-weather.ui': '天气'
 }
+
+
+def get_widget_list():
+    rl = []
+    for item, value in widget_conf.items():
+        rl.append(item)
+    return rl
+
+
+def get_widget_names():
+    rl = []
+    for item, value in widget_name.items():
+        rl.append(value)
+    return rl
+
+
+def get_current_theme_num():
+    for i in range(len(theme_folder)):
+        if theme_folder[i] == conf.read_conf('General', 'theme'):
+            return i
+
+
+def get_theme_ui_path(name):
+    for i in range(len(theme_folder)):
+        if theme_names[i] == name:
+            return theme_folder[i]
+    return 'default'
 
 
 def get_subject_abbreviation(key):
@@ -189,8 +237,35 @@ def import_schedule(filepath, filename):  # 导入课表
         logger.warning('此课程表格式不支持单双周')
         check_data['schedule_even'] = {str(i): [] for i in range(0, 6)}
 
+    if not check_data.get('part') or not check_data.get('part_name'):  # 兼容旧版本
+        logger.warning('此课程表格式不支持分段，为旧版本')
+        try:
+            check_data['part'] = {  # 兼容旧版本
+                "0": check_data['timeline']['start_time_m'], "1": check_data['timeline']['start_time_a']
+            }
+            check_data['part_name'] = {"0": "上午", "1": "下午"}
+            del check_data['timeline']['start_time_m']
+            del check_data['timeline']['start_time_a']
+            old_timeline = deepcopy(check_data['timeline'])
+            # 转换为标准格式
+            check_data['timeline']['default'] = {}
+            for i in range(0, 6):
+                check_data['timeline'][i] = {}
+
+            for item_name, _ in old_timeline.items():
+                if item_name[1] == 'a':
+                    ma_to_num = 1
+                else:
+                    ma_to_num = 0
+                new_name = item_name[0]+str(ma_to_num)+item_name[2]
+                check_data['timeline']['default'][new_name] = check_data['timeline'][item_name]
+                del check_data['timeline'][item_name]
+        except Exception as e:
+            logger.error(f"转换数据时出错: {e}")
+            return False
     # 保存文件
     try:
+        print(check_data)
         copy(filepath, f'config/schedule/{filename}')
         conf.save_data_to_json(check_data, filename)
         conf.write_conf('General', 'schedule', filename)
@@ -216,9 +291,12 @@ def get_widget_config():
             c = data
         return c['widgets']
     except Exception as e:
-        print(f'ReadWidgetConfigFAILD: {e}')
+        logger.error(f'ReadWidgetConfigFAILD: {e}')
         return default_widgets
 
 
 if __name__ == '__main__':
+    print(theme_folder)
+    print(theme_names)
     print('AL-1S')
+    print(get_widget_list())

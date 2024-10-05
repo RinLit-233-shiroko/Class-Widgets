@@ -1,16 +1,14 @@
-import sys
 import datetime as dt
 import sys
 from shutil import copy
 
 from PyQt6 import uic
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QFontDatabase
 from PyQt6.QtWidgets import QApplication
 from loguru import logger
 from qfluentwidgets import FluentWindow, setTheme, Theme, FluentIcon as fIcon, ComboBox, \
     PrimaryPushButton, Flyout, FlyoutAnimationType, InfoBarIcon, ListWidget, LineEdit, ToolButton, HyperlinkButton
-from win32 import win32api
 
 import conf
 import list
@@ -78,13 +76,15 @@ class ExactMenu(FluentWindow):
                 if conf.read_conf('Temp', 'temp_schedule') == '':  # 备份检测
                     copy(f'config/schedule/{filename}', f'config/schedule/backup.json')  # 备份课表配置
                     logger.info(f'备份课表配置成功：已将 {filename} -备份至-> backup.json')
-                conf.write_conf('Temp', 'temp_schedule', filename)
+                    conf.write_conf('Temp', 'temp_schedule', filename)
+                else:
+                    copy('config/schedule/backup.json', f'config/schedule/{filename}')  # 恢复课表配置
                 conf.save_data_to_json(temp_schedule, filename)
             conf.write_conf('Temp', 'set_week', str(temp_week.currentIndex()))
             Flyout.create(
                 icon=InfoBarIcon.SUCCESS,
                 title='保存成功',
-                content=f"已保存至 ./config.ini \n重启后失效。",
+                content=f"已保存至 ./config.ini \n重启后恢复。",
                 target=self.findChild(PrimaryPushButton, 'save_temp_conf'),
                 parent=self,
                 isClosable=True,
@@ -106,10 +106,17 @@ class ExactMenu(FluentWindow):
         current_week = self.findChild(ComboBox, 'select_temp_week').currentIndex()
         tmp_schedule_list = self.findChild(ListWidget, 'schedule_list')  # 换课列表
         tmp_schedule_list.clear()
-        if conf.get_week_type():
-            tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule_even'][str(current_week)])
+        tmp_schedule_list.clearSelection()
+        if conf.read_conf('Temp', 'temp_schedule') == '':
+            if conf.get_week_type():
+                tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule_even'][str(current_week)])
+            else:
+                tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule'][str(current_week)])
         else:
-            tmp_schedule_list.addItems(conf.load_from_json(filename)['schedule'][str(current_week)])
+            if conf.get_week_type():
+                tmp_schedule_list.addItems(conf.load_from_json('backup.json')['schedule_even'][str(current_week)])
+            else:
+                tmp_schedule_list.addItems(conf.load_from_json('backup.json')['schedule'][str(current_week)])
 
     def upload_item(self):
         global temp_schedule
@@ -138,11 +145,17 @@ class ExactMenu(FluentWindow):
                     selected_item.setText(custom_class.text())
 
     def initUI(self):
+        if conf.read_conf('General', 'color_mode') == '2':
+            setTheme(Theme.AUTO)
+        elif conf.read_conf('General', 'color_mode') == '1':
+            setTheme(Theme.DARK)
+        else:
+            setTheme(Theme.LIGHT)
+
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        setTheme(Theme.AUTO)
 
         self.resize(1000, 700)
         self.setWindowTitle('Class Widgets - 更多功能')
@@ -151,6 +164,13 @@ class ExactMenu(FluentWindow):
 
         self.addSubInterface(self.interface, fIcon.INFO, '更多设置')
 
+        self.init_font()
+
+    def init_font(self):
+        self.setStyleSheet("""QLabel {
+                            font: 'Microsoft YaHei';
+                        }""")
+
     def closeEvent(self, event):
         event.ignore()
         self.hide()
@@ -158,8 +178,7 @@ class ExactMenu(FluentWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    if sys.platform == 'win32' and sys.getwindowsversion().build >= 22000:  # 修改在win11高版本阴影异常
-        app.setStyle("fusion")
     ex = ExactMenu()
     ex.show()
+
     sys.exit(app.exec())

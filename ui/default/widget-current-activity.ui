@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>当前活动</string>
   </property>
   <widget class="QPushButton" name="subject">
    <property name="geometry">
@@ -52,7 +52,7 @@ font-weight: bold;</string>
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../img/it.svg</normaloff>../../img/it.svg</iconset>
+     <normaloff>../../../../../img/it.svg</normaloff>../../../../../img/it.svg</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -109,7 +109,7 @@ font-weight: bold;</string>
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="backgnd">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -119,14 +119,14 @@ font-weight: bold;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgba(242, 243, 245, 242);
+    <string notr="true">background-color: rgba(242, 243, 245, 255);
 border-radius: 8px</string>
    </property>
    <property name="text">
     <string/>
    </property>
   </widget>
-  <zorder>label</zorder>
+  <zorder>backgnd</zorder>
   <zorder>blurEffect</zorder>
   <zorder>sub_title</zorder>
   <zorder>subject</zorder>

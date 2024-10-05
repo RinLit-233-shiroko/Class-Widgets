@@ -57,16 +57,30 @@
 
 Copyright © 2024 RinLit.
 
-## 引用
-此程序引用了[zhiyiYo](https://github.com/zhiyiYo/)的[PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
-作为设置的 UI 界面
+# 致谢
+
+## 第三方库和框架
+
+- [PyQt6](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
+- [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+- [Loguru](https://github.com/Delgan/loguru)
+- [Request](https://github.com/psf/requests)
+- [SoundFile](https://github.com/bastibe/python-soundfile)
+- [SoundDevice](https://github.com/spatialaudio/python-sounddevice)
+
+## 资源
+
+- [SF Symbols](https://developer.apple.com/sf-symbols/) （部分图标已做修改）
+- [和风天气图标](https://icons.qweather.com/)（部分图标已做修改）
+- [HarmonyOS Sans](https://developer.huawei.com/consumer/cn/design/resource/)
 
 ## 贡献者
-感谢以下人员对此项目的贡献：
 
+<div align="center">
 <a href="https://github.com/RinLit-233-shiroko/Class-Widgets/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=RinLit-233-shiroko/Class-Widgets" />
 </a>
+</div>
 
 ## 星标历史
 <picture>

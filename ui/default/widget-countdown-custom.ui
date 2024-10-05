@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>自定义倒计时</string>
   </property>
   <widget class="QLabel" name="countdown_custom_title">
    <property name="geometry">
@@ -88,7 +88,7 @@ font-weight: bold</string>
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="backgnd">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -98,14 +98,14 @@ font-weight: bold</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgba(242, 243, 245, 242);
+    <string notr="true">background-color: rgba(242, 243, 245, 255);
 border-radius: 8px</string>
    </property>
    <property name="text">
     <string/>
    </property>
   </widget>
-  <zorder>label</zorder>
+  <zorder>backgnd</zorder>
   <zorder>countdown_custom_title</zorder>
   <zorder>custom_countdown</zorder>
  </widget>

@@ -13,42 +13,6 @@ path = 'config.ini'
 conf = config.ConfigParser()
 name = 'Class Widgets'
 
-
-def check_config():
-    conf = config.ConfigParser()
-    with open(f'config/default_config.json', 'r', encoding='utf-8') as file:  # 加载默认配置
-        default_conf = json.load(file)
-
-    if not os.path.exists('config.ini'):  # 如果配置文件不存在，则copy默认配置文件
-        conf.read_dict(default_conf)
-        with open(path, 'w', encoding='utf-8') as configfile:
-            conf.write(configfile)
-        logger.info("配置文件不存在，已创建并写入默认配置。")
-    else:
-        with open(path, 'r', encoding='utf-8') as configfile:
-            conf.read_file(configfile)
-
-        if conf['Other']['version'] != default_conf['Other']['version']:  # 如果配置文件版本不同，则更新配置文件
-            logger.info(f"配置文件版本不同，将重新适配")
-            try:
-                for section, options in default_conf.items():
-                    if section not in conf:
-                        conf[section] = options
-                    else:
-                        for key, value in options.items():
-                            if key not in conf[section]:
-                                conf[section][key] = str(value)
-                conf.set('Other', 'version', '1.1.6')
-                with open(path, 'w', encoding='utf-8') as configfile:
-                    conf.write(configfile)
-                logger.info(f"配置文件已更新")
-            except Exception as e:
-                logger.error(f"配置文件更新失败: {e}")
-
-
-check_config()
-
-
 # CONFIG
 # 读取config
 def read_conf(section='General', key=''):
@@ -127,6 +91,26 @@ def load_from_json(filename):
     except Exception as e:
         logger.error(f"加载数据时出错: {e}")
         return None
+
+
+def load_theme_config(theme):
+    try:
+        with open(f'ui/{theme}/theme.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            return data
+    except Exception as e:
+        logger.error(f"加载主题数据时出错: {e}")
+        return None
+
+
+def load_theme_width(theme):
+    try:
+        with open(f'ui/{theme}/theme.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            return data['widget_width']
+    except Exception as e:
+        logger.error(f"加载主题宽度时出错: {e}")
+        return list.widget_width
 
 
 def is_temp_week():
@@ -255,7 +239,7 @@ def get_custom_countdown():  # 获取自定义倒计时
             return '0 天'
         else:
             cd_text = custom_countdown - datetime.now()
-            return f'{cd_text.days} 天'
+            return f'{cd_text.days + 1} 天'
             # return (
             #     f"{cd_text.days} 天 {cd_text.seconds // 3600} 小时 {cd_text.seconds // 60 % 60} 分"
             # )
@@ -303,30 +287,54 @@ def save_widget_conf_to_json(new_data):
         return e
 
 
-# 示例使用
-test_data_dict = {
-    "timeline": {
-        "start_time_m": (0, 0),
-        "start_time_a": (0, 0),
-        "am0": "40",
-        "fm0": "10",
-        "am1": "30",
-        "fm1": "10",
-        "am2": "40",
-        "aa0": "40",
-        "fa0": "10",
-        "aa1": "40",
-        "fa1": "10",
-        "aa2": "40",
-    },
-    "schedule": {
-        0: ['语文', '数学', '英语', '语文', '数学', '英语'],
-        1: ['语文', '数学', '英语', '语文', '数学', '英语'],
-        2: ['语文', '数学', '英语', '语文', '数学', '英语'],
-        3: ['语文', '数学', '英语', '语文', '数学', '英语'],
-        4: ['语文', '数学', '英语', '语文', '数学', '英语']
-    }
-}
+def check_config():
+    conf = config.ConfigParser()
+    with open(f'config/default_config.json', 'r', encoding='utf-8') as file:  # 加载默认配置
+        default_conf = json.load(file)
+
+    if not os.path.exists('config.ini'):  # 如果配置文件不存在，则copy默认配置文件
+        conf.read_dict(default_conf)
+        with open(path, 'w', encoding='utf-8') as configfile:
+            conf.write(configfile)
+        logger.info("配置文件不存在，已创建并写入默认配置。")
+        copy('config/default.json', f'config/schedule/新课表 - 1.json')
+    else:
+        with open(path, 'r', encoding='utf-8') as configfile:
+            conf.read_file(configfile)
+
+        if conf['Other']['version'] != default_conf['Other']['version']:  # 如果配置文件版本不同，则更新配置文件
+            logger.info(f"配置文件版本不同，将重新适配")
+            try:
+                for section, options in default_conf.items():
+                    if section not in conf:
+                        conf[section] = options
+                    else:
+                        for key, value in options.items():
+                            if key not in conf[section]:
+                                conf[section][key] = str(value)
+                conf.set('Other', 'version', default_conf['Other']['version'])
+                with open(path, 'w', encoding='utf-8') as configfile:
+                    conf.write(configfile)
+                logger.info(f"配置文件已更新")
+            except Exception as e:
+                logger.error(f"配置文件更新失败: {e}")
+        if not os.path.exists(f'config/schedule/{read_conf('General', 'schedule')}'):  # 如果config.ini课程表不存在，则创建
+            schedule_config = []
+            # 遍历目标目录下的所有文件
+            for file_name in os.listdir('config/schedule'):
+                # 找json
+                if file_name.endswith('.json') and file_name != 'backup.json':
+                    # 将文件路径添加到列表
+                    schedule_config.append(file_name)
+            if not schedule_config:
+                copy('config/default.json', f'config/schedule/{read_conf("General", "schedule")}')
+                logger.info(f"课程表不存在，已创建默认课程表")
+            else:
+                write_conf('General', 'schedule', schedule_config[0])
+        print(os.path.join(os.getcwd(), 'config', 'schedule'))
+
+
+check_config()
 
 
 if __name__ == '__main__':

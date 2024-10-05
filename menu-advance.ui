@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>745</width>
-    <height>1172</height>
+    <height>1028</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,7 +33,7 @@
     <number>24</number>
    </property>
    <property name="bottomMargin">
-    <number>24</number>
+    <number>0</number>
    </property>
    <item>
     <widget class="TitleLabel" name="TitleLabel">
@@ -56,7 +56,7 @@
         <x>0</x>
         <y>0</y>
         <width>697</width>
-        <height>1067</height>
+        <height>947</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -70,67 +70,6 @@
            <property name="text">
             <string>课程</string>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="CardWidget" name="CardWidget_6">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>70</height>
-            </size>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <property name="leftMargin">
-             <number>16</number>
-            </property>
-            <property name="topMargin">
-             <number>16</number>
-            </property>
-            <property name="rightMargin">
-             <number>16</number>
-            </property>
-            <property name="bottomMargin">
-             <number>16</number>
-            </property>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="StrongBodyLabel" name="StrongBodyLabel_6">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>启用上下课提醒</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="CaptionLabel" name="CaptionLabel_5">
-                <property name="text">
-                 <string>启用后将在上下课时置顶弹窗且发出提示音提醒</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="SwitchButton" name="switch_enable_toast">
-              <property name="onText">
-               <string>启用</string>
-              </property>
-              <property name="offText">
-               <string>禁用</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
           </widget>
          </item>
          <item>
@@ -500,6 +439,12 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>130</width>
+                <height>33</height>
+               </size>
+              </property>
               <property name="minimum">
                <number>-15</number>
               </property>
@@ -546,28 +491,21 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>上课时自动隐藏</string>
+                 <string>隐藏方式</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_4">
                 <property name="text">
-                 <string>当上课时自动收起小组件，下课后展开    *将禁用“单击自动隐藏”</string>
+                 <string>选择你需要的隐藏方式</string>
                 </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <widget class="SwitchButton" name="switch_auto_hide">
-              <property name="onText">
-               <string>启用</string>
-              </property>
-              <property name="offText">
-               <string>禁用</string>
-              </property>
-             </widget>
+             <widget class="ComboBox" name="hide_mode_combo"/>
             </item>
            </layout>
           </widget>
@@ -683,7 +621,7 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_9">
                 <property name="text">
-                 <string>程序多开后可能出现未知的问题，请谨慎使用。</string>
+                 <string>程序多开后可能出现未知的问题，请谨慎使用</string>
                 </property>
                </widget>
               </item>
@@ -706,6 +644,25 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QFrame" name="blank">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>5</number>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="verticalSpacer">
