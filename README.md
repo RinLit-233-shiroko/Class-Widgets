@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
+
 <p align="center">
   <img width="18%" align="center" src="img/Logo.png" alt="logo">
 </p>
@@ -12,8 +15,9 @@
 
 ![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=flat&color=orange&label=星标)
 ![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本)
+![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow)
 ![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证)
-![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=yellow)
+![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green)
 
 ![Banner](img/Banner.png)
 
@@ -43,6 +47,9 @@
 ## 安装&使用
 > [!TIP]
 > 可在 [Class Widgets 官方文档](https://www.yuque.com/rinlit/class-widgets_help/gs3gsbms1iivgibm) 查看教程。
+
+> [!IMPORTANT]
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
 
 下载 ![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本) 中最新版的压缩文件，解压到合适位置后，打开 `ClassWidgets.exe` 即可。
 可通过托盘菜单进入设置、或退出此程序。
