@@ -56,28 +56,28 @@ class tip_toast(QWidget):
             subtitle_label.setText('当前课程')
             lesson.setText(lesson_name)  # 课程名
             playsound(attend_class)
-            setThemeColor(f'#{conf.read_conf('Color', 'attend_class')}')  # 主题色
+            setThemeColor(f"#{conf.read_conf('Color', 'attend_class')}")  # 主题色
         elif state == 0:
             logger.info('下课铃声显示')
             title_label.setText('下课')
             subtitle_label.setText('下一节')
             lesson.setText(lesson_name)  # 课程名
             playsound(finish_class)
-            setThemeColor(f'#{conf.read_conf('Color', 'finish_class')}')
+            setThemeColor(f"#{conf.read_conf('Color', 'finish_class')}")
         elif state == 2:
             logger.info('放学铃声显示')
             title_label.setText('放学')
             subtitle_label.setText('当前课程已结束')
             lesson.setText('')  # 课程名
             playsound(finish_class)
-            setThemeColor(f'#{conf.read_conf('Color', 'finish_class')}')
+            setThemeColor(f"#{conf.read_conf('Color', 'finish_class')}")
         elif state == 3:
             logger.info('预备铃声显示')
             title_label.setText('即将上课')
             subtitle_label.setText('下一节')
             lesson.setText(lesson_name)
             playsound(prepare_class)
-            setThemeColor(f'#{conf.read_conf('Color', 'prepare_class')}')
+            setThemeColor(f"#{conf.read_conf('Color', 'prepare_class')}")
         elif state == 4:
             logger.info(f'通知显示: {title}')
             title_label.setText(title)

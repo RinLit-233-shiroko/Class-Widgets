@@ -750,8 +750,8 @@ if __name__ == '__main__':
         logger.info(f'Class Widgets 启动。版本: {conf.read_conf("Other", "version")}')
 
         if current_state:
-            setThemeColor(f'#{conf.read_conf('Color', 'attend_class')}')
+            setThemeColor(f"#{conf.read_conf('Color', 'attend_class')}")
         else:
-            setThemeColor(f'#{conf.read_conf('Color', 'finish_class')}')
+            setThemeColor(f"#{conf.read_conf('Color', 'finish_class')}")
 
     sys.exit(app.exec())
