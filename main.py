@@ -690,7 +690,7 @@ if __name__ == '__main__':
     share = QSharedMemory('ClassWidgets')
     share.create(1)  # 创建共享内存
     mgr = WidgetsManager()
-    logger.info(f'共享内存：{share.isAttached()} 是否允许多开实例：{conf.read_conf('Other', 'multiple_programs')}')
+    logger.info(f"共享内存：{share.isAttached()} 是否允许多开实例：{conf.read_conf('Other', 'multiple_programs')}")
 
     if share.attach() and conf.read_conf('Other', 'multiple_programs') != '1':
         msg_box = QMessageBox()
