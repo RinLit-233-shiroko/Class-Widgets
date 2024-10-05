@@ -1,11 +1,11 @@
-name: Python Package and Build
+name: Python Package 和 Build
 
 on:
   push:
-    branches:
+    分支:
       - main
   pull_request:
-    branches:
+    分支:
       - main
   workflow_dispatch:
 
@@ -37,9 +37,9 @@ jobs:
       - name: Package application with PyInstaller
         run: |
           .\venv\Scripts\activate
-          pyinstaller main.py -w -i ./img/favicon.ico -n Class-Widgets
+          pyinstaller main.py -w -i ./img/favicon.ico -n ClassWidgets
 
-      - name: Copy dependencies and resources
+      - name: Copy dependencies 和 resources
         run: |
           xcopy /E /I config .\dist\Class-Widgets\config
           xcopy /E /I ui .\dist\Class-Widgets\ui
