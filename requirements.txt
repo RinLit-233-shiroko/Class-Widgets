@@ -17,3 +17,4 @@ win32-setctime==1.1.0
 soundfile~=0.12.1
 sounddevice~=0.5.0
 PyQt6-WebEngine~=6.7.0
+PyGetWindow~=0.0.9

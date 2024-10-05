@@ -1,7 +1,6 @@
 from shutil import copy
 import pygetwindow
 import requests
-import ctypes
 from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
