@@ -1,8 +1,3 @@
-> [!IMPORTANT]
-> 新版本(v1.1.7)还未上架
-> 
-> **新版本暂未上架，敬请期待**
-
 <p align="center">
   <img width="18%" align="center" src="img/Logo.png" alt="logo">
 </p>
