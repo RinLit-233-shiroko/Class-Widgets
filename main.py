@@ -586,8 +586,8 @@ class DesktopWidget(QWidget):  # 主要小组件
             logger.info('已获取天气数据')
             if hasattr(self, 'weather_icon'):  # 天气组件
                 temperature = self.findChild(QLabel, 'temperature')
-                temperature.setText(f'{weather_data['current']['temperature']['value']}'
-                                    f'{weather_data['current']['temperature']['unit']}')
+                temperature.setText(f"{weather_data['current']['temperature']['value']}"
+                                    f"{weather_data['current']['temperature']['unit']}")
                 weather_icon = self.findChild(QLabel, 'weather_icon')
                 weather_icon.setPixmap(QPixmap(db.get_weather_icon_by_code(weather_data['current']['weather'])))
                 current_city = self.findChild(QLabel, 'current_city')
