@@ -59,9 +59,9 @@
 
 Copyright © 2024 RinLit.
 
-# 致谢
+## 致谢
 
-## 第三方库和框架
+### 第三方库和框架
 
 - [PyQt6](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
 - [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
@@ -70,13 +70,13 @@ Copyright © 2024 RinLit.
 - [SoundFile](https://github.com/bastibe/python-soundfile)
 - [SoundDevice](https://github.com/spatialaudio/python-sounddevice)
 
-## 资源
+### 资源
 
 - [SF Symbols](https://developer.apple.com/sf-symbols/) （部分图标已做修改）
 - [和风天气图标](https://icons.qweather.com/)（部分图标已做修改）
 - [HarmonyOS Sans](https://developer.huawei.com/consumer/cn/design/resource/)
 
-## 贡献者
+### 贡献者
 
 <div align="center">
 <a href="https://github.com/RinLit-233-shiroko/Class-Widgets/graphs/contributors">
