@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
+
 <p align="center">
   <img width="18%" align="center" src="img/Logo.png" alt="logo">
 </p>
@@ -12,8 +15,9 @@
 
 ![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=flat&color=orange&label=星标)
 ![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本)
+![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow)
 ![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证)
-![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=yellow)
+![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green)
 
 ![Banner](img/Banner.png)
 
@@ -44,6 +48,9 @@
 > [!TIP]
 > 可在 [Class Widgets 官方文档](https://www.yuque.com/rinlit/class-widgets_help/gs3gsbms1iivgibm) 查看教程。
 
+> [!IMPORTANT]
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
+
 下载 ![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本) 中最新版的压缩文件，解压到合适位置后，打开 `ClassWidgets.exe` 即可。
 可通过托盘菜单进入设置、或退出此程序。
 
@@ -52,9 +59,9 @@
 
 Copyright © 2024 RinLit.
 
-# 致谢
+## 致谢
 
-## 第三方库和框架
+### 第三方库和框架
 
 - [PyQt6](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
 - [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
@@ -63,13 +70,13 @@ Copyright © 2024 RinLit.
 - [SoundFile](https://github.com/bastibe/python-soundfile)
 - [SoundDevice](https://github.com/spatialaudio/python-sounddevice)
 
-## 资源
+### 资源
 
 - [SF Symbols](https://developer.apple.com/sf-symbols/) （部分图标已做修改）
 - [和风天气图标](https://icons.qweather.com/)（部分图标已做修改）
 - [HarmonyOS Sans](https://developer.huawei.com/consumer/cn/design/resource/)
 
-## 贡献者
+### 贡献者
 
 <div align="center">
 <a href="https://github.com/RinLit-233-shiroko/Class-Widgets/graphs/contributors">
