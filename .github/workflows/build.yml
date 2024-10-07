@@ -1,11 +1,11 @@
-name: Python Package 和 Build
+name: 构建
 
 on:
   push:
-    分支:
+    branches:
       - main
   pull_request:
-    分支:
+    branches:
       - main
   workflow_dispatch:
 
@@ -21,12 +21,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: 设置 Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8.10'
 
-      - name: Create virtual environment
+      - name: 创建虚拟环境
         run: |
           python -m venv venv
           .\venv\Scripts\activate
@@ -34,21 +34,21 @@ jobs:
           pip install requests
           pip install pyinstaller
 
-      - name: Package application with PyInstaller
+      - name: 使用 PyInstaller 打包
         run: |
           .\venv\Scripts\activate
           pyinstaller main.py -w -i ./img/favicon.ico -n ClassWidgets
 
-      - name: Copy dependencies 和 resources
+      - name: 复制依赖和资源
         run: |
           xcopy /E /I config .\dist\Class-Widgets\config
           xcopy /E /I ui .\dist\Class-Widgets\ui
           xcopy /E /I img .\dist\Class-Widgets\img
           xcopy /E /I audio .\dist\Class-Widgets\audio
-          copy *.ui .\dist\Class-Widgets\
+          copy *.ui .\dist\ClassWidgets\
 
-      - name: Archive the build output
+      - name: 存到构建输出
         uses: actions/upload-artifact@v4
         with:
           name: Windows-amd64
-          path: ./dist/Class-Widgets/
+          path: ./dist/ClassWidgets/
