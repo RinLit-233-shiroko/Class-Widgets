@@ -4,9 +4,9 @@ import requests
 from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
-    QGraphicsDropShadowEffect, QSystemTrayIcon, QMessageBox, QGraphicsOpacityEffect
+    QGraphicsDropShadowEffect, QSystemTrayIcon, QMessageBox
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter, QCursor
+from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
 from loguru import logger
 import sys
 from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme
@@ -46,9 +46,9 @@ time_offset = 0  # 时差偏移
 
 if conf.read_conf('Other', 'do_not_log') != '1':
     logger.add("log/ClassWidgets_main_{time}.log", rotation="1 MB", encoding="utf-8", retention="1 minute")
-    logger.info('未启用开发者模式')
+    logger.info('未禁用日志输出')
 else:
-    logger.info('启用开发者模式')
+    logger.info('已禁用日志输出功能，若需保存日志，请在“设置”->“高级选项”中关闭禁用日志功能')
 
 
 def get_timeline_data():
@@ -132,8 +132,8 @@ def get_countdown(toast=False):  # 重构好累aaaa
                     c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                     part = i
             else:
-                if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[
-                    i + 1] - dt.timedelta(minutes=30):
+                if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
+                        - dt.timedelta(minutes=30)):
                     c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                     part = i
                     break
@@ -203,8 +203,8 @@ def get_next_lessons():
                         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                         part = i
                 else:
-                    if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[
-                        i + 1] - dt.timedelta(minutes=30):
+                    if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
+                            - dt.timedelta(minutes=30)):
                         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                         part = i
                         break
@@ -267,8 +267,8 @@ def get_current_lesson_name():
                         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                         part = i
                 else:
-                    if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[
-                        i + 1] - dt.timedelta(minutes=30):
+                    if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
+                            - dt.timedelta(minutes=30)):
                         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                         part = i
                         break
@@ -317,10 +317,13 @@ class weatherReportThread(QThread):  # 获取最新天气信息
                 return data
             else:
                 logger.error(f"获取天气信息失败：{response.status_code}")
-                return f"{response.status_code}"
-        except requests.exceptions.RequestException as e:
+                return response.status_code
+        except requests.exceptions.RequestException as e:  # 请求失败
             logger.error(f"获取天气信息失败：{e}")
-            return "请求失败"
+            return {'current': {'weather': 99, 'temperature': {'value': '错误', 'unit': ''}}}
+        except Exception as e:
+            logger.error(f"获取天气信息失败：{e}")
+            return {'current': {'weather': 99, 'temperature': {'value': '错误', 'unit': ''}}}
 
 
 class WidgetsManager:
@@ -597,7 +600,7 @@ class DesktopWidget(QWidget):  # 主要小组件
                                       f'{db.get_weather_stylesheet(weather_data["current"]["weather"])}); '
                                       f'border-radius: {radius}')
         else:
-            logger.error(f'获取天气数据失败：{weather_data}')
+            logger.error(f'获取天气数据出错：{weather_data}')
 
     def open_settings(self):
         if self.menu is None or not self.menu.isVisible():  # 防多开

@@ -1,4 +1,5 @@
 import os
+from shutil import rmtree
 
 import requests
 from PyQt6 import uic, QtCore
@@ -211,11 +212,13 @@ class desktop_widget(FluentWindow):
         spin_prepare_time.setValue(int(conf.read_conf('Toast', 'prepare_minutes')))
         spin_prepare_time.valueChanged.connect(self.save_prepare_time)  # 准备时间
 
-    def setup_configs_interface(self):
+    def setup_configs_interface(self):  # 配置界面
         cf_import_schedule = self.findChild(PushButton, 'im_schedule')
         cf_import_schedule.clicked.connect(self.cf_import_schedule)  # 导入课程表
         cf_export_schedule = self.findChild(PushButton, 'ex_schedule')
         cf_export_schedule.clicked.connect(self.cf_export_schedule)  # 导出课程表
+        cf_open_schedule_folder = self.findChild(PushButton, 'open_schedule_folder')  # 打开课程表文件夹
+        cf_open_schedule_folder.clicked.connect(lambda: os.startfile(os.path.join(os.getcwd(), 'config/schedule')))
 
     def setup_customization_interface(self):
         self.ct_update_preview()
@@ -332,6 +335,13 @@ class desktop_widget(FluentWindow):
         switch_enable_multiple_programs = self.findChild(SwitchButton, 'switch_multiple_programs')
         switch_enable_multiple_programs.setChecked(int(conf.read_conf('Other', 'multiple_programs')))
         switch_enable_multiple_programs.checkedChanged.connect(self.switch_enable_multiple_programs)  # 多开
+
+        switch_disable_log = self.findChild(SwitchButton, 'switch_disable_log')
+        switch_disable_log.setChecked(int(conf.read_conf('Other', 'do_not_log')))
+        switch_disable_log.checkedChanged.connect(self.switch_disable_log)  # 禁用日志
+
+        button_clear_log = self.findChild(PushButton, 'button_clear_log')
+        button_clear_log.clicked.connect(self.clear_log)  # 清空日志
 
         set_start_date = self.findChild(CalendarPicker, 'set_start_date')  # 日期
         if conf.read_conf('Date', 'start_date') != '':
@@ -464,6 +474,13 @@ class desktop_widget(FluentWindow):
         license_dialog = licenseDialog(self)
         license_dialog.exec()
 
+    def switch_disable_log(self):
+        switch_disable_log = self.findChild(SwitchButton, 'switch_disable_log')
+        if switch_disable_log.isChecked():
+            conf.write_conf('Other', 'do_not_log', '1')
+        else:
+            conf.write_conf('Other', 'do_not_log', '0')
+
     def switch_pin(self):
         switch_pin_button = self.findChild(SwitchButton, 'switch_pin_button')
         if switch_pin_button.isChecked():
@@ -511,6 +528,31 @@ class desktop_widget(FluentWindow):
     def save_prepare_time(self):
         prepare_time_spin = self.findChild(SpinBox, 'spin_prepare_class')
         conf.write_conf('Toast', 'prepare_minutes', str(prepare_time_spin.value()))
+
+    def clear_log(self):  # 清空日志
+        button_clear_log = self.findChild(PushButton, 'button_clear_log')
+        try:
+            if os.path.exists('log'):
+                rmtree('log')
+            Flyout.create(
+                icon=InfoBarIcon.SUCCESS,
+                title='已清除日志',
+                content="已清空所有日志文件",
+                target=button_clear_log,
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+        except Exception as e:
+            Flyout.create(
+                icon=InfoBarIcon.ERROR,
+                title='清除日志失败！',
+                content=f"清除日志失败：{e}",
+                target=button_clear_log,
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
 
     def ct_change_color_mode(self):
         color_mode_combo = self.findChild(ComboBox, 'combo_color_mode')
@@ -679,20 +721,38 @@ class desktop_widget(FluentWindow):
             print(f'修改课程文件名称时发生错误：{e}')
             logger.error(f'修改课程文件名称时发生错误：{e}')
 
-    def ad_change_file(self):
+    def ad_change_file(self):  # 切换课程文件
         try:
             conf_combo = self.findChild(ComboBox, 'conf_combo')
-            # 添加新课表
             conf_name = self.findChild(LineEdit, 'conf_name')
+            # 添加新课表
             if conf_combo.currentText() == '添加新课表':
                 new_name = f'新课表 - {list.return_default_schedule_number() + 1}'
                 list.create_new_profile(f'{new_name}.json')
+                conf_combo.clear()
+                conf_combo.addItems(list.get_schedule_config())
                 conf.write_conf('General', 'schedule', f'{new_name}.json')
+                conf_combo.setCurrentIndex(list.get_schedule_config().index(conf.read_conf('General', 'schedule')))
                 conf_name.setText(new_name)
+
+            elif conf_combo.currentText().endswith('.json'):
+                new_name = conf_combo.currentText()
+                conf.write_conf('General', 'schedule', new_name)
+                conf_name.setText(new_name[:-5])
+
             else:
-                if conf_combo.currentText().endswith('.json'):
-                    conf.write_conf('General', 'schedule', conf_combo.currentText())
-                    conf_name.setText(conf_combo.currentText()[:-5])
+                logger.error(f'切换课程文件时列表选择异常：{conf_combo.currentText()}')
+                Flyout.create(
+                    icon=InfoBarIcon.ERROR,
+                    title='错误！',
+                    content=f"列表选项异常！{conf_combo.currentText()}",
+                    target=conf_combo,
+                    parent=self,
+                    isClosable=True,
+                    aniType=FlyoutAnimationType.PULL_UP
+                )
+                return
+
             global filename
             filename = conf.read_conf('General', 'schedule')
             self.te_load_item()
