@@ -45,10 +45,10 @@ jobs:
           xcopy /E /I ui .\dist\Class-Widgets\ui
           xcopy /E /I img .\dist\Class-Widgets\img
           xcopy /E /I audio .\dist\Class-Widgets\audio
-          copy *.ui .\dist\Class-Widgets\
+          copy *.ui .\dist\ClassWidgets\
 
       - name: 存到构建输出
         uses: actions/upload-artifact@v4
         with:
           name: Windows-amd64
-          path: ./dist/Class-Widgets/
+          path: ./dist/ClassWidgets/
