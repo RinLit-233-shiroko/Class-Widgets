@@ -2,7 +2,7 @@ import datetime
 import sqlite3
 import json
 
-weather_status = json.load(open('config/data/xiaomi_weather_status.json'))
+weather_status = json.load(open('config/data/xiaomi_weather_status.json', encoding='utf-8'))
 path = 'config/data/xiaomi_weather.db'
 def search_by_name(search_term):
     conn = sqlite3.connect(path)
