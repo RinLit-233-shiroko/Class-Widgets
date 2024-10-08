@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b2)预发行版的页面下载。
 
 <p align="center">
   <img width="18%" align="center" src="img/Logo.png" alt="logo">
@@ -49,7 +49,7 @@
 > 可在 [Class Widgets 官方文档](https://www.yuque.com/rinlit/class-widgets_help/gs3gsbms1iivgibm) 查看教程。
 
 > [!IMPORTANT]
-> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b1)预发行版的页面下载。
+> 若要体验此页面的特性，请前往[此处](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/tag/v1.1.7-b2)预发行版的页面下载。
 
 下载 ![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本) 中最新版的压缩文件，解压到合适位置后，打开 `ClassWidgets.exe` 即可。
 可通过托盘菜单进入设置、或退出此程序。
