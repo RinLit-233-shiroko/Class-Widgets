@@ -7,7 +7,7 @@ from loguru import logger
 
 import conf
 
-try:
+try:  # 加载课程/主题配置文件
     subject_info = json.load(open('config/data/subject.json', 'r', encoding='utf-8'))
     subject_icon = subject_info['subject_icon']
     subject_abbreviation = subject_info['subject_abbreviation']

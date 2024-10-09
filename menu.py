@@ -402,14 +402,14 @@ class desktop_widget(FluentWindow):
         te_add_button.clicked.connect(self.te_add_item)
         te_add_button.clicked.connect(self.te_upload_item)
 
-        te_add_part_button = self.findChild(ToolButton, 'add_part_button')  # 添加时段
+        te_add_part_button = self.findChild(ToolButton, 'add_part_button')  # 添加节点
         te_add_part_button.setIcon(fIcon.ADD)
         te_add_part_button.clicked.connect(self.te_add_part)
 
         te_name_edit = self.findChild(EditableComboBox, 'name_part_combo')  # 名称
         te_name_edit.addItems(list.time)
 
-        te_delete_part_button = self.findChild(ToolButton, 'delete_part_button')  # 删除时段
+        te_delete_part_button = self.findChild(ToolButton, 'delete_part_button')  # 删除节点
         te_delete_part_button.setIcon(fIcon.DELETE)
         te_delete_part_button.clicked.connect(self.te_delete_part)
 
@@ -426,12 +426,12 @@ class desktop_widget(FluentWindow):
         te_class_activity_combo.addItems(list.class_activity)
         te_class_activity_combo.currentIndexChanged.connect(self.te_sync_time)
 
-        te_select_timeline = self.findChild(ComboBox, 'select_timeline')  # 时间线
+        te_select_timeline = self.findChild(ComboBox, 'select_timeline')  # 选择时间线
         te_select_timeline.addItem('默认')
         te_select_timeline.addItems(list.week)
         te_select_timeline.currentIndexChanged.connect(self.te_upload_list)
 
-        te_timeline_list = self.findChild(ListWidget, 'timeline_list')  # 时间线列表
+        te_timeline_list = self.findChild(ListWidget, 'timeline_list')  # 所选时间线列表
         te_timeline_list.addItems(timeline_dict['default'])
         te_timeline_list.itemChanged.connect(self.te_upload_item)
 
@@ -1085,7 +1085,6 @@ class desktop_widget(FluentWindow):
         self.se_load_item()
         if part_list.count() > 0:
             tips_part.hide()
-            self.te_detect_part()
         else:
             tips_part.show()
         if timeline_list.count() > 0:
@@ -1112,6 +1111,7 @@ class desktop_widget(FluentWindow):
                 f'{te_name_part.currentText()} - {te_part_time.time().toString("h:mm")}'
             )
         self.te_detect_item()
+        self.te_detect_part()
 
     def te_delete_part(self):
         te_part_list = self.findChild(ListWidget, 'part_list')
@@ -1119,6 +1119,7 @@ class desktop_widget(FluentWindow):
         for item in selected_items:
             te_part_list.takeItem(te_part_list.row(item))
         self.te_detect_item()
+        self.te_detect_part()
 
     def te_detect_part(self):
         rl = []
@@ -1168,19 +1169,19 @@ class desktop_widget(FluentWindow):
         quick_set_schedule = self.findChild(ListWidget, 'subject_list')
         selected_items = se_schedule_list.selectedItems()
         selected_subject = quick_set_schedule.currentItem().text()
+        if se_schedule_list.count() > 0:
+            if not selected_items:
+                se_schedule_list.setCurrentRow(0)
 
-        if not selected_items:
-            se_schedule_list.setCurrentRow(0)
+            selected_row = se_schedule_list.currentRow()
+            selected_item = se_schedule_list.item(selected_row)
+            name_list = selected_item.text().split('-')
+            selected_item.setText(
+                f'{selected_subject}-{name_list[1]}'
+            )
 
-        selected_row = se_schedule_list.currentRow()
-        selected_item = se_schedule_list.item(selected_row)
-        name_list = selected_item.text().split('-')
-        selected_item.setText(
-            f'{selected_subject}-{name_list[1]}'
-        )
-
-        if se_schedule_list.count() > selected_row + 1:  # 选择下一行
-            se_schedule_list.setCurrentRow(selected_row + 1)
+            if se_schedule_list.count() > selected_row + 1:  # 选择下一行
+                se_schedule_list.setCurrentRow(selected_row + 1)
 
     def se_quick_select_week(self):  # 快速选择周
         se_week_combo = self.findChild(ComboBox, 'week_combo')
