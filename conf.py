@@ -28,6 +28,8 @@ def read_conf(section='General', key=''):
 
     if section in data and key in data[section]:
         return data[section][key]
+    elif section in data and key == '':
+        return data[section]
     else:
         return None
 

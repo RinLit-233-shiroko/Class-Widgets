@@ -15,7 +15,7 @@ from qfluentwidgets import (
     SpinBox, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
     CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, SegmentedWidget, MessageBoxBase,
-    SearchLineEdit, Slider, PlainTextEdit, TextEdit
+    SearchLineEdit, Slider, PlainTextEdit, TextEdit, ToolTipFilter, ToolTipPosition
 )
 from copy import deepcopy
 from loguru import logger
@@ -23,6 +23,7 @@ import datetime as dt
 import list
 import conf
 import tip_toast as toast
+import weather_db
 import weather_db as wd
 
 today = dt.date.today()
@@ -78,6 +79,9 @@ class selectCity(MessageBoxBase):  # 选择城市
         super().__init__(parent)
         title_label = SubtitleLabel('搜索城市')
         subtitle_label = BodyLabel('请输入当地城市名进行搜索')
+        self.yesButton.setText('选择此城市')  # 按钮组件汉化
+        self.cancelButton.setText('取消')
+
         self.search_edit = SearchLineEdit()
 
         self.search_edit.setPlaceholderText('输入城市名')
@@ -99,6 +103,7 @@ class selectCity(MessageBoxBase):  # 选择城市
     def search_city(self):
         self.city_list.clear()
         self.city_list.addItems(wd.search_by_name(self.search_edit.text()))
+        self.city_list.clearSelection()  # 清除选中项
 
     def get_selected_city(self):
         selected_city = self.city_list.findItems(
@@ -117,6 +122,10 @@ class licenseDialog(MessageBoxBase):  # 显示软件许可协议
         super().__init__(parent)
         title_label = SubtitleLabel('软件许可协议')
         subtitle_label = BodyLabel('此项目 (Class Widgets) 基于 GPL-3.0 许可证授权发布，详情请参阅：')
+        self.yesButton.setText('好')  # 按钮组件汉化
+        self.cancelButton.hide()
+        self.buttonLayout.insertStretch(0, 1)
+
         self.license_text = PlainTextEdit()
         self.license_text.setPlainText(open('LICENSE', 'r', encoding='utf-8').read())
         self.license_text.setReadOnly(True)
@@ -125,8 +134,8 @@ class licenseDialog(MessageBoxBase):  # 显示软件许可协议
         self.viewLayout.addWidget(title_label)
         self.viewLayout.addWidget(subtitle_label)
         self.viewLayout.addWidget(self.license_text)
-        self.widget.setMinimumWidth(700)
-        self.widget.setMinimumHeight(600)
+        self.widget.setMinimumWidth(600)
+        self.widget.setMinimumHeight(500)
 
 
 class desktop_widget(FluentWindow):
@@ -274,6 +283,20 @@ class desktop_widget(FluentWindow):
             lambda: conf.write_conf('General', 'opacity', str(slider_opacity.value()))
         )  # 透明度
 
+        select_weather_api = self.findChild(ComboBox, 'select_weather_api')  # 天气API选择
+        select_weather_api.addItems(weather_db.api_config['weather_api_list_zhCN'])
+        select_weather_api.setCurrentIndex(weather_db.api_config['weather_api_list'].index(
+            conf.read_conf('Weather', 'api')
+        ))
+        select_weather_api.currentIndexChanged.connect(
+            lambda: conf.write_conf('Weather', 'api',
+                                    weather_db.api_config['weather_api_list'][select_weather_api.currentIndex()])
+        )
+
+        api_key_edit = self.findChild(LineEdit, 'api_key_edit')  # API密钥
+        api_key_edit.setText(conf.read_conf('Weather', 'api_key'))
+        api_key_edit.textChanged.connect(lambda: conf.write_conf('Weather', 'api_key', api_key_edit.text()))
+
     def setup_about_interface(self):
         self.version = self.findChild(BodyLabel, 'version')
         self.version.setText(f'当前版本：{conf.read_conf("Other", "version")}\n正在检查最新版本…')
@@ -359,10 +382,14 @@ class desktop_widget(FluentWindow):
         self.se_load_item()
         se_set_button = self.findChild(ToolButton, 'set_button')
         se_set_button.setIcon(fIcon.EDIT)
+        se_set_button.setToolTip('编辑课程')
+        se_set_button.installEventFilter(ToolTipFilter(se_set_button, showDelay=300, position=ToolTipPosition.TOP))
         se_set_button.clicked.connect(self.se_edit_item)
 
         se_clear_button = self.findChild(ToolButton, 'clear_button')
         se_clear_button.setIcon(fIcon.DELETE)
+        se_clear_button.setToolTip('清空课程')
+        se_clear_button.installEventFilter(ToolTipFilter(se_clear_button, showDelay=300, position=ToolTipPosition.TOP))
         se_clear_button.clicked.connect(self.se_delete_item)
 
         se_class_kind_combo = self.findChild(ComboBox, 'class_combo')  # 课程类型
@@ -399,11 +426,16 @@ class desktop_widget(FluentWindow):
         # teInterface
         te_add_button = self.findChild(ToolButton, 'add_button')  # 添加
         te_add_button.setIcon(fIcon.ADD)
+        te_add_button.setToolTip('添加时间线')  # 增加提示
+        te_add_button.installEventFilter(ToolTipFilter(te_add_button, showDelay=300, position=ToolTipPosition.TOP))
         te_add_button.clicked.connect(self.te_add_item)
         te_add_button.clicked.connect(self.te_upload_item)
 
         te_add_part_button = self.findChild(ToolButton, 'add_part_button')  # 添加节点
         te_add_part_button.setIcon(fIcon.ADD)
+        te_add_part_button.setToolTip('添加节点')
+        te_add_part_button.installEventFilter(
+            ToolTipFilter(te_add_part_button, showDelay=300, position=ToolTipPosition.TOP))
         te_add_part_button.clicked.connect(self.te_add_part)
 
         te_name_edit = self.findChild(EditableComboBox, 'name_part_combo')  # 名称
@@ -411,24 +443,34 @@ class desktop_widget(FluentWindow):
 
         te_delete_part_button = self.findChild(ToolButton, 'delete_part_button')  # 删除节点
         te_delete_part_button.setIcon(fIcon.DELETE)
+        te_delete_part_button.setToolTip('删除节点')
+        te_delete_part_button.installEventFilter(
+            ToolTipFilter(te_delete_part_button, showDelay=300, position=ToolTipPosition.TOP))
         te_delete_part_button.clicked.connect(self.te_delete_part)
 
         te_edit_button = self.findChild(ToolButton, 'edit_button')  # 编辑
         te_edit_button.setIcon(fIcon.EDIT)
+        te_edit_button.setToolTip('编辑时间线')
+        te_edit_button.installEventFilter(ToolTipFilter(te_edit_button, showDelay=300, position=ToolTipPosition.TOP))
         te_edit_button.clicked.connect(self.te_edit_item)
 
         te_delete_button = self.findChild(ToolButton, 'delete_button')  # 删除
         te_delete_button.setIcon(fIcon.DELETE)
+        te_delete_button.setToolTip('删除时间线')
+        te_delete_button.installEventFilter(
+            ToolTipFilter(te_delete_button, showDelay=300, position=ToolTipPosition.TOP))
         te_delete_button.clicked.connect(self.te_delete_item)
         te_delete_button.clicked.connect(self.te_upload_item)
 
         te_class_activity_combo = self.findChild(ComboBox, 'class_activity')  # 活动类型
         te_class_activity_combo.addItems(list.class_activity)
+        te_class_activity_combo.setToolTip('选择活动类型（“课程”或“课间”）')
         te_class_activity_combo.currentIndexChanged.connect(self.te_sync_time)
 
         te_select_timeline = self.findChild(ComboBox, 'select_timeline')  # 选择时间线
         te_select_timeline.addItem('默认')
         te_select_timeline.addItems(list.week)
+        te_select_timeline.setToolTip('选择一周内的某一天的时间线')
         te_select_timeline.currentIndexChanged.connect(self.te_upload_list)
 
         te_timeline_list = self.findChild(ListWidget, 'timeline_list')  # 所选时间线列表

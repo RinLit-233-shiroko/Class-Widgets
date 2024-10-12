@@ -7,6 +7,7 @@
     "opacity": 95,
     "auto_startup": 0,
     "hide": 0,
+    "full_hide": 0,
     "color_mode": 2,
     "enable_toast": 1,
     "enable_alt_schedule": 0,
@@ -19,7 +20,9 @@
     "prepare_minutes": 2
   },
   "Weather": {
-    "city": 101010100
+    "city": 101010100,
+    "api": "xiaomi_weather",
+    "api_key": ""
   },
   "Color": {
     "attend_class": "DD986F",
@@ -45,6 +48,6 @@
     "do_not_log": 0,
     "initialstartup": 1,
     "multiple_programs": 0,
-    "version": "1.1.7-b2"
+    "version": "1.1.7-b3"
   }
 }

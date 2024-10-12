@@ -9,7 +9,8 @@ from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QS
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
 from loguru import logger
 import sys
-from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme
+from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme, \
+    MessageBox, Dialog
 import datetime as dt
 import list
 import conf
@@ -290,6 +291,7 @@ def get_current_lesson_name():
 
 class weatherReportThread(QThread):  # 获取最新天气信息
     weather_signal = pyqtSignal(dict)
+
     def __init__(self):
         super().__init__()
 
@@ -301,29 +303,24 @@ class weatherReportThread(QThread):  # 获取最新天气信息
             logger.error(f"触发天气信息失败: {e}")
 
     def get_weather_data(self):
-        latitude = 0
-        longitude = 0
-        city = conf.read_conf('Weather', 'city')
-        location_key = f'weathercn:{city}'
+        location_key = conf.read_conf('Weather', 'city')
         days = 1
-        url = (f"https://weatherapi.market.xiaomi.com/wtr-v3/weather/all?"
-               f"latitude={latitude}&longitude={longitude}&"
-               f"locationKey={location_key}&appKey=weather20151024&sign=zUFJoAR2ZVrDy1vF3D07&"
-               f"isGlobal=false&locale=zh_cn&days={days}")
+        key = conf.read_conf('Weather', 'api_key')
+        url = db.get_weather_url().format(location_key=location_key, days=days, key=key)
         try:
-            response = requests.get(url)
+            response = requests.get(url, proxies={'http': None, 'https': None})  # 禁用代理
             if response.status_code == 200:
                 data = response.json()
                 return data
             else:
                 logger.error(f"获取天气信息失败：{response.status_code}")
-                return response.status_code
+                return {'error': {'info': {'value': '错误', 'unit': response.status_code}}}
         except requests.exceptions.RequestException as e:  # 请求失败
             logger.error(f"获取天气信息失败：{e}")
-            return {'current': {'weather': 99, 'temperature': {'value': '错误', 'unit': ''}}}
+            return {'error': {'info': {'value': '错误', 'unit': ''}}}
         except Exception as e:
             logger.error(f"获取天气信息失败：{e}")
-            return {'current': {'weather': 99, 'temperature': {'value': '错误', 'unit': ''}}}
+            return {'error': {'info': {'value': '错误', 'unit': ''}}}
 
 
 class WidgetsManager:
@@ -436,7 +433,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         # 设置窗口无边框和透明背景
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        if conf.read_conf('General', 'hide') == '2':
+        if (conf.read_conf('General', 'hide') == '2'
+                or conf.read_conf('General', 'hide') == '1'):
             self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         if int(conf.read_conf('General', 'pin_on_top')):  # 置顶
@@ -569,6 +567,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'countdown_custom_title'):  # 自定义倒计时
             self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
             self.custom_countdown.setText(conf.get_custom_countdown())
+        self.update()
 
     def get_weather_data(self):
         logger.info('获取天气数据')
@@ -577,28 +576,28 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.weather_thread.start()
 
     def detect_weather_code_changed(self):
-        pass
-        current_code = conf.read_conf('Weather', 'city')
+        current_code = conf.read_conf('Weather')
         if current_code != self.last_code:
             self.last_code = current_code
             self.get_weather_data()
 
-    def update_weather_data(self, weather_data):
-        if type(weather_data) is dict:
+    def update_weather_data(self, weather_data):  # 更新天气数据(已兼容多api)
+        if type(weather_data) is dict and hasattr(self, 'weather_icon'):
             logger.info('已获取天气数据')
-            if hasattr(self, 'weather_icon'):  # 天气组件
+            try:  # 天气组件
                 temperature = self.findChild(QLabel, 'temperature')
-                temperature.setText(f"{weather_data['current']['temperature']['value']}"
-                                    f"{weather_data['current']['temperature']['unit']}")
+                temperature.setText(f"{db.get_weather_data('temp', weather_data)}")
                 weather_icon = self.findChild(QLabel, 'weather_icon')
-                weather_icon.setPixmap(QPixmap(db.get_weather_icon_by_code(weather_data['current']['weather'])))
+                weather_icon.setPixmap(QPixmap(db.get_weather_icon_by_code(db.get_weather_data('icon', weather_data))))
                 current_city = self.findChild(QLabel, 'current_city')
-                current_city.setText(f'{db.search_by_num(conf.read_conf("Weather", "city"))} · '
-                                     f'{db.get_weather_by_code(int(weather_data["current"]["weather"]))}')
+                current_city.setText(f"{db.search_by_num(conf.read_conf('Weather', 'city'))} · "
+                                     f"{db.get_weather_by_code(db.get_weather_data('icon', weather_data))}")
                 backgnd = self.findChild(QLabel, 'backgnd')
                 backgnd.setStyleSheet('background-color: qlineargradient('
-                                      f'{db.get_weather_stylesheet(weather_data["current"]["weather"])}); '
+                                      f"{db.get_weather_stylesheet(db.get_weather_data('icon', weather_data))}); "
                                       f'border-radius: {radius}')
+            except Exception as e:
+                logger.error(f'天气组件出错：{e}')
         else:
             logger.error(f'获取天气数据出错：{weather_data}')
 
@@ -640,7 +639,9 @@ class DesktopWidget(QWidget):  # 主要小组件
     def animate_hide(self, full=False):  # 隐藏窗口
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(625)  # 持续时间
-        self.animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()))
+        width = self.width()
+        height = self.height()
+        self.setFixedSize(width, height)  # 防止连续打断窗口高度变小
         if full:
             self.animation.setEndValue(QRect(self.x(), -self.height(), self.width(), self.height()))
         else:
@@ -651,7 +652,10 @@ class DesktopWidget(QWidget):  # 主要小组件
     def animate_show(self):  # 显示窗口
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(625)  # 持续时间
-        self.animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()))
+        # 获取当前窗口的宽度和高度，确保动画过程中保持一致
+        width = self.width()
+        height = self.height()
+        self.setFixedSize(width, height)  # 防止连续打断窗口高度变小
         self.animation.setEndValue(
             QRect(self.x(), int(conf.read_conf('General', 'margin')), self.width(), self.height()))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
@@ -670,7 +674,7 @@ class DesktopWidget(QWidget):  # 主要小组件
 
 def check_windows_maxmize():  # 检查窗口是否最大化
     for window in pygetwindow.getAllWindows():
-        if window.isMaximized:
+        if window.isMaximized:  # 最大化或全屏(修复
             return True
     return False
 
@@ -695,11 +699,12 @@ if __name__ == '__main__':
     logger.info(f"共享内存：{share.isAttached()} 是否允许多开实例：{conf.read_conf('Other', 'multiple_programs')}")
 
     if share.attach() and conf.read_conf('Other', 'multiple_programs') != '1':
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("Class Widgets Tips")
-        msg_box.setText("Class Widgets 已在运行!")
-        msg_box.setIcon(QMessageBox.Icon.Information)
-        msg_box.addButton("好", QMessageBox.ButtonRole.YesRole)
+        msg_box = Dialog('Class Widgets 正在运行', 'Class Widgets 正在运行！请勿打开多个实例，否则将会出现不可预知的问题。'
+                                                   '\n(若您需要打开多个实例，请在“设置”->“高级选项”中启用“允许程序多开”)')
+        msg_box.yesButton.setText('好')
+        msg_box.cancelButton.hide()
+        msg_box.buttonLayout.insertStretch(0, 1)
+        msg_box.setFixedWidth(550)
         msg_box.exec()
         sys.exit(-1)
     else:
