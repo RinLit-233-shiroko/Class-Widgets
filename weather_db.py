@@ -8,8 +8,15 @@ import conf
 path = 'config/data/xiaomi_weather.db'
 api_config = json.load(open('config/data/weather_api.json', encoding='utf-8'))
 
+def update_path():
+    # if conf.read_conf('Weather', 'api') == 'amap_weather':
+        # path = 'config/data/amap_weather.db'
+    # else:
+        path = 'config/data/xiaomi_weather.db'
+
 
 def search_by_name(search_term):
+    update_path()
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
@@ -24,6 +31,7 @@ def search_by_name(search_term):
 
 
 def search_code_by_name(search_term):
+    update_path()
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
@@ -36,6 +44,7 @@ def search_code_by_name(search_term):
 
 
 def search_by_num(search_term):
+    update_path()
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
@@ -50,6 +59,7 @@ def search_by_num(search_term):
 
 
 def get_weather_by_code(code):
+    update_path()
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     for weather in weather_status['weatherinfo']:
         if str(weather['code']) == code:
@@ -58,6 +68,7 @@ def get_weather_by_code(code):
 
 
 def get_weather_icon_by_code(code):
+    update_path()
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     weather_code = None
     current_time = datetime.datetime.now()
@@ -81,6 +92,7 @@ def get_weather_icon_by_code(code):
 
 
 def get_weather_stylesheet(code):  # 天气样式
+    update_path()
     current_time = datetime.datetime.now()
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     weather_code = '99'
@@ -99,6 +111,7 @@ def get_weather_stylesheet(code):  # 天气样式
 
 
 def get_weather_url():
+    update_path()
     if conf.read_conf('Weather', 'api') in api_config['weather_api_list']:
         return api_config['weather_api'][conf.read_conf('Weather', 'api')]
     else:
@@ -106,6 +119,7 @@ def get_weather_url():
 
 
 def get_weather_data(key='temp', weather_data=None):
+    update_path()
     if weather_data is None:
         logger.error('weather_data is None!')
         return None
