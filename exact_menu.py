@@ -152,24 +152,22 @@ class ExactMenu(FluentWindow):
         else:
             setTheme(Theme.LIGHT)
 
+        # 修复设置窗口在各个屏幕分辨率DPI下的窗口大小
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        width = int(screen_width * 0.55)
+        height = int(screen_height * 0.65)
+
+        self.move(int(screen_width / 2 - width / 2), 150)
+        self.resize(width, height)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-
-        self.resize(1000, 700)
         self.setWindowTitle('Class Widgets - 更多功能')
         self.setWindowIcon(QIcon('img/favicon-exmenu.ico'))
-        self.move(int(screen_width/2-500), 150)  # 窗体居中，但不完全居中
 
         self.addSubInterface(self.interface, fIcon.INFO, '更多设置')
-
-        self.init_font()
-
-    def init_font(self):
-        self.setStyleSheet("""QLabel {
-                            font: 'Microsoft YaHei';
-                        }""")
 
     def closeEvent(self, event):
         event.ignore()
@@ -180,5 +178,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = ExactMenu()
     ex.show()
-
     sys.exit(app.exec())
