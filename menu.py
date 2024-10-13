@@ -28,9 +28,6 @@ import weather_db as wd
 
 today = dt.date.today()
 
-width = 1200
-height = 800
-
 morning_st = 0
 afternoon_st = 0
 
@@ -171,7 +168,7 @@ class desktop_widget(FluentWindow):
 
     def init_font(self):  # 设置字体
         self.setStyleSheet("""QLabel {
-                    font: 'Microsoft YaHei';
+                    font-family: 'Microsoft YaHei';
                 }""")
 
     def load_all_item(self):
@@ -481,6 +478,7 @@ class desktop_widget(FluentWindow):
         te_save_button.clicked.connect(self.te_save_item)
 
         self.te_detect_item()
+        self.te_detect_part()  # 修复在启动时无法添加时段到下拉框的问题
 
     def setup_schedule_preview(self):
         subtitle = self.findChild(SubtitleLabel, 'subtitle_file')
@@ -1278,15 +1276,22 @@ class desktop_widget(FluentWindow):
     def init_window(self):
         self.stackedWidget.setCurrentIndex(0)  # 设置初始页面
         self.load_all_item()
-        self.resize(width, height)
-        self.setMinimumWidth(800)
-        self.setMinimumHeight(500)
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(400)
         self.navigationInterface.setExpandWidth(250)
         self.navigationInterface.setCollapsible(False)
+
+        # 修复设置窗口在各个屏幕分辨率DPI下的窗口大小
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        width = int(screen_width * 0.6)
+        height = int(screen_height * 0.7)
 
         self.move(int(screen_width / 2 - width / 2), 150)
+        self.resize(width, height)
+
         self.setWindowTitle('Class Widgets - 设置')
         self.setWindowIcon(QIcon('img/favicon-settings.ico'))
 
@@ -1318,5 +1323,4 @@ if __name__ == '__main__':
     application = desktop_widget()
     application.show()
     application.setMicaEffectEnabled(True)
-
     sys.exit(app.exec())

@@ -4,13 +4,13 @@ import requests
 from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
-    QGraphicsDropShadowEffect, QSystemTrayIcon, QMessageBox
+    QGraphicsDropShadowEffect, QSystemTrayIcon
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
 from loguru import logger
 import sys
 from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme, \
-    MessageBox, Dialog
+    Dialog
 import datetime as dt
 import list
 import conf
@@ -42,7 +42,6 @@ temperature = '未设置'
 weather_icon = 0
 city = 101010100  # 默认城市
 
-bkg_opacity = 165  # 模糊label的透明度(0~255)
 time_offset = 0  # 时差偏移
 
 if conf.read_conf('Other', 'do_not_log') != '1':
@@ -449,13 +448,14 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
 
         # 添加阴影效果
-        if conf.load_theme_config(theme)['shadow']:
+        if conf.load_theme_config(theme)['shadow']:  # 修改阴影问题
+            backgnd = self.findChild(QLabel, 'backgnd')
             shadow_effect = QGraphicsDropShadowEffect(self)
-            shadow_effect.setBlurRadius(22)
+            shadow_effect.setBlurRadius(28)
             shadow_effect.setXOffset(0)
-            shadow_effect.setYOffset(7)
-            shadow_effect.setColor(QColor(0, 0, 0, 60))
-            self.setGraphicsEffect(shadow_effect)
+            shadow_effect.setYOffset(6)
+            shadow_effect.setColor(QColor(0, 0, 0, 75))
+            backgnd.setGraphicsEffect(shadow_effect)
 
     def init_font(self):
         font_path = 'font/HarmonyOS_Sans_SC_Bold.ttf'
@@ -549,9 +549,9 @@ class DesktopWidget(QWidget):  # 主要小组件
                 painter.fillRect(pixmap.rect(), QColor("#FFFFFF"))
             painter.end()
             self.current_lesson_name_text.setIcon(QIcon(pixmap))
-            self.blur_effect.setBlurRadius(35)  # 模糊半径
+            self.blur_effect.setBlurRadius(25)  # 模糊半径
             self.blur_effect_label.setStyleSheet(
-                f'background-color: rgba{list.subject_color(current_lesson_name)}, {bkg_opacity});'
+                f'background-color: rgba{list.subject_color(current_lesson_name)}, 200);'
             )
             self.blur_effect_label.setGraphicsEffect(self.blur_effect)
 
@@ -567,7 +567,6 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'countdown_custom_title'):  # 自定义倒计时
             self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
             self.custom_countdown.setText(conf.get_custom_countdown())
-        self.update()
 
     def get_weather_data(self):
         logger.info('获取天气数据')
@@ -584,15 +583,15 @@ class DesktopWidget(QWidget):  # 主要小组件
     def update_weather_data(self, weather_data):  # 更新天气数据(已兼容多api)
         if type(weather_data) is dict and hasattr(self, 'weather_icon'):
             logger.info('已获取天气数据')
+            temperature = self.findChild(QLabel, 'temperature')
+            weather_icon = self.findChild(QLabel, 'weather_icon')
+            current_city = self.findChild(QLabel, 'current_city')
+            backgnd = self.findChild(QLabel, 'backgnd')
             try:  # 天气组件
-                temperature = self.findChild(QLabel, 'temperature')
                 temperature.setText(f"{db.get_weather_data('temp', weather_data)}")
-                weather_icon = self.findChild(QLabel, 'weather_icon')
                 weather_icon.setPixmap(QPixmap(db.get_weather_icon_by_code(db.get_weather_data('icon', weather_data))))
-                current_city = self.findChild(QLabel, 'current_city')
                 current_city.setText(f"{db.search_by_num(conf.read_conf('Weather', 'city'))} · "
                                      f"{db.get_weather_by_code(db.get_weather_data('icon', weather_data))}")
-                backgnd = self.findChild(QLabel, 'backgnd')
                 backgnd.setStyleSheet('background-color: qlineargradient('
                                       f"{db.get_weather_stylesheet(db.get_weather_data('icon', weather_data))}); "
                                       f'border-radius: {radius}')
