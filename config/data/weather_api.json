@@ -14,8 +14,9 @@
       "icon": "now.icon"
     },
     "amap_weather": {
-      "temp": "lives.temperature",
-      "icon": "lives.weather"
+      "temp": "temperature",
+      "icon": "weather"
+
     }
   },
   "weather_api_list": ["xiaomi_weather", "qweather", "amap_weather"],
