@@ -8,7 +8,9 @@ import conf
 path = 'config/data/xiaomi_weather.db'
 api_config = json.load(open('config/data/weather_api.json', encoding='utf-8'))
 
+
 def update_path():
+    global path
     if conf.read_conf('Weather', 'api') == 'amap_weather':
         path = 'config/data/amap_weather.db'
     else:
@@ -147,7 +149,7 @@ def get_weather_data(key='temp', weather_data=None):
                 return '错误'
     if key == 'temp':
         value += '°C'
-    else:
+    elif conf.read_conf('Weather', 'api') == 'amap_weather' and key == 'icon':  # 修复此代码影响其他天气源的问题
         value = get_weather_code_by_description(value)
     return value
 
