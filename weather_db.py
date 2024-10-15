@@ -40,7 +40,11 @@ def search_code_by_name(search_term):
     cursor.execute('SELECT * FROM citys WHERE name LIKE ?', ('%' + search_term + '%',))  # 模糊查询
     citys_results = cursor.fetchall()
     conn.close()
-    result = citys_results[0][3]
+
+    if citys_results:
+        result = citys_results[0][3]
+    else:
+        result = 101010100  # 默认城市代码
     # 返回两个表的搜索结果
     return result
 
@@ -55,7 +59,10 @@ def search_by_num(search_term):
 
     conn.close()
 
-    result = citys_results[0][2]
+    if citys_results:
+        result = citys_results[0][2]
+    else:
+        result = '北京'  # 默认城市
     # 返回两个表的搜索结果
     return result
 
@@ -156,10 +163,13 @@ def get_weather_data(key='temp', weather_data=None):
 
 if __name__ == '__main__':
     # 测试代码
-    num_results = search_by_num('101310101')  # [2]城市名称
-    print(num_results)
-    citys_results = search_by_name('上海')  # [3]城市代码
-    print(citys_results)
-    citys_results = search_code_by_name('上海')  # [3]城市代码
-    print(citys_results)
-    get_weather_by_code(3)
+    try:
+        num_results = search_by_num('101310101')  # [2]城市名称
+        print(num_results)
+        citys_results = search_by_name('上海')  # [3]城市代码
+        print(citys_results)
+        citys_results = search_code_by_name('上海')  # [3]城市代码
+        print(citys_results)
+        get_weather_by_code(3)
+    except Exception as e:
+        print(e)
