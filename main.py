@@ -146,7 +146,10 @@ def get_countdown(toast=False):  # 重构好累aaaa
                         if item_name.startswith('a'):
                             tip_toast.main(1, current_lesson_name)  # 上课
                         else:
-                            tip_toast.main(0, next_lessons[0])  # 下课
+                            if next_lessons:  # 下课/放学
+                                tip_toast.main(0, next_lessons[0])  # 下课
+                            else:
+                                tip_toast.main(2)  # 放学
 
                     if current_dt == c_time - dt.timedelta(minutes=int(conf.read_conf('Toast', 'prepare_minutes'))):
                         if conf.read_conf('Toast', 'prepare_minutes') != '0' and toast and item_name.startswith('a'):
@@ -560,7 +563,10 @@ class DesktopWidget(QWidget):  # 主要小组件
 
         if hasattr(self, 'activity_countdown'):  # 活动倒计时
             if cd_list:
-                self.activity_countdown.setText(cd_list[1])
+                if conf.read_conf('General', 'blur_countdown') == '1':  # 模糊倒计时
+                    self.activity_countdown.setText(f"< {cd_list[1].split(':')[0]} 分钟")
+                else:
+                    self.activity_countdown.setText(cd_list[1])
                 self.ac_title.setText(cd_list[0])
                 self.countdown_progress_bar.setValue(cd_list[2])
 

@@ -6,7 +6,7 @@ from PyQt6 import uic
 from PyQt6.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QParallelAnimationGroup, QTimer, QPoint, \
     pyqtProperty
 from PyQt6.QtGui import QColor, QPainter, QBrush
-from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QFrame
+from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QFrame, QGraphicsDropShadowEffect
 from loguru import logger
 from qfluentwidgets import setThemeColor, Theme, setTheme
 
@@ -21,7 +21,7 @@ finish_class = conf.read_conf('Audio', 'finish_class')
 attend_class_color = '#dd986f'
 finish_class_color = '#79d4a1'
 prepare_class_color = '#8073F9'
-normal_color = '#73A0F9'
+normal_color = '#56CFD8'
 
 window_list = []  # 窗口列表
 
@@ -86,16 +86,25 @@ class tip_toast(QWidget):
             playsound(prepare_class)
 
         # 设置样式表
+        shadow_effect = QGraphicsDropShadowEffect(self)
+        shadow_effect.setBlurRadius(18)
+        shadow_effect.setXOffset(0)
+        shadow_effect.setYOffset(6)
         if state == 1:
             bg_color = ['rgba(255, 200, 150, 255)', 'rgba(220, 150, 110, 255)']
+            shadow_effect.setColor(QColor('#50'+attend_class_color[1:]))
         elif state == 0 or state == 2:
             bg_color = ['rgba(165, 200, 140, 255)', 'rgba(110, 220, 170, 255)']
+            shadow_effect.setColor(QColor('#50'+finish_class_color[1:]))
         elif state == 3:
             bg_color = ['rgba(165, 110, 210, 255)', 'rgba(120, 120, 225, 255)']
+            shadow_effect.setColor(QColor('#50'+prepare_class_color[1:]))
         elif state == 4:
-            bg_color = ['rgba(110, 180, 210, 255)', 'rgba(80, 130, 215, 255)']
+            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
+            shadow_effect.setColor(QColor('#50'+normal_color[1:]))
         else:
-            bg_color = ['rgba(110, 180, 210, 255)', 'rgba(80, 130, 215, 255)']
+            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
+            shadow_effect.setColor(QColor('#50'+normal_color[1:]))
 
         backgnd.setStyleSheet(f'font-weight: bold; border-radius: {radius}; '
                               'background-color: qlineargradient('
@@ -103,6 +112,9 @@ class tip_toast(QWidget):
                               f' stop:0 {bg_color[0]}, stop:1 {bg_color[1]}'
                               ');'
                               )
+        backgnd.setGraphicsEffect(shadow_effect)
+
+
         # 设置窗口初始大小
         mini_size_x = 100
         mini_size_y = 10

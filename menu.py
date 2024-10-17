@@ -280,6 +280,10 @@ class desktop_widget(FluentWindow):
             lambda: conf.write_conf('General', 'opacity', str(slider_opacity.value()))
         )  # 透明度
 
+        blur_countdown = self.findChild(SwitchButton, 'switch_blur_countdown')
+        blur_countdown.setChecked(int(conf.read_conf('General', 'blur_countdown')))
+        blur_countdown.checkedChanged.connect(self.switch_blur_countdown)  # 模糊倒计时
+
         select_weather_api = self.findChild(ComboBox, 'select_weather_api')  # 天气API选择
         select_weather_api.addItems(weather_db.api_config['weather_api_list_zhCN'])
         select_weather_api.setCurrentIndex(weather_db.api_config['weather_api_list'].index(
@@ -520,6 +524,13 @@ class desktop_widget(FluentWindow):
             conf.write_conf('Other', 'do_not_log', '1')
         else:
             conf.write_conf('Other', 'do_not_log', '0')
+
+    def switch_blur_countdown(self):
+        switch_blur_countdown = self.findChild(SwitchButton, 'switch_blur_countdown')
+        if switch_blur_countdown.isChecked():
+            conf.write_conf('General', 'blur_countdown', '1')
+        else:
+            conf.write_conf('General', 'blur_countdown', '0')
 
     def switch_pin(self):
         switch_pin_button = self.findChild(SwitchButton, 'switch_pin_button')

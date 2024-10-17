@@ -102,7 +102,7 @@ font-weight: bold;</string>
    <property name="font">
     <font>
      <family>Microsoft YaHei UI</family>
-     <pointsize>22</pointsize>
+     <pointsize>21</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>

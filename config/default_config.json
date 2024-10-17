@@ -7,10 +7,12 @@
     "opacity": 95,
     "auto_startup": 0,
     "hide": 0,
+    "hide_method": 0,
     "full_hide": 0,
     "color_mode": 2,
     "enable_toast": 1,
     "enable_alt_schedule": 0,
+    "blur_countdown": 0,
     "theme": "default"
   },
   "Toast": {
