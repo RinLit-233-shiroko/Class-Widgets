@@ -1,16 +1,18 @@
+import os
 from shutil import copy
 import pygetwindow
+from ctypes import windll
 import requests
 from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
-    QGraphicsDropShadowEffect, QSystemTrayIcon
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
+    QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, QSize
+from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter, QCursor
 from loguru import logger
 import sys
 from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme, \
-    Dialog
+    Dialog, ProgressRing
 import datetime as dt
 import list
 import conf
@@ -352,6 +354,176 @@ class WidgetsManager:
         for widget in self.widgets:
             widget.update_data(path=widget.path)
 
+    def decide_to_hide(self):
+        if conf.read_conf('General', 'hide_method') == '0':  # 正常
+            self.hide_windows()
+        elif conf.read_conf('General', 'hide_method') == '1':  # 单击即完全隐藏
+            self.full_hide_windows()
+        elif conf.read_conf('General', 'hide_method') == '2':  # 最小化为浮窗
+            self.full_hide_windows()
+            fw.show()
+        else:
+            self.hide_windows()
+
+
+class FloatingWidget(QWidget):  # 浮窗
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        self.init_font()
+
+        self.current_lesson_name_text = self.findChild(QLabel, 'subject')
+        self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
+        self.countdown_progress_bar = self.findChild(ProgressRing, 'progressBar')
+
+        self.update_data()
+        timer = QTimer(self)
+        timer.timeout.connect(self.update_data)
+        timer.start(1000)
+
+    def init_ui(self):
+        if conf.read_conf('General', 'color_mode') == '2':
+            setTheme(Theme.AUTO)
+        elif conf.read_conf('General', 'color_mode') == '1':
+            setTheme(Theme.DARK)
+        else:
+            setTheme(Theme.LIGHT)
+
+        if os.path.exists(f'ui/{theme}/widget-floating.ui'):
+            print(conf.load_theme_config(theme)['support_dark_mode'])
+            if isDarkTheme() and conf.load_theme_config(theme)['support_dark_mode']:
+                uic.loadUi(f'ui/{theme}/dark/widget-floating.ui', self)
+            else:
+                uic.loadUi(f'ui/{theme}/widget-floating.ui', self)
+        else:
+            if isDarkTheme() and conf.load_theme_config(theme)['support_dark_mode']:
+                uic.loadUi('ui/default/dark/widget-floating.ui', self)
+            else:
+                uic.loadUi('ui/default/widget-floating.ui', self)
+
+        # 设置窗口无边框和透明背景
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool |
+            Qt.WindowType.WindowDoesNotAcceptFocus
+        )
+
+        self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
+
+        backgnd = self.findChild(QFrame, 'backgnd')
+        shadow_effect = QGraphicsDropShadowEffect(self)
+        shadow_effect.setBlurRadius(28)
+        shadow_effect.setXOffset(0)
+        shadow_effect.setYOffset(6)
+        shadow_effect.setColor(QColor(0, 0, 0, 75))
+        backgnd.setGraphicsEffect(shadow_effect)
+
+    def init_font(self):
+        font_path = 'font/HarmonyOS_Sans_SC_Bold.ttf'
+        font_id = QFontDatabase.addApplicationFont(font_path)
+        if font_id != -1:
+            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+
+            self.setStyleSheet(f"""
+                QLabel, ProgressRing{{
+                    font-family: "{font_family}";
+                    }}
+                """)
+
+    def update_data(self):
+        self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)  # 设置窗口透明度
+        cd_list = get_countdown()
+        self.text_changed = False
+        if self.current_lesson_name_text.text() != current_lesson_name:
+            self.text_changed = True
+
+        self.current_lesson_name_text.setText(current_lesson_name)
+
+        if cd_list:  # 模糊倒计时
+            if cd_list[1] == '00:00':
+                self.activity_countdown.setText(f"< - 分钟")
+            else:
+                self.activity_countdown.setText(f"< {int(cd_list[1].split(':')[0]) + 1} 分钟")
+            self.countdown_progress_bar.setValue(cd_list[2])
+
+        self.adjustSize_animation()
+
+        self.update()
+
+    def showEvent(self, event):  # 窗口显示
+        self.zoom = 2
+        self.move((screen_width - self.width()) // 2, 50)
+        self.setMinimumSize(QSize(self.width() // self.zoom, self.height() // self.zoom))
+        self.move((screen_width - self.width()) // 2, 50)
+        self.animation = QPropertyAnimation(self, b'windowOpacity')
+        self.animation.setDuration(400)
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(int(conf.read_conf('General', 'opacity')) / 100)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)
+
+        self.animation_rect = QPropertyAnimation(self, b'geometry')
+        self.animation_rect.setDuration(500)
+        self.animation_rect.setStartValue(
+            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom, self.height() // self.zoom))
+        self.animation_rect.setEndValue(self.geometry())
+        self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
+
+        self.animation.start()
+        self.animation_rect.start()
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.animation = QPropertyAnimation(self, b'windowOpacity')
+        self.animation.setDuration(350)
+        self.animation.setEndValue(0)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)
+
+        self.animation_rect = QPropertyAnimation(self, b'geometry')
+        self.animation_rect.setDuration(400)
+        self.animation_rect.setEndValue(
+            QRect((screen_width - self.width() // self.zoom) // 2, 0, self.width() // self.zoom, self.height() // self.zoom))
+        self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
+
+        self.animation.start()
+        self.animation_rect.start()
+        self.animation_rect.finished.connect(self.hide)
+
+    def hideEvent(self, event):
+        self.setMinimumSize(QSize(self.width() * self.zoom, self.height() * self.zoom))
+
+    def adjustSize_animation(self):
+        if not self.text_changed:
+            return
+        current_geometry = self.geometry()
+        label_width = self.current_lesson_name_text.sizeHint().width()
+        target_geometry = current_geometry.adjusted(0, 0, label_width - current_geometry.width(), 0)
+        self.animation = QPropertyAnimation(self, b'geometry')
+        self.animation.setDuration(450)  # 动画持续时间为1秒
+        self.animation.setStartValue(current_geometry)
+        self.animation.setEndValue(target_geometry)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)
+        self.animation.start()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.m_flag = True
+            self.m_Position = event.globalPosition().toPoint() - self.pos()  # 获取鼠标相对窗口的位置
+            self.p_Position = event.globalPosition().toPoint()  # 获取鼠标相对屏幕的位置
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if Qt.MouseButton.LeftButton and self.m_flag:
+            self.move(event.globalPosition().toPoint() - self.m_Position)  # 更改窗口位置
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self.r_Position = event.globalPosition().toPoint()  # 获取鼠标相对窗口的位置
+        self.m_flag = False
+        if self.r_Position == self.p_Position:  # 鼠标左键单击
+            mgr.show_windows()
+            self.close()
+
 
 class DesktopWidget(QWidget):  # 主要小组件
     def __init__(self, path='widget-time.ui', pos=(100, 50), enable_tray=False):
@@ -477,7 +649,8 @@ class DesktopWidget(QWidget):  # 主要小组件
 
         self.tray_menu = SystemTrayMenu(title='Class Widgets', parent=self)
         self.tray_menu.addActions([
-            Action(FIcon.HIDE, '完全隐藏/显示小组件', triggered=lambda: self.hide_show_widgets())
+            Action(FIcon.HIDE, '完全隐藏/显示小组件', triggered=lambda: self.hide_show_widgets()),
+            Action(FIcon.BACK_TO_WINDOW, '最小化为浮窗', triggered=lambda: self.minimize_to_floating()),
         ])
         self.tray_menu.addSeparator()
         self.tray_menu.addActions([
@@ -513,7 +686,7 @@ class DesktopWidget(QWidget):  # 主要小组件
             else:
                 mgr.show_windows()
         elif conf.read_conf('General', 'hide') == '2':  # 自动最小化
-            if check_windows_maxmize():
+            if check_windows_maximize():
                 mgr.hide_windows()
             else:
                 mgr.show_windows()
@@ -564,7 +737,10 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'activity_countdown'):  # 活动倒计时
             if cd_list:
                 if conf.read_conf('General', 'blur_countdown') == '1':  # 模糊倒计时
-                    self.activity_countdown.setText(f"< {cd_list[1].split(':')[0]} 分钟")
+                    if cd_list[1] == '00:00':
+                        self.activity_countdown.setText(f"< - 分钟")
+                    else:
+                        self.activity_countdown.setText(f"< {int(cd_list[1].split(':')[0]) + 1} 分钟")
                 else:
                     self.activity_countdown.setText(cd_list[1])
                 self.ac_title.setText(cd_list[0])
@@ -632,6 +808,13 @@ class DesktopWidget(QWidget):  # 主要小组件
         else:
             mgr.show_windows()
 
+    def minimize_to_floating(self):  # 最小化到浮窗
+        if mgr.state:
+            fw.show()
+            mgr.full_hide_windows()
+        else:
+            mgr.show_windows()
+
     def animate_window(self, target_pos):  # 窗口动画！
         # 创建位置动画
         self.animation = QPropertyAnimation(self, b"geometry")
@@ -670,14 +853,14 @@ class DesktopWidget(QWidget):  # 主要小组件
     def mousePressEvent(self, event):
         if conf.read_conf('General', 'hide') != '2':  # 置顶
             if mgr.state:
-                mgr.hide_windows()
+                mgr.decide_to_hide()
             else:
                 mgr.show_windows()
         else:
             event.ignore()
 
 
-def check_windows_maxmize():  # 检查窗口是否最大化
+def check_windows_maximize():  # 检查窗口是否最大化
     for window in pygetwindow.getAllWindows():
         if window.isMaximized:  # 最大化或全屏(修复
             return True
@@ -714,6 +897,7 @@ if __name__ == '__main__':
         sys.exit(-1)
     else:
         theme = conf.read_conf('General', 'theme')  # 主题
+        fw = FloatingWidget()
 
         # 获取屏幕横向分辨率
         screen_geometry = app.primaryScreen().availableGeometry()

@@ -7,50 +7,6 @@ from loguru import logger
 
 import conf
 
-try:  # 加载课程/主题配置文件
-    subject_info = json.load(open('config/data/subject.json', 'r', encoding='utf-8'))
-    subject_icon = subject_info['subject_icon']
-    subject_abbreviation = subject_info['subject_abbreviation']
-    theme_folder = [f for f in os.listdir('ui/') if os.path.isdir(os.path.join('ui/', f))]
-    theme_names = []
-except Exception as e:
-    logger.error(f'加载课程/主题配置文件发生错误，使用默认配置：{e}')
-    subject_icon = {
-        '语文': 'chinese',
-        '数学': 'math',
-        '英语': 'abc',
-        '生物': 'biology',
-        '地理': 'geography',
-        '政治': 'chinese',
-        '历史': 'history',
-        '物理': 'physics',
-        '化学': 'chemistry',
-        '美术': 'art',
-        '音乐': 'music',
-        '体育': 'pe',
-        '信息技术': 'it',
-        '电脑': 'it',
-        '课程表未加载': 'xmark',
-
-        '班会': 'meeting',
-        '自习': 'self_study',
-        '课间': 'break',
-        '大课间': 'pe',
-        '放学': 'after_school',
-        '暂无课程': 'break',
-    }
-    # 简称
-    subject_abbreviation = {
-        '历史': '史'
-    }
-
-for folder in theme_folder:
-    try:
-        json_file = json.load(open(f'ui/{folder}/theme.json', 'r', encoding='utf-8'))
-        theme_names.append(json_file['name'])
-    except Exception as e:
-        logger.error(f'加载主题文件 theme.json {folder} 发生错误，跳过：{e}')
-
 week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 week_type = ['单周', '双周']
 color_mode = ['浅色', '深色', '跟随系统']
@@ -141,6 +97,51 @@ widget_name = {
     'widget-countdown-custom.ui': '自定义倒计时',
     'widget-weather.ui': '天气'
 }
+
+try:  # 加载课程/主题配置文件
+    subject_info = json.load(open('config/data/subject.json', 'r', encoding='utf-8'))
+    subject_icon = subject_info['subject_icon']
+    subject_abbreviation = subject_info['subject_abbreviation']
+    theme_folder = [f for f in os.listdir('ui/') if os.path.isdir(os.path.join('ui/', f))]
+    theme_names = []
+except Exception as e:
+    logger.error(f'加载课程/主题配置文件发生错误，使用默认配置：{e}')
+    conf.write_conf('General', 'theme', 'default')
+    subject_icon = {
+        '语文': 'chinese',
+        '数学': 'math',
+        '英语': 'abc',
+        '生物': 'biology',
+        '地理': 'geography',
+        '政治': 'chinese',
+        '历史': 'history',
+        '物理': 'physics',
+        '化学': 'chemistry',
+        '美术': 'art',
+        '音乐': 'music',
+        '体育': 'pe',
+        '信息技术': 'it',
+        '电脑': 'it',
+        '课程表未加载': 'xmark',
+
+        '班会': 'meeting',
+        '自习': 'self_study',
+        '课间': 'break',
+        '大课间': 'pe',
+        '放学': 'after_school',
+        '暂无课程': 'break',
+    }
+    # 简称
+    subject_abbreviation = {
+        '历史': '史'
+    }
+
+for folder in theme_folder:
+    try:
+        json_file = json.load(open(f'ui/{folder}/theme.json', 'r', encoding='utf-8'))
+        theme_names.append(json_file['name'])
+    except Exception as e:
+        logger.error(f'加载主题文件 theme.json {folder} 发生错误，跳过：{e}')
 
 
 def get_widget_list():
