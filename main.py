@@ -1,12 +1,11 @@
 import os
 from shutil import copy
 import pygetwindow
-from ctypes import windll
 import requests
 from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
-    QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame
+    QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame, QGraphicsOpacityEffect
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, QSize
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter, QCursor
 from loguru import logger
@@ -577,6 +576,12 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.w_d_timer.timeout.connect(self.detect_weather_code_changed)
             self.w_d_timer.start()
 
+        if hasattr(self, 'img'):  # 自定义图片主题兼容
+            img = self.findChild(QLabel, 'img')
+            opacity = QGraphicsOpacityEffect(self)
+            opacity.setOpacity(0.65)
+            img.setGraphicsEffect(opacity)
+
         # 设置窗口位置
         self.animate_window(pos)
 
@@ -749,6 +754,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'countdown_custom_title'):  # 自定义倒计时
             self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
             self.custom_countdown.setText(conf.get_custom_countdown())
+
 
     def get_weather_data(self):
         logger.info('获取天气数据')

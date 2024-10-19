@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>170</width>
-    <height>100</height>
+    <height>110</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -28,9 +28,9 @@
   <widget class="ProgressBar" name="progressBar">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>75</y>
-     <width>151</width>
+     <x>20</x>
+     <y>80</y>
+     <width>131</width>
      <height>6</height>
     </rect>
    </property>
@@ -74,7 +74,7 @@
      <x>10</x>
      <y>10</y>
      <width>151</width>
-     <height>31</height>
+     <height>41</height>
     </rect>
    </property>
    <property name="font">
@@ -105,13 +105,13 @@ font-weight: bold;</string>
      <x>20</x>
      <y>30</y>
      <width>131</width>
-     <height>51</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Microsoft YaHei UI</family>
-     <pointsize>18</pointsize>
+     <pointsize>19</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -137,11 +137,12 @@ font-weight: bold</string>
      <x>10</x>
      <y>10</y>
      <width>151</width>
-     <height>71</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgba(242, 243, 245, 255);</string>
+    <string notr="true">background-color: rgba(242, 243, 245, 255);
+border-radius: 8px</string>
    </property>
    <property name="text">
     <string/>

@@ -1,10 +1,10 @@
 {
   "name": "小尺寸",
   "support_dark_mode": true,
-  "radius": "0px",
-  "spacing": -19,
-  "height": 100,
-  "shadow": false,
+  "radius": "8px",
+  "spacing": -9,
+  "height": 110,
+  "shadow": true,
   "widget_width": {
     "widget-time.ui": 170,
     "widget-countdown.ui": 170,

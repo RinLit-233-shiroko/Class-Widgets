@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>100</height>
+    <height>110</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -31,7 +31,7 @@
      <x>10</x>
      <y>10</y>
      <width>161</width>
-     <height>31</height>
+     <height>41</height>
     </rect>
    </property>
    <property name="font">
@@ -62,11 +62,13 @@ font-weight: bold;</string>
      <x>10</x>
      <y>10</y>
      <width>161</width>
-     <height>71</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(40, 60, 110, 245), stop:1 rgba(75, 175, 245, 245));</string>
+    <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(40, 60, 110, 245), stop:1 rgba(75, 175, 245, 245));
+border-radius: 8px
+</string>
    </property>
    <property name="text">
     <string/>
@@ -76,9 +78,9 @@ font-weight: bold;</string>
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>20</y>
+     <y>30</y>
      <width>121</width>
-     <height>71</height>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">

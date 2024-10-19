@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>290</width>
-    <height>100</height>
+    <height>110</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -28,16 +28,16 @@
   <widget class="QPushButton" name="subject">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>271</width>
-     <height>91</height>
+     <x>20</x>
+     <y>30</y>
+     <width>251</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Microsoft YaHei UI</family>
-     <pointsize>18</pointsize>
+     <pointsize>19</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -82,9 +82,9 @@ border-radius:20px</string>
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>0</y>
+     <y>10</y>
      <width>231</width>
-     <height>51</height>
+     <height>41</height>
     </rect>
    </property>
    <property name="font">
@@ -115,11 +115,13 @@ font-weight: bold;</string>
      <x>10</x>
      <y>10</y>
      <width>271</width>
-     <height>71</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgba(242, 243, 245, 255);</string>
+    <string notr="true">background-color: rgba(242, 243, 245, 255);
+border-radius: 8px
+</string>
    </property>
    <property name="text">
     <string/>
