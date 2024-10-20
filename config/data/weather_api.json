@@ -2,7 +2,8 @@
   "weather_api": {
     "xiaomi_weather": "https://weatherapi.market.xiaomi.com/wtr-v3/weather/all?latitude=0&longitude=0&locationKey=weathercn:{location_key}&appKey=weather20151024&sign=zUFJoAR2ZVrDy1vF3D07&isGlobal=false&locale=zh_cn&days={days}",
     "qweather": "https://devapi.qweather.com/v7/weather/now?location={location_key}&key={key}",
-    "amap_weather": "https://restapi.amap.com/v3/weather/weatherInfo?key={key}&city={location_key}"
+    "amap_weather": "https://restapi.amap.com/v3/weather/weatherInfo?key={key}&city={location_key}",
+    "qq_weather": "https://apis.map.qq.com/ws/weather/v1?key={key}&adcode={location_key}"
   },
   "weather_api_parameters": {
     "xiaomi_weather": {
@@ -16,9 +17,12 @@
     "amap_weather": {
       "temp": "temperature",
       "icon": "weather"
-
+    },
+    "qq_weather": {
+      "temp": "temperature",
+      "icon": "weather"
     }
   },
-  "weather_api_list": ["xiaomi_weather", "qweather", "amap_weather"],
-  "weather_api_list_zhCN": ["小米天气", "和风天气 (需 API Key)", "高德天气 (需 API Key 且重新选择城市)"]
+  "weather_api_list": ["xiaomi_weather", "qweather", "amap_weather", "qq_weather"],
+  "weather_api_list_zhCN": ["小米天气", "和风天气 (需 API Key)", "高德天气 (需 API Key)", "腾讯天气 (需 API Key)"]
 }

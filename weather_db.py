@@ -11,7 +11,7 @@ api_config = json.load(open('config/data/weather_api.json', encoding='utf-8'))
 
 def update_path():
     global path
-    if conf.read_conf('Weather', 'api') == 'amap_weather':
+    if conf.read_conf('Weather', 'api') == 'amap_weather' or conf.read_conf('Weather', 'api') == 'qq_weather':
         path = 'config/data/amap_weather.db'
     else:
         path = 'config/data/xiaomi_weather.db'
@@ -132,7 +132,6 @@ def get_weather_code_by_description(value):
 
 
 def get_weather_data(key='temp', weather_data=None):
-
     if weather_data is None:
         logger.error('weather_data is None!')
         return None
@@ -147,6 +146,8 @@ def get_weather_data(key='temp', weather_data=None):
     value = weather_data
     if conf.read_conf('Weather', 'api') == 'amap_weather':
         value = weather_data['lives'][0][api_parameters[key]]
+    elif conf.read_conf('Weather', 'api') == 'qq_weather':
+        value = str(weather_data['result']['realtime'][0]['infos'][api_parameters[key]])
     else:
         for parameter in parameter:
             if parameter in value:
@@ -156,7 +157,7 @@ def get_weather_data(key='temp', weather_data=None):
                 return '错误'
     if key == 'temp':
         value += '°C'
-    elif conf.read_conf('Weather', 'api') == 'amap_weather' and key == 'icon':  # 修复此代码影响其他天气源的问题
+    elif conf.read_conf('Weather', 'api') == 'amap_weather' or conf.read_conf('Weather', 'api') == 'qq_weather' and key == 'icon':  # 修复此代码影响其他天气源的问题
         value = get_weather_code_by_description(value)
     return value
 
