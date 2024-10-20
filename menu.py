@@ -197,9 +197,21 @@ class desktop_widget(FluentWindow):
         web_layout.addWidget(help_docu)
 
     def setup_sound_interface(self):
-        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_toast')
-        switch_enable_toast.setChecked(int(conf.read_conf('General', 'enable_toast')))
-        switch_enable_toast.checkedChanged.connect(self.switch_enable_toast)  # 通知开关
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_attend')
+        switch_enable_toast.setChecked(int(conf.read_conf('Toast', 'attend_class')))
+        switch_enable_toast.checkedChanged.connect(self.switch_enable_attend)  # 上课提醒开关
+
+        switch_enable_finish = self.findChild(SwitchButton, 'switch_enable_finish')
+        switch_enable_finish.setChecked(int(conf.read_conf('Toast', 'finish_class')))
+        switch_enable_finish.checkedChanged.connect(self.switch_enable_finish)  # 下课提醒开关
+
+        switch_enable_prepare = self.findChild(SwitchButton, 'switch_enable_prepare')
+        switch_enable_prepare.setChecked(int(conf.read_conf('Toast', 'prepare_class')))
+        switch_enable_prepare.checkedChanged.connect(self.switch_enable_prepare)  # 预备铃开关
+
+        switch_enable_pin_toast = self.findChild(SwitchButton, 'switch_enable_pin_toast')
+        switch_enable_pin_toast.setChecked(int(conf.read_conf('Toast', 'pin_on_top')))
+        switch_enable_pin_toast.checkedChanged.connect(self.switch_enable_pin_toast)  # 置顶开关
 
         slider_volume = self.findChild(Slider, 'slider_volume')
         slider_volume.setValue(int(conf.read_conf('Audio', 'volume')))
@@ -570,12 +582,33 @@ class desktop_widget(FluentWindow):
             conf.write_conf('General', 'auto_startup', '0')
             conf.remove_from_startup()
 
-    def switch_enable_toast(self):
-        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_toast')
+    def switch_enable_attend(self):
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_attend')
         if switch_enable_toast.isChecked():
-            conf.write_conf('General', 'enable_toast', '1')
+            conf.write_conf('Toast', 'attend_class', '1')
         else:
-            conf.write_conf('General', 'enable_toast', '0')
+            conf.write_conf('Toast', 'attend_class', '0')
+
+    def switch_enable_finish(self):
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_finish')
+        if switch_enable_toast.isChecked():
+            conf.write_conf('Toast', 'finish_class', '1')
+        else:
+            conf.write_conf('Toast', 'finish_class', '0')
+
+    def switch_enable_prepare(self):
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_prepare')
+        if switch_enable_toast.isChecked():
+            conf.write_conf('Toast', 'prepare_class', '1')
+        else:
+            conf.write_conf('Toast', 'prepare_class', '0')
+
+    def switch_enable_pin_toast(self):
+        switch_enable_toast = self.findChild(SwitchButton, 'switch_enable_pin_toast')
+        if switch_enable_toast.isChecked():
+            conf.write_conf('Toast', 'pin_on_top', '1')
+        else:
+            conf.write_conf('Toast', 'pin_on_top', '0')
 
     def switch_enable_alt_schedule(self):
         switch_enable_alt_schedule = self.findChild(SwitchButton, 'switch_enable_alt_schedule')

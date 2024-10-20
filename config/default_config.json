@@ -10,7 +10,6 @@
     "hide_method": 0,
     "full_hide": 0,
     "color_mode": 2,
-    "enable_toast": 1,
     "enable_alt_schedule": 0,
     "blur_countdown": 0,
     "theme": "default"
@@ -19,7 +18,10 @@
     "wave": 1,
     "pin_on_top": 1,
     "ringtone": 1,
-    "prepare_minutes": 2
+    "prepare_minutes": 2,
+    "attend_class": 1,
+    "finish_class": 1,
+    "prepare_class": 1
   },
   "Weather": {
     "city": 101010100,

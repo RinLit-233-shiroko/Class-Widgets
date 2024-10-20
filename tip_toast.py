@@ -262,33 +262,37 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
     else:
         setTheme(Theme.LIGHT)
 
-    if conf.read_conf('General', 'enable_toast') == '1':
-        theme = conf.read_conf('General', 'theme')
-        height = conf.load_theme_config(theme)['height']
-        radius = conf.load_theme_config(theme)['radius']
-
-        screen_geometry = QApplication.primaryScreen().geometry()
-        screen_width = screen_geometry.width()
-        spacing = -5
-        widgets = list.get_widget_config()
-        total_width = total_width = sum((list.widget_width[key] for key in widgets), spacing * (len(widgets) - 1))
-
-        start_x = int((screen_width - total_width) / 2)
-        start_y = int(conf.read_conf('General', 'margin'))
-
-        if conf.read_conf('Toast', 'wave') == '1':
-            wave = wave_Effect(state)
-            wave.show()
-            window_list.append(wave)
-
-        if state != 4:
-            window = tip_toast((start_x, start_y), total_width, state, lesson_name)
-        else:
-            window = tip_toast((start_x, start_y), total_width, state, '', title, subtitle, content)
-        window.show()
-        window_list.append(window)
-    else:
+    if conf.read_conf('Toast', 'attend_class') != '1' and state == 1:
         return
+    if conf.read_conf('Toast', 'finish_class') != '1' and state == 0 or state == 2:
+        return
+    if conf.read_conf('Toast', 'prepare_class') != '1' and state == 3:
+        return
+
+    theme = conf.read_conf('General', 'theme')
+    height = conf.load_theme_config(theme)['height']
+    radius = conf.load_theme_config(theme)['radius']
+
+    screen_geometry = QApplication.primaryScreen().geometry()
+    screen_width = screen_geometry.width()
+    spacing = -5
+    widgets = list.get_widget_config()
+    total_width = total_width = sum((list.widget_width[key] for key in widgets), spacing * (len(widgets) - 1))
+
+    start_x = int((screen_width - total_width) / 2)
+    start_y = int(conf.read_conf('General', 'margin'))
+
+    if conf.read_conf('Toast', 'wave') == '1':
+        wave = wave_Effect(state)
+        wave.show()
+        window_list.append(wave)
+
+    if state != 4:
+        window = tip_toast((start_x, start_y), total_width, state, lesson_name)
+    else:
+        window = tip_toast((start_x, start_y), total_width, state, '', title, subtitle, content)
+    window.show()
+    window_list.append(window)
 
 
 if __name__ == '__main__':

@@ -77,8 +77,6 @@ class ExactMenu(FluentWindow):
                     copy(f'config/schedule/{filename}', f'config/schedule/backup.json')  # 备份课表配置
                     logger.info(f'备份课表配置成功：已将 {filename} -备份至-> backup.json')
                     conf.write_conf('Temp', 'temp_schedule', filename)
-                else:
-                    copy('config/schedule/backup.json', f'config/schedule/{filename}')  # 恢复课表配置
                 conf.save_data_to_json(temp_schedule, filename)
             conf.write_conf('Temp', 'set_week', str(temp_week.currentIndex()))
             Flyout.create(

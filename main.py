@@ -1,3 +1,4 @@
+import ctypes
 import os
 from shutil import copy
 import pygetwindow
@@ -292,6 +293,32 @@ def get_current_lesson_name():
                         break
 
 
+# 定义 RECT 结构体
+class RECT(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_long),
+                ("top", ctypes.c_long),
+                ("right", ctypes.c_long),
+                ("bottom", ctypes.c_long)]
+
+
+def check_fullscreen():  # 检查是否全屏
+    user32 = ctypes.windll.user32
+    hwnd = user32.GetForegroundWindow()
+    # 获取桌面窗口的矩形
+    desktop_rect = RECT()
+    user32.GetWindowRect(user32.GetDesktopWindow(), ctypes.byref(desktop_rect))
+    # 获取当前窗口的矩形
+    app_rect = RECT()
+    user32.GetWindowRect(hwnd, ctypes.byref(app_rect))
+    if hwnd != user32.GetDesktopWindow() and hwnd != user32.GetShellWindow():
+        if (app_rect.left <= desktop_rect.left and
+                app_rect.top <= desktop_rect.top and
+                app_rect.right >= desktop_rect.right and
+                app_rect.bottom >= desktop_rect.bottom):
+            return True
+    return False
+
+
 class weatherReportThread(QThread):  # 获取最新天气信息
     weather_signal = pyqtSignal(dict)
 
@@ -469,7 +496,8 @@ class FloatingWidget(QWidget):  # 浮窗
         self.animation_rect = QPropertyAnimation(self, b'geometry')
         self.animation_rect.setDuration(500)
         self.animation_rect.setStartValue(
-            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom, self.height() // self.zoom))
+            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom,
+                  self.height() // self.zoom))
         self.animation_rect.setEndValue(self.geometry())
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
@@ -493,7 +521,8 @@ class FloatingWidget(QWidget):  # 浮窗
         self.animation_rect = QPropertyAnimation(self, b'geometry')
         self.animation_rect.setDuration(400)
         self.animation_rect.setEndValue(
-            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom, self.height() // self.zoom))
+            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom,
+                  self.height() // self.zoom))
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
         self.animation.start()
@@ -701,13 +730,13 @@ class DesktopWidget(QWidget):  # 主要小组件
         time_offset = conf.get_time_offset()
         filename = conf.read_conf('General', 'schedule')
 
-        if conf.read_conf('General', 'hide') == '1':  # 自动隐藏
+        if conf.read_conf('General', 'hide') == '1':  # 上课自动隐藏
             if current_state:
                 mgr.decide_to_hide()
             else:
                 mgr.show_windows()
-        elif conf.read_conf('General', 'hide') == '2':  # 自动最小化
-            if check_windows_maximize():
+        elif conf.read_conf('General', 'hide') == '2':  # 最大化/全屏自动隐藏
+            if check_windows_maximize() or check_fullscreen():
                 mgr.decide_to_hide()
             else:
                 mgr.show_windows()
@@ -770,7 +799,6 @@ class DesktopWidget(QWidget):  # 主要小组件
         if hasattr(self, 'countdown_custom_title'):  # 自定义倒计时
             self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
             self.custom_countdown.setText(conf.get_custom_countdown())
-
 
     def get_weather_data(self):
         logger.info('获取天气数据')

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>688</width>
-    <height>1028</height>
+    <height>1331</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -56,7 +56,7 @@
         <x>0</x>
         <y>0</y>
         <width>640</width>
-        <height>1226</height>
+        <height>1256</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -336,9 +336,25 @@
           </widget>
          </item>
          <item>
+          <widget class="CaptionLabel" name="CaptionLabel_5">
+           <property name="text">
+            <string>隐藏方式将会修改单击隐藏和自动隐藏的行为，可按需更改（重启后生效）</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_12">
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_10">
+             <property name="spacing">
+              <number>9</number>
+             </property>
              <item>
               <widget class="QLabel" name="label">
                <property name="sizePolicy">
@@ -381,6 +397,9 @@
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_20">
+             <property name="spacing">
+              <number>9</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_2">
                <property name="sizePolicy">
@@ -423,6 +442,9 @@
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_19">
+             <property name="spacing">
+              <number>9</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_3">
                <property name="sizePolicy">
@@ -457,7 +479,7 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>最小化为浮窗</string>
+                <string>最小化为浮窗（推荐）</string>
                </property>
               </widget>
              </item>
@@ -716,6 +738,9 @@
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_14">
+         <property name="spacing">
+          <number>3</number>
+         </property>
          <item>
           <widget class="SubtitleLabel" name="SubtitleLabel_4">
            <property name="text">
