@@ -15,7 +15,7 @@ from qfluentwidgets import (
     SpinBox, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
     CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, SegmentedWidget, MessageBoxBase,
-    SearchLineEdit, Slider, PlainTextEdit, TextEdit, ToolTipFilter, ToolTipPosition
+    SearchLineEdit, Slider, PlainTextEdit, TextEdit, ToolTipFilter, ToolTipPosition, RadioButton
 )
 from copy import deepcopy
 from loguru import logger
@@ -351,6 +351,21 @@ class desktop_widget(FluentWindow):
         hide_mode_combo.currentIndexChanged.connect(
             lambda: conf.write_conf('General', 'hide', str(hide_mode_combo.currentIndex()))
         )  # 隐藏模式
+
+        hide_method_default = self.findChild(RadioButton, 'hide_method_default')
+        hide_method_default.setChecked(conf.read_conf('General', 'hide_method') == '0')
+        hide_method_default.toggled.connect(lambda: conf.write_conf('General', 'hide_method', '0'))
+        # 默认隐藏
+
+        hide_method_all = self.findChild(RadioButton, 'hide_method_all')
+        hide_method_all.setChecked(conf.read_conf('General', 'hide_method') == '1')
+        hide_method_all.toggled.connect(lambda: conf.write_conf('General', 'hide_method', '1'))
+        # 单击全部隐藏
+
+        hide_method_floating = self.findChild(RadioButton, 'hide_method_floating')
+        hide_method_floating.setChecked(conf.read_conf('General', 'hide_method') == '2')
+        hide_method_floating.toggled.connect(lambda: conf.write_conf('General', 'hide_method', '2'))
+        # 最小化为浮窗
 
         switch_enable_alt_schedule = self.findChild(SwitchButton, 'switch_enable_alt_schedule')
         switch_enable_alt_schedule.setChecked(int(conf.read_conf('General', 'enable_alt_schedule')))

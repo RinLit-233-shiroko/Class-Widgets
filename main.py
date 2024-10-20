@@ -345,6 +345,8 @@ class WidgetsManager:
             widget.animate_hide(True)
 
     def show_windows(self):
+        if fw.isVisible():
+            fw.close()
         self.state = 1
         for widget in self.widgets:
             widget.animate_show()
@@ -370,6 +372,8 @@ class FloatingWidget(QWidget):  # 浮窗
         super().__init__()
         self.init_ui()
         self.init_font()
+        self.position = None
+        self.animating = False
 
         self.current_lesson_name_text = self.findChild(QLabel, 'subject')
         self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
@@ -454,7 +458,8 @@ class FloatingWidget(QWidget):  # 浮窗
         self.zoom = 2
         self.move((screen_width - self.width()) // 2, 50)
         self.setMinimumSize(QSize(self.width() // self.zoom, self.height() // self.zoom))
-        self.move((screen_width - self.width()) // 2, 50)
+        if self.position:  # 最小化为浮窗
+            self.move(self.position)
         self.animation = QPropertyAnimation(self, b'windowOpacity')
         self.animation.setDuration(400)
         self.animation.setStartValue(0)
@@ -470,9 +475,16 @@ class FloatingWidget(QWidget):  # 浮窗
 
         self.animation.start()
         self.animation_rect.start()
+        self.animating = True
+        self.animation_rect.finished.connect(self.animation_done)
+
+    def animation_done(self):
+        self.animating = False
 
     def closeEvent(self, event):
         event.ignore()
+        self.setMinimumWidth(0)
+        self.position = self.pos()
         self.animation = QPropertyAnimation(self, b'windowOpacity')
         self.animation.setDuration(350)
         self.animation.setEndValue(0)
@@ -481,22 +493,26 @@ class FloatingWidget(QWidget):  # 浮窗
         self.animation_rect = QPropertyAnimation(self, b'geometry')
         self.animation_rect.setDuration(400)
         self.animation_rect.setEndValue(
-            QRect((screen_width - self.width() // self.zoom) // 2, 0, self.width() // self.zoom, self.height() // self.zoom))
+            QRect((screen_width - self.width() // self.zoom) // 2, -50, self.width() // self.zoom, self.height() // self.zoom))
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
         self.animation.start()
         self.animation_rect.start()
+        self.animating = True
         self.animation_rect.finished.connect(self.hide)
 
     def hideEvent(self, event):
+        self.animating = False
         self.setMinimumSize(QSize(self.width() * self.zoom, self.height() * self.zoom))
 
     def adjustSize_animation(self):
         if not self.text_changed:
             return
+        self.setMinimumWidth(200)
         current_geometry = self.geometry()
-        label_width = self.current_lesson_name_text.sizeHint().width()
-        target_geometry = current_geometry.adjusted(0, 0, label_width - current_geometry.width(), 0)
+        label_width = self.current_lesson_name_text.sizeHint().width() + 120
+        offset = label_width - current_geometry.width()
+        target_geometry = current_geometry.adjusted(0, 0, offset, 0)
         self.animation = QPropertyAnimation(self, b'geometry')
         self.animation.setDuration(450)  # 动画持续时间为1秒
         self.animation.setStartValue(current_geometry)
@@ -687,12 +703,12 @@ class DesktopWidget(QWidget):  # 主要小组件
 
         if conf.read_conf('General', 'hide') == '1':  # 自动隐藏
             if current_state:
-                mgr.hide_windows()
+                mgr.decide_to_hide()
             else:
                 mgr.show_windows()
         elif conf.read_conf('General', 'hide') == '2':  # 自动最小化
             if check_windows_maximize():
-                mgr.hide_windows()
+                mgr.decide_to_hide()
             else:
                 mgr.show_windows()
 
