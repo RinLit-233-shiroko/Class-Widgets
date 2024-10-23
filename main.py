@@ -372,6 +372,8 @@ class WidgetsManager:
             widget.animate_hide(True)
 
     def show_windows(self):
+        if fw.animating: # 避免动画Bug
+            return
         if fw.isVisible():
             fw.close()
         self.state = 1
@@ -388,8 +390,9 @@ class WidgetsManager:
         elif conf.read_conf('General', 'hide_method') == '1':  # 单击即完全隐藏
             self.full_hide_windows()
         elif conf.read_conf('General', 'hide_method') == '2':  # 最小化为浮窗
-            self.full_hide_windows()
-            fw.show()
+            if not fw.animating:
+                self.full_hide_windows()
+                fw.show()
         else:
             self.hide_windows()
 
@@ -472,7 +475,7 @@ class FloatingWidget(QWidget):  # 浮窗
 
         if cd_list:  # 模糊倒计时
             if cd_list[1] == '00:00':
-                self.activity_countdown.setText(f"< - 分钟")
+                self.activity_countdown.setText(f"< - 分钟")
             else:
                 self.activity_countdown.setText(f"< {int(cd_list[1].split(':')[0]) + 1} 分钟")
             self.countdown_progress_bar.setValue(cd_list[2])
@@ -482,6 +485,7 @@ class FloatingWidget(QWidget):  # 浮窗
         self.update()
 
     def showEvent(self, event):  # 窗口显示
+        logger.info('显示浮窗')
         self.zoom = 2
         self.move((screen_width - self.width()) // 2, 50)
         self.setMinimumSize(QSize(self.width() // self.zoom, self.height() // self.zoom))
@@ -501,9 +505,9 @@ class FloatingWidget(QWidget):  # 浮窗
         self.animation_rect.setEndValue(self.geometry())
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
+        self.animating = True
         self.animation.start()
         self.animation_rect.start()
-        self.animating = True
         self.animation_rect.finished.connect(self.animation_done)
 
     def animation_done(self):
@@ -525,12 +529,13 @@ class FloatingWidget(QWidget):  # 浮窗
                   self.height() // self.zoom))
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
+        self.animating = True
         self.animation.start()
         self.animation_rect.start()
-        self.animating = True
         self.animation_rect.finished.connect(self.hide)
 
     def hideEvent(self, event):
+        logger.info('隐藏浮窗')
         self.animating = False
         self.setMinimumSize(QSize(self.width() * self.zoom, self.height() * self.zoom))
 
@@ -543,11 +548,13 @@ class FloatingWidget(QWidget):  # 浮窗
         offset = label_width - current_geometry.width()
         target_geometry = current_geometry.adjusted(0, 0, offset, 0)
         self.animation = QPropertyAnimation(self, b'geometry')
-        self.animation.setDuration(450)  # 动画持续时间为1秒
+        self.animation.setDuration(450)
         self.animation.setStartValue(current_geometry)
         self.animation.setEndValue(target_geometry)
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)
+        self.animating = True  # 避免动画Bug x114514
         self.animation.start()
+        self.animation.finished.connect(self.animation_done)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -564,7 +571,7 @@ class FloatingWidget(QWidget):  # 浮窗
     def mouseReleaseEvent(self, event):
         self.r_Position = event.globalPosition().toPoint()  # 获取鼠标相对窗口的位置
         self.m_flag = False
-        if self.r_Position == self.p_Position:  # 鼠标左键单击
+        if self.r_Position == self.p_Position and not self.animating:  # 鼠标左键单击
             mgr.show_windows()
             self.close()
 
