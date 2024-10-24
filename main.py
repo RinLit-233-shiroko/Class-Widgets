@@ -65,24 +65,47 @@ def get_timeline_data():
 
 # 获取Part开始时间
 def get_start_time():
-    global parts_start_time, timeline_data, loaded_data
+    global parts_start_time, timeline_data, loaded_data, order
     loaded_data = conf.load_from_json(filename)
     timeline = get_timeline_data()
     part = loaded_data['part']
     parts_start_time = []
     timeline_data = {}
+    order = []
 
-    for item_name, _ in part.items():
+    for item_name, item_value in part.items():
         try:
-            h, m = part[item_name]
+            h, m = item_value
             parts_start_time.append(dt.datetime.combine(today, dt.time(h, m)))
+            order.append(item_name)
         except Exception as e:
             logger.error(f'加载课程表文件[起始时间]出错：{e}')
+
+    paired = zip(parts_start_time, order)
+    paired_sorted = sorted(paired, key=lambda x: x[0])  # 按时间大小排序
+    parts_start_time, order = zip(*paired_sorted)
+
+    print(parts_start_time, order)
+
     for item_name, item_time in timeline.items():
         try:
             timeline_data[item_name] = item_time
         except Exception as e:
             logger.error(f'加载课程表文件[课程数据]出错：{e}')
+
+
+def get_part():
+    current_dt = dt.datetime.now()
+    for i in range(len(parts_start_time)):  # 遍历每个Part
+        if i == len(parts_start_time) - 1:
+            if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
+                c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
+                return c_time, int(order[i])
+        else:
+            if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
+                    - dt.timedelta(minutes=30)):
+                c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
+                return c_time, int(order[i])
 
 
 # 获取当前活动
@@ -125,20 +148,9 @@ def get_countdown(toast=False):  # 重构好累aaaa
     current_dt = dt.datetime.combine(today, dt.datetime.strptime(current_time, '%H:%M:%S').time())  # 当前时间
     return_text = []
     got_return_data = False
-    part = 0
+
     if parts_start_time:
-        c_time = parts_start_time[0] + dt.timedelta(seconds=time_offset)
-        for i in range(len(parts_start_time)):  # 遍历每个Part
-            if i == len(parts_start_time) - 1:
-                if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
-                    c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                    part = i
-            else:
-                if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
-                        - dt.timedelta(minutes=30)):
-                    c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                    part = i
-                    break
+        c_time, part = get_part()
 
         if current_dt >= c_time:
             for item_name, item_time in timeline_data.items():
@@ -199,20 +211,9 @@ def get_next_lessons():
     next_lessons = []
     part = 0
     current_dt = dt.datetime.combine(today, dt.datetime.strptime(current_time, '%H:%M:%S').time())  # 当前时间
+
     if parts_start_time:
-        c_time = parts_start_time[0] + dt.timedelta(seconds=time_offset)
-        if current_dt >= parts_start_time[0]:
-            for i in range(len(parts_start_time)):
-                if i == len(parts_start_time) - 1:
-                    if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
-                        c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                        part = i
-                else:
-                    if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
-                            - dt.timedelta(minutes=30)):
-                        c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                        part = i
-                        break
+        c_time, part = get_part()
 
         def before_class():
             if part == 0:
@@ -263,20 +264,9 @@ def get_current_lesson_name():
     current_state = 0
 
     part = 0
+
     if parts_start_time:
-        c_time = parts_start_time[0] + dt.timedelta(seconds=time_offset)
-        if current_dt >= parts_start_time[0]:
-            for i in range(len(parts_start_time)):
-                if i == len(parts_start_time) - 1:
-                    if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
-                        c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                        part = i
-                else:
-                    if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
-                            - dt.timedelta(minutes=30)):
-                        c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                        part = i
-                        break
+        c_time, part = get_part()
 
         if current_dt >= c_time:
             for item_name, item_time in timeline_data.items():
