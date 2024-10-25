@@ -99,13 +99,13 @@ def get_part():
         if i == len(parts_start_time) - 1:
             if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
                 c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                if f'a{i}' in get_timeline_data() or f'f{i}' in get_timeline_data():
+                if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
                     return c_time, int(order[i])
         else:
             if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
                     - dt.timedelta(minutes=30)):
                 c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                if f'a{i}' in get_timeline_data() or f'f{i}' in get_timeline_data():
+                if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
                     return c_time, int(order[i])
     return parts_start_time[0] + dt.timedelta(seconds=time_offset), 0
 
