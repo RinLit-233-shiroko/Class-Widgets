@@ -216,7 +216,7 @@ font-weight: bold;</string>
              <bool>true</bool>
             </property>
             <property name="format">
-             <string>%p</string>
+             <string>%p%</string>
             </property>
             <property name="val">
              <double>0.000000000000000</double>

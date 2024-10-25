@@ -77,7 +77,7 @@
         <x>0</x>
         <y>0</y>
         <width>853</width>
-        <height>1082</height>
+        <height>1147</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -846,7 +846,10 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_15">
                 <property name="text">
-                 <string>部分天气源（如“和风天气”）可能需要设置 Key 才能正常使用，可在“帮助”页找到各个天气源获得 Key 的方法。</string>
+                 <string>部分天气源可能需要设置 Key 才能正常使用，可在“帮助”页找到各个天气源获得 Key 的方法。</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

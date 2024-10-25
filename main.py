@@ -28,6 +28,7 @@ filename = conf.read_conf('General', 'schedule')
 
 # 存储窗口对象
 windows = []
+w_menu = None
 
 current_lesson_name = '课程表未加载'
 current_state = 0  # 0：课间 1：上课
@@ -45,6 +46,7 @@ weather_icon = 0
 city = 101010100  # 默认城市
 
 time_offset = 0  # 时差偏移
+first_start = True
 
 if conf.read_conf('Other', 'do_not_log') != '1':
     logger.add("log/ClassWidgets_main_{time}.log", rotation="1 MB", encoding="utf-8", retention="1 minute")
@@ -370,13 +372,18 @@ class WidgetsManager:
             widget.animate_hide(True)
 
     def show_windows(self):
-        if fw.animating: # 避免动画Bug
+        if fw.animating:  # 避免动画Bug
             return
         if fw.isVisible():
             fw.close()
         self.state = 1
         for widget in self.widgets:
             widget.animate_show()
+
+    def clear_widgets(self):
+        for widget in self.widgets:
+            widget.animate_hide_opacity()
+        init()
 
     def update_widgets(self):
         for widget in self.widgets:
@@ -586,10 +593,11 @@ class DesktopWidget(QWidget):  # 主要小组件
     def __init__(self, path='widget-time.ui', pos=(100, 50), enable_tray=False):
         super().__init__()
 
-        self.menu = None
         self.exmenu = None
         self.path = path
         self.last_code = 101010100
+        self.last_theme = conf.read_conf('General', 'theme')
+        self.last_color_mode = conf.read_conf('General', 'color_mode')
 
         init_config()
         self.init_ui(path)
@@ -616,6 +624,11 @@ class DesktopWidget(QWidget):  # 主要小组件
             button = self.findChild(QPushButton, 'subject')
             button.clicked.connect(self.open_exact_menu)
 
+            self.d_t_timer = QTimer(self)
+            self.d_t_timer.setInterval(500)
+            self.d_t_timer.timeout.connect(self.detect_theme_changed)
+            self.d_t_timer.start()
+
         if path == 'widget-next-activity.ui':  # 接下来的活动
             self.nl_text = self.findChild(QLabel, 'next_lesson_text')
 
@@ -641,7 +654,11 @@ class DesktopWidget(QWidget):  # 主要小组件
             img.setGraphicsEffect(opacity)
 
         # 设置窗口位置
-        self.animate_window(pos)
+        if first_start:
+            self.animate_window(pos)
+        else:
+            self.animate_show_opacity()
+            self.move(pos[0], pos[1])
 
         self.update_data('')
         self.timer = QTimer(self)
@@ -825,6 +842,15 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.last_code = current_code
             self.get_weather_data()
 
+    def detect_theme_changed(self):
+        theme = conf.read_conf('General', 'theme')
+        color_mode = conf.read_conf('General', 'color_mode')
+        if theme != self.last_theme or color_mode != self.last_color_mode:
+            self.last_theme = theme
+            self.last_color_mode = color_mode
+            print(f'切换主题：{theme}，颜色模式{color_mode}')
+            mgr.clear_widgets()
+
     def update_weather_data(self, weather_data):  # 更新天气数据(已兼容多api)
         if type(weather_data) is dict and hasattr(self, 'weather_icon'):
             logger.info('已获取天气数据')
@@ -846,13 +872,14 @@ class DesktopWidget(QWidget):  # 主要小组件
             logger.error(f'获取天气数据出错：{weather_data}')
 
     def open_settings(self):
-        if self.menu is None or not self.menu.isVisible():  # 防多开
-            self.menu = menu.desktop_widget()
-            self.menu.show()
+        global w_menu
+        if w_menu is None or not w_menu.isVisible():  # 防多开
+            w_menu = menu.desktop_widget()
+            w_menu.show()
             logger.info('打开“设置”')
         else:
-            self.menu.raise_()
-            self.menu.activateWindow()
+            w_menu.raise_()
+            w_menu.activateWindow()
 
     def open_exact_menu(self):
         if mgr.state:  # 如果没有隐藏
@@ -900,6 +927,23 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
         self.animation.start()
 
+    def animate_hide_opacity(self):  # 隐藏窗口透明度
+        self.animation = QPropertyAnimation(self, b"windowOpacity")
+        self.animation.setDuration(300)  # 持续时间
+        self.animation.setStartValue(int(conf.read_conf('General', 'opacity')) / 100)
+        self.animation.setEndValue(0)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
+        self.animation.start()
+        self.animation.finished.connect(self.close)
+
+    def animate_show_opacity(self):  # 显示窗口透明度
+        self.animation = QPropertyAnimation(self, b"windowOpacity")
+        self.animation.setDuration(350)  # 持续时间
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(int(conf.read_conf('General', 'opacity')) / 100)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
+        self.animation.start()
+
     def animate_show(self):  # 显示窗口
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(625)  # 持续时间
@@ -922,6 +966,15 @@ class DesktopWidget(QWidget):  # 主要小组件
         else:
             event.ignore()
 
+    def closeEvent(self, event):
+        try:
+            self.tray_icon.hide()
+            self.tray_icon = None
+        except:
+            pass
+        self.deleteLater()  # 销毁内存
+        event.accept()
+
 
 def check_windows_maximize():  # 检查窗口是否最大化
     for window in pygetwindow.getAllWindows():
@@ -942,6 +995,40 @@ def show_window(path, pos, enable_tray=False):
     mgr.add_widget(application)  # 将窗口对象添加到列表
 
 
+def init():
+    global theme, radius, mgr, screen_width, first_start
+    mgr = WidgetsManager()
+
+    theme = conf.read_conf('General', 'theme')  # 主题
+    # 获取屏幕横向分辨率
+    screen_geometry = app.primaryScreen().availableGeometry()
+    screen_width = screen_geometry.width()
+
+    widgets = list.get_widget_config()
+
+    # 所有组件窗口的宽度
+    spacing = conf.load_theme_config(theme)['spacing']
+    radius = conf.load_theme_config(theme)['radius']
+    total_width = sum(conf.load_theme_width(theme)[key] for key in widgets) + spacing * (len(widgets) - 1)
+
+    start_x = (screen_width - total_width) // 2
+    start_y = int(conf.read_conf('General', 'margin'))
+
+    def cal_start_width(num):
+        return int(start_x + spacing * num + sum(conf.load_theme_width(theme)[widgets[i]] for i in range(num)))
+
+    for w in range(len(widgets)):
+        show_window(widgets[w], (cal_start_width(w), start_y), w == 0)
+
+    for application in mgr.widgets:  # 显示所有窗口
+        logger.info(f'显示窗口：{application.windowTitle()}')
+        application.show()
+    logger.info(f'Class Widgets 启动。版本: {conf.read_conf("Other", "version")}')
+
+    first_start = False
+
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     share = QSharedMemory('ClassWidgets')
@@ -959,31 +1046,6 @@ if __name__ == '__main__':
         msg_box.exec()
         sys.exit(-1)
     else:
-        theme = conf.read_conf('General', 'theme')  # 主题
-        fw = FloatingWidget()
-
-        # 获取屏幕横向分辨率
-        screen_geometry = app.primaryScreen().availableGeometry()
-        screen_width = screen_geometry.width()
-
-        widgets = list.get_widget_config()
-
-        # 所有组件窗口的宽度
-        spacing = conf.load_theme_config(theme)['spacing']
-        radius = conf.load_theme_config(theme)['radius']
-        total_width = sum((conf.load_theme_width(theme)[key] for key in widgets), spacing * (len(widgets) - 1))
-
-        start_x = int((screen_width - total_width) / 2)
-        start_y = int(conf.read_conf('General', 'margin'))
-
-
-        def cal_start_width(num):
-            width = 0
-            for i in range(num):
-                width += conf.load_theme_width(theme)[widgets[i]]
-            return int(start_x + spacing * num + width)
-
-
         if conf.read_conf('Other', 'initialstartup') == '1':  # 首次启动
             try:
                 conf.add_shortcut('ClassWidgets.exe', 'img/favicon.ico')
@@ -991,22 +1053,14 @@ if __name__ == '__main__':
                 conf.write_conf('Other', 'initialstartup', '')
             except Exception as e:
                 logger.error(f'添加快捷方式失败：{e}')
+        theme = conf.read_conf('General', 'theme')  # 主题
+        fw = FloatingWidget()
 
-        for w in range(len(widgets)):
-            if w == 0:
-                show_window(widgets[w], (cal_start_width(w), start_y), True)
-            else:
-                show_window(widgets[w], (cal_start_width(w), start_y))
-
+        init()
         get_start_time()
         get_current_lessons()
         get_current_lesson_name()
         get_next_lessons()
-
-        for application in mgr.widgets:  # 显示所有窗口
-            logger.info(f'显示窗口：{application.windowTitle()}')
-            application.show()
-        logger.info(f'Class Widgets 启动。版本: {conf.read_conf("Other", "version")}')
 
         if current_state:
             setThemeColor(f"#{conf.read_conf('Color', 'attend_class')}")

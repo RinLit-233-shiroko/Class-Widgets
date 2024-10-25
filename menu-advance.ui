@@ -123,7 +123,10 @@
                </sizepolicy>
               </property>
               <property name="minimum">
-               <number>-99</number>
+               <number>-114514</number>
+              </property>
+              <property name="maximum">
+               <number>114514</number>
               </property>
              </widget>
             </item>
