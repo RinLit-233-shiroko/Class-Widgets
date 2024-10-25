@@ -48,7 +48,6 @@ class tip_toast(QWidget):
         backgnd = self.findChild(QFrame, 'backgnd')
         lesson = self.findChild(QLabel, 'lesson')
         subtitle_label = self.findChild(QLabel, 'subtitle')
-        bg_color = []
 
         if state == 1:
             logger.info('上课铃声显示')
@@ -105,6 +104,9 @@ class tip_toast(QWidget):
         else:
             bg_color = ['rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
             shadow_effect.setColor(QColor('#50'+normal_color[1:]))
+
+        if detect_enable_toast(state):
+            return
 
         backgnd.setStyleSheet(f'font-weight: bold; border-radius: {radius}; '
                               'background-color: qlineargradient('
@@ -262,13 +264,6 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
     else:
         setTheme(Theme.LIGHT)
 
-    if conf.read_conf('Toast', 'attend_class') != '1' and state == 1:
-        return
-    if conf.read_conf('Toast', 'finish_class') != '1' and state == 0 or state == 2:
-        return
-    if conf.read_conf('Toast', 'prepare_class') != '1' and state == 3:
-        return
-
     theme = conf.read_conf('General', 'theme')
     height = conf.load_theme_config(theme)['height']
     radius = conf.load_theme_config(theme)['radius']
@@ -282,17 +277,29 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
     start_x = int((screen_width - total_width) / 2)
     start_y = int(conf.read_conf('General', 'margin'))
 
-    if conf.read_conf('Toast', 'wave') == '1':
-        wave = wave_Effect(state)
-        wave.show()
-        window_list.append(wave)
-
     if state != 4:
         window = tip_toast((start_x, start_y), total_width, state, lesson_name)
     else:
         window = tip_toast((start_x, start_y), total_width, state, '', title, subtitle, content)
     window.show()
     window_list.append(window)
+
+    if detect_enable_toast(state):
+        return
+
+    if conf.read_conf('Toast', 'wave') == '1':
+        wave = wave_Effect(state)
+        wave.show()
+        window_list.append(wave)
+
+
+def detect_enable_toast(state=0):
+    if conf.read_conf('Toast', 'attend_class') != '1' and state == 1:
+        return
+    if conf.read_conf('Toast', 'finish_class') != '1' and state == 0 or state == 2:
+        return
+    if conf.read_conf('Toast', 'prepare_class') != '1' and state == 3:
+        return
 
 
 if __name__ == '__main__':
