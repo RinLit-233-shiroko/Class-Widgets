@@ -83,9 +83,8 @@ def get_start_time():
 
     paired = zip(parts_start_time, order)
     paired_sorted = sorted(paired, key=lambda x: x[0])  # 按时间大小排序
-    parts_start_time, order = zip(*paired_sorted)
-
-    print(parts_start_time, order)
+    if paired_sorted:
+        parts_start_time, order = zip(*paired_sorted)
 
     for item_name, item_time in timeline.items():
         try:
@@ -106,6 +105,7 @@ def get_part():
                     - dt.timedelta(minutes=30)):
                 c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                 return c_time, int(order[i])
+    return parts_start_time[0] + dt.timedelta(seconds=time_offset), 0
 
 
 # 获取当前活动
@@ -300,12 +300,18 @@ def check_fullscreen():  # 检查是否全屏
     # 获取当前窗口的矩形
     app_rect = RECT()
     user32.GetWindowRect(hwnd, ctypes.byref(app_rect))
+    if hwnd == user32.GetDesktopWindow():
+        return False
+    if user32.GetForegroundWindow() == 0:  # 聚焦桌面则判断否
+        return False
     if hwnd != user32.GetDesktopWindow() and hwnd != user32.GetShellWindow():
         if (app_rect.left <= desktop_rect.left and
                 app_rect.top <= desktop_rect.top and
                 app_rect.right >= desktop_rect.right and
                 app_rect.bottom >= desktop_rect.bottom):
             return True
+    if fw.focusing:  # 拖动浮窗时返回t
+        return True
     return False
 
 
@@ -394,10 +400,13 @@ class FloatingWidget(QWidget):  # 浮窗
         self.init_font()
         self.position = None
         self.animating = False
+        self.focusing = False
 
         self.current_lesson_name_text = self.findChild(QLabel, 'subject')
         self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
         self.countdown_progress_bar = self.findChild(ProgressRing, 'progressBar')
+
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)  # 检查焦点
 
         self.update_data()
         timer = QTimer(self)
@@ -428,8 +437,7 @@ class FloatingWidget(QWidget):  # 浮窗
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool |
-            Qt.WindowType.WindowDoesNotAcceptFocus
+            Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool
         )
 
         self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
@@ -564,6 +572,12 @@ class FloatingWidget(QWidget):  # 浮窗
         if self.r_Position == self.p_Position and not self.animating:  # 鼠标左键单击
             mgr.show_windows()
             self.close()
+
+    def focusInEvent(self, event):
+        self.focusing = True
+
+    def focusOutEvent(self, event):
+        self.focusing = False
 
 
 class DesktopWidget(QWidget):  # 主要小组件
