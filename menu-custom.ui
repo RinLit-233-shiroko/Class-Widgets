@@ -208,7 +208,7 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_5">
                 <property name="text">
-                 <string>将用于小组件（重启以应用）</string>
+                 <string>将用于小组件</string>
                 </property>
                </widget>
               </item>

@@ -87,18 +87,3 @@ body:
       options:
         - label: 我认为上述的描述已经足以详细，以允许开发人员能复现该问题。如果我的 issue 没有按照上述的要求填写，可能会被无条件关闭。
           required: true
-  - type: markdown
-    attributes: 
-      value: |
-        ### 紧急通知：不要乱下载别人底下发的文件，最近GitHub正在疯传病毒，特别是名字是fix.zip的文件，千万别下载
-
-        已经有数人被此感染，如果看见这样的评论，请及时联系删除！
-  - type: dropdown
-    id: virus
-    attributes:
-      label: 不要乱下载别人发的文件，特别是名字是fix.zip的文件。您是否遇见过这样的文件？
-      options:
-        - 是
-        - 否
-    validations:
-      required: true
