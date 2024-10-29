@@ -108,7 +108,7 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_6">
                 <property name="text">
-                 <string>修正系统时间与学校铃声的时差</string>
+                 <string>修正系统时间与学校铃声的时差，学校铃声慢于系统时间为正值，反之为负</string>
                 </property>
                </widget>
               </item>
@@ -301,7 +301,7 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_7">
                 <property name="text">
-                 <string>将用于计算单/双周，开学日期需设置为开学第一天（即周一）</string>
+                 <string>将用于计算单/双周，开学日期需设置为开学第一周第一天（即周一）</string>
                 </property>
                </widget>
               </item>
