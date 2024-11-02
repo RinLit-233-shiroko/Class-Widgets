@@ -7,15 +7,15 @@ from PyQt6.QtCore import Qt, QTime, QUrl, QDate, QThread, pyqtSignal
 from qframelesswindow.webengine import FramelessWebEngineView
 import sys
 
-from PyQt6.QtGui import QIcon, QDesktopServices, QPixmap, QColor, QFontDatabase
-from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, QSpacerItem, \
-    QFileDialog, QVBoxLayout, QTextBrowser
+from PyQt6.QtGui import QIcon, QDesktopServices, QPixmap, QColor
+from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, \
+    QSpacerItem, QFileDialog, QVBoxLayout
 from qfluentwidgets import (
     Theme, setTheme, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
     SpinBox, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
-    CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, SegmentedWidget, MessageBoxBase,
-    SearchLineEdit, Slider, PlainTextEdit, TextEdit, ToolTipFilter, ToolTipPosition, RadioButton
+    CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, MessageBoxBase,
+    SearchLineEdit, Slider, PlainTextEdit, ToolTipFilter, ToolTipPosition, RadioButton
 )
 from copy import deepcopy
 from loguru import logger
@@ -643,6 +643,16 @@ class desktop_widget(FluentWindow):
                 isClosable=True,
                 aniType=FlyoutAnimationType.PULL_UP
             )
+        except OSError:  # 遇到程序正在使用的log，忽略
+            Flyout.create(
+                icon=InfoBarIcon.SUCCESS,
+                title='已清除日志',
+                content="已清空所有日志文件",
+                target=button_clear_log,
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
         except Exception as e:
             Flyout.create(
                 icon=InfoBarIcon.ERROR,
@@ -1171,7 +1181,7 @@ class desktop_widget(FluentWindow):
         part_list = self.findChild(ListWidget, 'part_list')
         tips = self.findChild(CaptionLabel, 'tips_2')
         tips_part = self.findChild(CaptionLabel, 'tips_1')
-        self.se_load_item()
+        # self.se_load_item()
         if part_list.count() > 0:
             tips_part.hide()
         else:
@@ -1203,12 +1213,76 @@ class desktop_widget(FluentWindow):
         self.te_detect_part()
 
     def te_delete_part(self):
-        te_part_list = self.findChild(ListWidget, 'part_list')
-        selected_items = te_part_list.selectedItems()
-        for item in selected_items:
-            te_part_list.takeItem(te_part_list.row(item))
-        self.te_detect_item()
-        self.te_detect_part()
+        alert = MessageBox("您确定要删除这个时段吗？", "删除该节点后，将一并删除该节点下所有课程安排，且无法恢复。", self)
+        if alert.exec():
+            global timeline_dict, schedule_dict
+            te_part_list = self.findChild(ListWidget, 'part_list')
+            selected_items = te_part_list.selectedItems()
+            deleted_part_name = selected_items[0].text().split(' - ')[0]
+            for item in selected_items:
+                te_part_list.takeItem(te_part_list.row(item))
+
+            # 修复了删除时段没能同步删除时间线的Bug #123
+            for day in timeline_dict:  # 删除时间线
+                count = 0
+                break_count = 0
+                delete_schedule_list = []
+                delete_schedule_even_list = []
+                delete_part_list = []
+                for i in range(len(timeline_dict[day])):
+                    act = timeline_dict[day][i]
+                    count += 1
+                    item_info = act.split(' - ')
+
+                    if item_info[0] == '课间':
+                        break_count += 1
+
+                    if item_info[2] == deleted_part_name:
+                        delete_part_list.append(act)
+                        if item_info[0] != '课间':
+                            if day != 'default':
+                                delete_schedule_list.append(schedule_dict[day][count - break_count - 1])
+                                delete_schedule_even_list.append(schedule_even_dict[day][count - break_count - 1])
+                            else:
+                                for j in range(7):
+                                    try:
+                                        for item in schedule_dict[str(j)]:
+                                            if item.split('-')[1] == deleted_part_name:
+                                                delete_schedule_list.append(
+                                                    schedule_dict[str(j)][count - break_count - 1])
+                                        for item in schedule_even_dict[str(j)]:
+                                            if item.split('-')[1] == deleted_part_name:
+                                                delete_schedule_even_list.append(
+                                                    schedule_dict[str(j)][count - break_count - 1])
+                                    except Exception as e:
+                                        logger.warning(f'删除时段时发生错误：{e}')
+
+                for item in delete_part_list:  # 删除时间线
+                    timeline_dict[day].remove(item)
+                if day != 'default':  # 删除课表
+                    for item in delete_schedule_list:
+                        schedule_dict[day].remove(item)
+
+            for day in range(7):  # 删除默认课程表
+                delete_schedule_list = []
+                delete_schedule_even_list = []
+                for item in schedule_dict[str(day)]:  # 单周
+                    if item.split('-')[1] == deleted_part_name:
+                        delete_schedule_list.append(item)
+                for item in delete_schedule_list:
+                    schedule_dict[str(day)].remove(item)
+
+                for item in schedule_even_dict[str(day)]:  # 双周
+                    if item.split('-')[1] == deleted_part_name:
+                        delete_schedule_even_list.append(item)
+                for item in delete_schedule_even_list:
+                    schedule_even_dict[str(day)].remove(item)
+
+            self.te_upload_list()
+            self.se_upload_list()
+            self.te_detect_part()
+        else:
+            return
 
     def te_detect_part(self):
         rl = []
@@ -1369,7 +1443,7 @@ def sp_get_class_num():  # 获取当前周课程数（未完成）
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    application = desktop_widget()
-    application.show()
-    application.setMicaEffectEnabled(True)
+    settings = desktop_widget()
+    settings.show()
+    settings.setMicaEffectEnabled(True)
     sys.exit(app.exec())

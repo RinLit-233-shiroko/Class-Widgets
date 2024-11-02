@@ -110,6 +110,20 @@
                 <property name="text">
                  <string>需导入从其他 Class Widgets 导出的课程表</string>
                 </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -168,6 +182,20 @@
                 <property name="text">
                  <string>将当前使用的课程表文件 (.json) 导出</string>
                 </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -225,6 +253,20 @@
                <widget class="CaptionLabel" name="CaptionLabel_6">
                 <property name="text">
                  <string>打开 Class Widgets 课程表文件夹</string>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
                 </property>
                </widget>
               </item>

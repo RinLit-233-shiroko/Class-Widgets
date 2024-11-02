@@ -7,7 +7,8 @@ from PyQt6 import uic
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
     QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame, QGraphicsOpacityEffect
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, QSize
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, \
+                        QSize
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter, QCursor
 from loguru import logger
 import sys
@@ -16,6 +17,7 @@ from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Actio
 import datetime as dt
 import list
 import conf
+import subprocess
 import tip_toast
 from PyQt6.QtGui import QFontDatabase
 
@@ -29,6 +31,7 @@ filename = conf.read_conf('General', 'schedule')
 # 存储窗口对象
 windows = []
 w_menu = None
+ex_menu = None
 
 current_lesson_name = '课程表未加载'
 current_state = 0  # 0：课间 1：上课
@@ -98,7 +101,7 @@ def get_start_time():
 def get_part():
     current_dt = dt.datetime.now()
     for i in range(len(parts_start_time)):  # 遍历每个Part
-        if i == len(parts_start_time) - 1:
+        if i == len(parts_start_time) - 1:  # 最后一个Part
             if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
                 c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
                 if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
@@ -171,7 +174,8 @@ def get_countdown(toast=False):  # 重构好累aaaa
 
                     if current_dt == c_time - dt.timedelta(minutes=int(conf.read_conf('Toast', 'prepare_minutes'))):
                         if conf.read_conf('Toast', 'prepare_minutes') != '0' and toast and item_name.startswith('a'):
-                            tip_toast.main(3, next_lessons[0])  # 准备上课
+                            if not current_state:  # 课间
+                                tip_toast.main(3, next_lessons[0])  # 准备上课（预备铃）
 
                     if c_time + dt.timedelta(minutes=int(item_time)) == current_dt and not next_lessons and toast:
                         tip_toast.main(2)  # 放学
@@ -267,8 +271,6 @@ def get_current_lesson_name():
     current_lesson_name = '暂无课程'
     current_state = 0
 
-    part = 0
-
     if parts_start_time:
         c_time, part = get_part()
 
@@ -317,6 +319,75 @@ def check_fullscreen():  # 检查是否全屏
     if fw.focusing:  # 拖动浮窗时返回t
         return True
     return False
+
+
+# 多线程（我也不知道有啥用，但是写都写了不想改回去力）
+class SettingsThread(QThread):
+    finished = pyqtSignal()
+    show_menu_signal = pyqtSignal()
+    activate_menu_signal = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.show_menu_signal.connect(self.show_menu)
+        self.activate_menu_signal.connect(self.activate_menu)
+
+    def run(self):
+        if mgr.state:  # 如果没有隐藏
+            if w_menu is None or not w_menu.isVisible():  # 防多开
+                self.show_menu_signal.emit()
+            else:
+                self.activate_menu_signal.emit()
+        else:
+            mgr.show_windows()
+            self.finished.emit()
+
+    def show_menu(self):
+        global w_menu
+        w_menu = menu.desktop_widget()
+        w_menu.show()
+
+        # 完成信号
+        self.finished.emit()
+
+    def activate_menu(self):  # 重聚焦
+        w_menu.raise_()
+        w_menu.activateWindow()
+        self.finished.emit()
+
+
+class ExMenuThread(QThread):
+    finished = pyqtSignal()
+    show_menu_signal = pyqtSignal()
+    activate_menu_signal = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.show_menu_signal.connect(self.show_menu)
+        self.activate_menu_signal.connect(self.activate_menu)
+
+    def run(self):
+        if mgr.state:  # 如果没有隐藏
+            if ex_menu is None or not ex_menu.isVisible():  # 防多开
+                self.show_menu_signal.emit()
+            else:
+                self.activate_menu_signal.emit()
+        else:
+            mgr.show_windows()
+            self.finished.emit()
+
+    def show_menu(self):
+        global ex_menu
+        ex_menu = exact_menu.ExactMenu()
+        ex_menu.show()
+
+        # 完成信号
+        self.finished.emit()
+
+    def activate_menu(self):  # 重聚焦
+        ex_menu.raise_()
+        ex_menu.activateWindow()
+        self.finished.emit()
 
 
 class weatherReportThread(QThread):  # 获取最新天气信息
@@ -381,6 +452,8 @@ class WidgetsManager:
             widget.animate_show()
 
     def clear_widgets(self):
+        if fw.isVisible():
+            fw.close()
         for widget in self.widgets:
             widget.animate_hide_opacity()
         init()
@@ -431,7 +504,6 @@ class FloatingWidget(QWidget):  # 浮窗
             setTheme(Theme.LIGHT)
 
         if os.path.exists(f'ui/{theme}/widget-floating.ui'):
-            print(conf.load_theme_config(theme)['support_dark_mode'])
             if isDarkTheme() and conf.load_theme_config(theme)['support_dark_mode']:
                 uic.loadUi(f'ui/{theme}/dark/widget-floating.ui', self)
             else:
@@ -448,8 +520,6 @@ class FloatingWidget(QWidget):  # 浮窗
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool
         )
-
-        self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
 
         backgnd = self.findChild(QFrame, 'backgnd')
         shadow_effect = QGraphicsDropShadowEffect(self)
@@ -578,7 +648,8 @@ class FloatingWidget(QWidget):  # 浮窗
     def mouseReleaseEvent(self, event):
         self.r_Position = event.globalPosition().toPoint()  # 获取鼠标相对窗口的位置
         self.m_flag = False
-        if self.r_Position == self.p_Position and not self.animating:  # 鼠标左键单击
+        if (self.r_Position == self.p_Position and not self.animating and
+                conf.read_conf('General', 'hide') == '0'):  # 开启自动隐藏忽略点击事件
             mgr.show_windows()
             self.close()
 
@@ -592,8 +663,15 @@ class FloatingWidget(QWidget):  # 浮窗
 class DesktopWidget(QWidget):  # 主要小组件
     def __init__(self, path='widget-time.ui', pos=(100, 50), enable_tray=False):
         super().__init__()
+        # 设置窗口位置
+        if first_start:
+            self.animate_window(pos)
+            self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
+        else:
+            self.setWindowOpacity(0)
+            self.animate_show_opacity()
+            self.move(pos[0], pos[1])
 
-        self.exmenu = None
         self.path = path
         self.last_code = 101010100
         self.last_theme = conf.read_conf('General', 'theme')
@@ -653,13 +731,6 @@ class DesktopWidget(QWidget):  # 主要小组件
             opacity.setOpacity(0.65)
             img.setGraphicsEffect(opacity)
 
-        # 设置窗口位置
-        if first_start:
-            self.animate_window(pos)
-        else:
-            self.animate_show_opacity()
-            self.move(pos[0], pos[1])
-
         self.update_data('')
         self.timer = QTimer(self)
         self.update_time()
@@ -700,7 +771,6 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
 
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)
 
         # 添加阴影效果
         if conf.load_theme_config(theme)['shadow']:  # 修改阴影问题
@@ -781,7 +851,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         get_current_lesson_name()
         get_next_lessons()
 
-        self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)  # 设置窗口透明度
+        if not self.animation:
+            self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)  # 设置窗口透明度
 
         if path != 'widget-current-activity.ui':  # 不是当前活动组件
             cd_list = get_countdown()
@@ -848,7 +919,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         if theme != self.last_theme or color_mode != self.last_color_mode:
             self.last_theme = theme
             self.last_color_mode = color_mode
-            print(f'切换主题：{theme}，颜色模式{color_mode}')
+            logger.info(f'切换主题：{theme}，颜色模式{color_mode}')
             mgr.clear_widgets()
 
     def update_weather_data(self, weather_data):  # 更新天气数据(已兼容多api)
@@ -872,25 +943,14 @@ class DesktopWidget(QWidget):  # 主要小组件
             logger.error(f'获取天气数据出错：{weather_data}')
 
     def open_settings(self):
-        global w_menu
-        if w_menu is None or not w_menu.isVisible():  # 防多开
-            w_menu = menu.desktop_widget()
-            w_menu.show()
-            logger.info('打开“设置”')
-        else:
-            w_menu.raise_()
-            w_menu.activateWindow()
+        self.settings_thread = SettingsThread()
+        self.settings_thread.finished.connect(lambda: logger.info('打开“设置”'))
+        self.settings_thread.start()
 
     def open_exact_menu(self):
-        if mgr.state:  # 如果没有隐藏
-            if self.exmenu is None or not self.exmenu.isVisible():  # 防多开
-                self.exmenu = exact_menu.ExactMenu()
-                self.exmenu.show()
-            else:
-                self.exmenu.raise_()
-                self.exmenu.activateWindow()
-        else:
-            mgr.show_windows()
+        self.exmenu_thread = ExMenuThread()
+        self.exmenu_thread.finished.connect(lambda: logger.info('打开“额外选项”'))
+        self.exmenu_thread.start()
 
     def hide_show_widgets(self):  # 隐藏/显示主界面（全部隐藏）
         if mgr.state:
@@ -996,8 +1056,9 @@ def show_window(path, pos, enable_tray=False):
 
 
 def init():
-    global theme, radius, mgr, screen_width, first_start
+    global theme, radius, mgr, screen_width, first_start, fw
     mgr = WidgetsManager()
+    fw = FloatingWidget()
 
     theme = conf.read_conf('General', 'theme')  # 主题
     # 获取屏幕横向分辨率
@@ -1023,6 +1084,7 @@ def init():
     for application in mgr.widgets:  # 显示所有窗口
         logger.info(f'显示窗口：{application.windowTitle()}')
         application.show()
+
     logger.info(f'Class Widgets 启动。版本: {conf.read_conf("Other", "version")}')
 
     first_start = False

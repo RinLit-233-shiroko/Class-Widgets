@@ -109,6 +109,23 @@
                 <property name="text">
                  <string>启用后将在上课时弹窗且发出提示音提醒</string>
                 </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -169,6 +186,23 @@
                <widget class="CaptionLabel" name="CaptionLabel_7">
                 <property name="text">
                  <string>启用后将在下课时弹窗且发出提示音提醒</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
                 </property>
                </widget>
               </item>
@@ -231,6 +265,23 @@
                 <property name="text">
                  <string>启用后将在预备铃时弹窗且发出提示音提醒</string>
                 </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -292,6 +343,23 @@
                 <property name="text">
                  <string>在正式上课前发出预备铃（输入提前的分钟数，若为0则禁用）</string>
                 </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -349,6 +417,20 @@
                <widget class="CaptionLabel" name="CaptionLabel_6">
                 <property name="text">
                  <string>将调整提醒声音的音量大小</string>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
                 </property>
                </widget>
               </item>
@@ -420,6 +502,20 @@
                 <property name="text">
                  <string>启用后将在提醒时置顶弹窗</string>
                 </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
                </widget>
               </item>
              </layout>
@@ -479,7 +575,25 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_9">
                 <property name="text">
-                 <string>启用后弹出提醒弹窗同时会有水波强调效果</string>
+                 <string>启用后弹出提醒弹窗同时会有水波强调及模糊淡入淡出效果
+*可能影响性能</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="lightColor" stdset="0">
+                 <color alpha="150">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </property>
+                <property name="darkColor" stdset="0">
+                 <color alpha="200">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
                 </property>
                </widget>
               </item>

@@ -143,13 +143,6 @@ class ExactMenu(FluentWindow):
                     selected_item.setText(custom_class.text())
 
     def initUI(self):
-        if conf.read_conf('General', 'color_mode') == '2':
-            setTheme(Theme.AUTO)
-        elif conf.read_conf('General', 'color_mode') == '1':
-            setTheme(Theme.DARK)
-        else:
-            setTheme(Theme.LIGHT)
-
         # 修复设置窗口在各个屏幕分辨率DPI下的窗口大小
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
