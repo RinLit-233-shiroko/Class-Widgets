@@ -265,7 +265,7 @@
         <item>
          <widget class="PushButton" name="quick_select_week">
           <property name="text">
-           <string>下个星期</string>
+           <string>下一天</string>
           </property>
          </widget>
         </item>
