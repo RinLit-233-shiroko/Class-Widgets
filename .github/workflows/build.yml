@@ -36,14 +36,10 @@ jobs:
       - name: 使用 PyInstaller 打包
         run: |
           .\venv\Scripts\activate
-          pyinstaller main.py -w -i ./img/favicon.ico ^
-          -n ClassWidgets --contents-directory . ^
-          --add-data config:config --add-data audio:audio ^
-          --add-data img:img --add-data ui:ui --add-data font:font ^
-          --add-data *.ui:. --add-data LICENSE:.
+          pyinstaller main.py -w -i ./img/favicon.ico -n ClassWidgets --contents-directory . --add-data config:config --add-data audio:audio --add-data img:img --add-data ui:ui --add-data font:font --add-data *.ui:. --add-data LICENSE:.
 
-      - name: 上传构建输出
-        uses: actions/upload-artifact@v4.4.3
+      - name: 存到构建输出
+        uses: actions/upload-artifact@v4.4.2
         with:
           name: Windows-amd64
           path: ./dist/ClassWidgets/
