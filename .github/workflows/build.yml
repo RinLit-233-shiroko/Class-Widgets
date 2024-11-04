@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.2.2
 
       - name: 设置 Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5.3.0
         with:
           python-version: '3.8.10'
 
@@ -31,24 +31,15 @@ jobs:
           python -m venv venv
           .\venv\Scripts\activate
           pip install -r requirements.txt
-          pip install requests
           pip install pyinstaller
 
       - name: 使用 PyInstaller 打包
         run: |
           .\venv\Scripts\activate
-          pyinstaller main.py -w -i ./img/favicon.ico -n ClassWidgets
-
-      - name: 复制依赖和资源
-        run: |
-          xcopy /E /I config .\dist\Class-Widgets\config
-          xcopy /E /I ui .\dist\Class-Widgets\ui
-          xcopy /E /I img .\dist\Class-Widgets\img
-          xcopy /E /I audio .\dist\Class-Widgets\audio
-          copy *.ui .\dist\ClassWidgets\
+          pyinstaller main.py -w -i ./img/favicon.ico -n ClassWidgets --contents-directory . --add-data config:config --add-data audio:audio --add-data img:img --add-data ui:ui --add-data font:font --add-data *.ui:. --add-data LICENSE:.
 
       - name: 存到构建输出
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4.2
         with:
           name: Windows-amd64
           path: ./dist/ClassWidgets/
