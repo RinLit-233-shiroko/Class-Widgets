@@ -1146,6 +1146,7 @@ class desktop_widget(FluentWindow):
             self.se_load_item()
             self.se_upload_list()
             self.se_upload_item()
+            self.te_upload_item()
             self.sp_fill_grid_row()
             Flyout.create(
                 icon=InfoBarIcon.SUCCESS,
