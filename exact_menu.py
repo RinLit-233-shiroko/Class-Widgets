@@ -60,10 +60,7 @@ class ExactMenu(FluentWindow):
 
     def load_schedule(self):
         global filename
-        if conf.read_conf('Temp', 'temp_schedule') == '':
-            filename = conf.read_conf('General', 'schedule')
-        else:
-            filename = 'backup.json'
+        filename = conf.read_conf('General', 'schedule')
         if conf.get_week_type():
             return conf.load_from_json(filename)['schedule_even'][str(current_week)]
         else:
