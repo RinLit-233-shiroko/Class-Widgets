@@ -15,7 +15,8 @@ from qfluentwidgets import (
     SpinBox, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
     CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, MessageBoxBase,
-    SearchLineEdit, Slider, PlainTextEdit, ToolTipFilter, ToolTipPosition, RadioButton
+    SearchLineEdit, Slider, PlainTextEdit, ToolTipFilter, ToolTipPosition, RadioButton, HyperlinkLabel,
+    PrimaryDropDownPushButton, Action, RoundMenu
 )
 from copy import deepcopy
 from loguru import logger
@@ -185,12 +186,12 @@ class desktop_widget(FluentWindow):
     # 初始化界面
     def setup_help_interface(self):
         help_docu = FramelessWebEngineView(self)
-        help_docu.load(QUrl("https://www.yuque.com/rinlit/class-widgets_help?#"))
+        help_docu.load(QUrl("https://www.yuque.com/rinlit/class-widgets_help"))
         help_docu.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         open_by_browser = self.findChild(PushButton, 'open_by_browser')
         open_by_browser.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(
-            'https://www.yuque.com/rinlit/class-widgets_help?#'
+            'https://www.yuque.com/rinlit/class-widgets_help'
         )))
 
         web_layout = self.findChild(QVBoxLayout, 'web')
@@ -217,10 +218,20 @@ class desktop_widget(FluentWindow):
         slider_volume.setValue(int(conf.read_conf('Audio', 'volume')))
         slider_volume.valueChanged.connect(self.save_volume)  # 音量滑块
 
-        preview_toast_button = self.findChild(PushButton, 'preview_toast_bar')
-        preview_toast_button.clicked.connect(lambda: toast.main(
-            4, title='通知', subtitle='测试通知', content='这是一条测试通知'
-        ))  # 预览通知栏
+        preview_toast_button = self.findChild(PrimaryDropDownPushButton, 'preview')
+
+        pre_toast_menu = RoundMenu(parent=preview_toast_button)
+        pre_toast_menu.addActions([
+            Action(fIcon.EDUCATION, '上课提醒',
+                   triggered=lambda: toast.main(1, lesson_name='信息技术')),
+            Action(fIcon.CAFE, '下课提醒',
+                   triggered=lambda: toast.main(0, lesson_name='信息技术')),
+            Action(fIcon.BOOK_SHELF, '预备提醒',
+                   triggered=lambda: toast.main(3, lesson_name='信息技术')),
+            Action(fIcon.CODE, '其他提醒',
+                   triggered=lambda: toast.main(4, title='通知', subtitle='测试通知示例', content='这是一条测试通知ヾ(≧▽≦*)o'))
+        ])
+        preview_toast_button.setMenu(pre_toast_menu)# 预览通知栏
 
         switch_wave_effect = self.findChild(SwitchButton, 'switch_enable_wave')
         switch_wave_effect.setChecked(int(conf.read_conf('Toast', 'wave')))
@@ -263,6 +274,9 @@ class desktop_widget(FluentWindow):
         set_ac_color.clicked.connect(self.ct_set_ac_color)
         set_fc_color = self.findChild(PushButton, 'set_fc_color')
         set_fc_color.clicked.connect(self.ct_set_fc_color)
+
+        open_theme_folder = self.findChild(HyperlinkLabel, 'open_theme_folder')  # 打开主题文件夹
+        open_theme_folder.clicked.connect(lambda: os.startfile(os.path.join(os.getcwd(), 'ui')))
 
         select_theme_combo = self.findChild(ComboBox, 'combo_theme_select')  # 主题选择
         select_theme_combo.addItems(list.theme_names)
@@ -630,24 +644,44 @@ class desktop_widget(FluentWindow):
         conf.write_conf('Toast', 'prepare_minutes', str(prepare_time_spin.value()))
 
     def clear_log(self):  # 清空日志
+        def get_directory_size(path):  #计算目录大小
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(path):
+                for filename in filenames:
+                    file_path = os.path.join(dirpath, filename)
+                    total_size += os.path.getsize(file_path)
+            total_size /= 1024
+            return round(total_size, 2)
+
         button_clear_log = self.findChild(PushButton, 'button_clear_log')
         try:
             if os.path.exists('log'):
+                size = get_directory_size('log')
                 rmtree('log')
-            Flyout.create(
-                icon=InfoBarIcon.SUCCESS,
-                title='已清除日志',
-                content="已清空所有日志文件",
-                target=button_clear_log,
-                parent=self,
-                isClosable=True,
-                aniType=FlyoutAnimationType.PULL_UP
-            )
+                Flyout.create(
+                    icon=InfoBarIcon.SUCCESS,
+                    title='已清除日志',
+                    content=f"已清空所有日志文件，约 {size} KB",
+                    target=button_clear_log,
+                    parent=self,
+                    isClosable=True,
+                    aniType=FlyoutAnimationType.PULL_UP
+                )
+            else:
+                Flyout.create(
+                    icon=InfoBarIcon.INFORMATION,
+                    title='未找到日志',
+                    content="日志目录下为空，已清理完成。",
+                    target=button_clear_log,
+                    parent=self,
+                    isClosable=True,
+                    aniType=FlyoutAnimationType.PULL_UP
+                )
         except OSError:  # 遇到程序正在使用的log，忽略
             Flyout.create(
                 icon=InfoBarIcon.SUCCESS,
                 title='已清除日志',
-                content="已清空所有日志文件",
+                content=f"已清空所有日志文件，约 {size} KB",
                 target=button_clear_log,
                 parent=self,
                 isClosable=True,
@@ -1215,6 +1249,31 @@ class desktop_widget(FluentWindow):
 
     def te_delete_part(self):
         alert = MessageBox("您确定要删除这个时段吗？", "删除该节点后，将一并删除该节点下所有课程安排，且无法恢复。", self)
+        alert.yesButton.setText('删除')
+        alert.yesButton.setStyleSheet("""
+        PushButton{
+            border-radius: 5px;
+            padding: 5px 12px 6px 12px;
+            outline: none;
+        }
+        PrimaryPushButton{
+            color: white;
+            background-color: #FF6167;
+            border: 1px solid #FF8585;
+            border-bottom: 1px solid #943333;
+        }
+        PrimaryPushButton:hover{
+            background-color: #FF7E83;
+            border: 1px solid #FF8084;
+            border-bottom: 1px solid #B13939;
+        }
+        PrimaryPushButton:pressed{
+            color: rgba(255, 255, 255, 0.63);
+            background-color: #DB5359;
+            border: 1px solid #DB5359;
+        }
+    """)
+        alert.cancelButton.setText('取消')
         if alert.exec():
             global timeline_dict, schedule_dict
             te_part_list = self.findChild(ListWidget, 'part_list')

@@ -18,9 +18,6 @@ attend_class = conf.read_conf('Audio', 'attend_class')
 finish_class = conf.read_conf('Audio', 'finish_class')
 
 # 波纹效果
-attend_class_color = '#dd986f'
-finish_class_color = '#79d4a1'
-prepare_class_color = '#8073F9'
 normal_color = '#56CFD8'
 
 window_list = []  # 窗口列表
@@ -85,16 +82,28 @@ class tip_toast(QWidget):
             playsound(prepare_class)
 
         # 设置样式表
-        if state == 1:
-            bg_color = ['rgba(255, 200, 150, 255)', 'rgba(220, 150, 110, 255)']
-        elif state == 0 or state == 2:
-            bg_color = ['rgba(165, 200, 140, 255)', 'rgba(110, 220, 170, 255)']
-        elif state == 3:
-            bg_color = ['rgba(165, 110, 210, 255)', 'rgba(120, 120, 225, 255)']
-        elif state == 4:
-            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
+        if state == 1:  # 上课铃声
+            bg_color = [  # 1为正常、2为渐变亮色部分、3为渐变暗色部分
+                generate_gradient_color(attend_class_color)[0],
+                generate_gradient_color(attend_class_color)[1],
+                generate_gradient_color(attend_class_color)[2]
+            ]
+        elif state == 0 or state == 2:  # 下课铃声
+            bg_color = [
+                generate_gradient_color(finish_class_color)[0],
+                generate_gradient_color(finish_class_color)[1],
+                generate_gradient_color(finish_class_color)[2]
+            ]
+        elif state == 3:  # 预备铃声
+            bg_color = [
+                generate_gradient_color(prepare_class_color)[0],
+                generate_gradient_color(prepare_class_color)[1],
+                generate_gradient_color(prepare_class_color)[2]
+            ]
+        elif state == 4:  # 通知铃声
+            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
         else:
-            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
+            bg_color = ['rgba(110, 190, 210, 255)', 'rgba(110, 190, 210, 255)', 'rgba(90, 210, 215, 255)']
 
         if detect_enable_toast(state):
             return
@@ -102,7 +111,7 @@ class tip_toast(QWidget):
         backgnd.setStyleSheet(f'font-weight: bold; border-radius: {radius}; '
                               'background-color: qlineargradient('
                               'spread:pad, x1:0, y1:0, x2:1, y2:1,'
-                              f' stop:0 {bg_color[0]}, stop:1 {bg_color[1]}'
+                              f' stop:0 {bg_color[1]},stop:0.15 {bg_color[0]}, stop:0.6 {bg_color[0]}, stop:1 {bg_color[2]}'
                               ');'
                               )
 
@@ -112,8 +121,8 @@ class tip_toast(QWidget):
             backgnd.setGraphicsEffect(self.blur_effect)
 
         # 设置窗口初始大小
-        mini_size_x = 100
-        mini_size_y = 10
+        mini_size_x = 150
+        mini_size_y = 50
 
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
@@ -122,13 +131,13 @@ class tip_toast(QWidget):
 
         # 放大效果
         self.geometry_animation = QPropertyAnimation(self, b"geometry")
-        self.geometry_animation.setDuration(450)  # 动画持续时间
+        self.geometry_animation.setDuration(750)  # 动画持续时间
         self.geometry_animation.setStartValue(
             QRect(int(start_x + mini_size_x / 2), int(start_y + mini_size_y / 2),
                   total_width - mini_size_x, height - mini_size_y)
         )
         self.geometry_animation.setEndValue(QRect(start_x, start_y, total_width, height))
-        self.geometry_animation.setEasingCurve(QEasingCurve.Type.InOutCirc)
+        self.geometry_animation.setEasingCurve(QEasingCurve.Type.OutCirc)
         self.geometry_animation.finished.connect(self.timer.start)
 
         self.blur_animation = QPropertyAnimation(self.blur_effect, b"blurRadius")
@@ -171,6 +180,7 @@ class tip_toast(QWidget):
         self.geometry_animation_close.start()
         self.opacity_animation_close.start()
         self.blur_animation_close.start()
+        self.opacity_animation_close.finished.connect(self.close)
 
 
 class wave_Effect(QWidget):
@@ -204,7 +214,7 @@ class wave_Effect(QWidget):
 
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
-        self.timer.setInterval(250)
+        self.timer.setInterval(275)
         self.timer.timeout.connect(self.showAnimation)
         self.timer.start()
 
@@ -258,9 +268,29 @@ def playsound(filename):
         logger.error(f'读取音频文件出错：{e}')
 
 
+def generate_gradient_color(theme_color): # 计算渐变色
+    def adjust_color(color, factor):
+        r = max(0, min(255, int(color.red() * (1 + factor))))
+        g = max(0, min(255, int(color.green() * (1 + factor))))
+        b = max(0, min(255, int(color.blue() * (1 + factor))))
+        # return QColor(r, g, b)
+        return f'rgba({r}, {g}, {b}, 255)'
+    color = QColor(theme_color)
+    gradient = [adjust_color(color, 0), adjust_color(color, 0.24), adjust_color(color, -0.11)]
+    return gradient
+
+
+
 def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
          content='这是一条通知示例'):  # 0:下课铃声 1:上课铃声 2:放学铃声 3:预备铃 4:其他
-    global start_x, start_y, total_width, height, radius
+    if detect_enable_toast(state):
+        return
+
+    global start_x, start_y, total_width, height, radius, attend_class_color, finish_class_color, prepare_class_color
+
+    attend_class_color = f"#{conf.read_conf('Color', 'attend_class')}"
+    finish_class_color = f"#{conf.read_conf('Color', 'finish_class')}"
+    prepare_class_color = f"#{conf.read_conf('Color', 'prepare_class')}"
 
     if conf.read_conf('General', 'color_mode') == '2':
         setTheme(Theme.AUTO)
@@ -286,11 +316,9 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
         window = tip_toast((start_x, start_y), total_width, state, lesson_name)
     else:
         window = tip_toast((start_x, start_y), total_width, state, '', title, subtitle, content)
+
     window.show()
     window_list.append(window)
-
-    if detect_enable_toast(state):
-        return
 
     if conf.read_conf('Toast', 'wave') == '1':
         wave = wave_Effect(state)
@@ -300,14 +328,14 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
 
 def detect_enable_toast(state=0):
     if conf.read_conf('Toast', 'attend_class') != '1' and state == 1:
-        return
+        return True
     if conf.read_conf('Toast', 'finish_class') != '1' and state == 0 or state == 2:
-        return
+        return True
     if conf.read_conf('Toast', 'prepare_class') != '1' and state == 3:
-        return
+        return True
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main(0, '测试课程')
+    main(4, '', '测试通知喵', 'By Rin.', '欢迎使用 ClassWidgets')
     sys.exit(app.exec())

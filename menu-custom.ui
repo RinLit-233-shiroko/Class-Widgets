@@ -80,7 +80,7 @@
         <x>0</x>
         <y>0</y>
         <width>743</width>
-        <height>1164</height>
+        <height>1187</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -172,6 +172,13 @@
            </property>
            <property name="pixelFontSize" stdset="0">
             <number>18</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="HyperlinkLabel" name="open_theme_folder">
+           <property name="text">
+            <string>打开“主题”文件夹</string>
            </property>
           </widget>
          </item>
@@ -433,7 +440,10 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_7">
                 <property name="text">
-                 <string>将用于设置窗口、进度条（重启以应用）</string>
+                 <string>将用于设置窗口、进度条和提醒弹窗 (为了提醒弹窗可读性，请不要设置过浅的颜色)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
                 </property>
                 <property name="lightColor" stdset="0">
                  <color alpha="150">
@@ -505,7 +515,10 @@
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_6">
                 <property name="text">
-                 <string>将用于设置窗口、进度条（重启以应用）</string>
+                 <string>将用于设置窗口、进度条和提醒弹窗 (为了提醒弹窗可读性，请不要设置过浅的颜色)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
                 </property>
                 <property name="lightColor" stdset="0">
                  <color alpha="150">
@@ -1177,6 +1190,11 @@
   <customwidget>
    <class>TitleLabel</class>
    <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>HyperlinkLabel</class>
+   <extends>QPushButton</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

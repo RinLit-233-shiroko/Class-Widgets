@@ -649,7 +649,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="PrimaryPushButton" name="preview_toast_bar">
+          <widget class="PrimaryDropDownPushButton" name="preview">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -704,6 +704,11 @@
   <customwidget>
    <class>PrimaryPushButton</class>
    <extends>PushButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>PrimaryDropDownPushButton</class>
+   <extends>PrimaryPushButton</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

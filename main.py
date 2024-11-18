@@ -8,7 +8,7 @@ from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
     QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame, QGraphicsOpacityEffect
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, \
-                        QSize
+    QSize
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter, QCursor
 from loguru import logger
 import sys
@@ -30,8 +30,6 @@ filename = conf.read_conf('General', 'schedule')
 
 # 存储窗口对象
 windows = []
-w_menu = None
-ex_menu = None
 
 current_lesson_name = '课程表未加载'
 current_state = 0  # 0：课间 1：上课
@@ -326,75 +324,6 @@ def check_fullscreen():  # 检查是否全屏
     return False
 
 
-# 多线程（我也不知道有啥用，但是写都写了不想改回去力）
-class SettingsThread(QThread):
-    finished = pyqtSignal()
-    show_menu_signal = pyqtSignal()
-    activate_menu_signal = pyqtSignal()
-
-    def __init__(self):
-        super().__init__()
-        self.show_menu_signal.connect(self.show_menu)
-        self.activate_menu_signal.connect(self.activate_menu)
-
-    def run(self):
-        if mgr.state:  # 如果没有隐藏
-            if w_menu is None or not w_menu.isVisible():  # 防多开
-                self.show_menu_signal.emit()
-            else:
-                self.activate_menu_signal.emit()
-        else:
-            mgr.show_windows()
-            self.finished.emit()
-
-    def show_menu(self):
-        global w_menu
-        w_menu = menu.desktop_widget()
-        w_menu.show()
-
-        # 完成信号
-        self.finished.emit()
-
-    def activate_menu(self):  # 重聚焦
-        w_menu.raise_()
-        w_menu.activateWindow()
-        self.finished.emit()
-
-
-class ExMenuThread(QThread):
-    finished = pyqtSignal()
-    show_menu_signal = pyqtSignal()
-    activate_menu_signal = pyqtSignal()
-
-    def __init__(self):
-        super().__init__()
-        self.show_menu_signal.connect(self.show_menu)
-        self.activate_menu_signal.connect(self.activate_menu)
-
-    def run(self):
-        if mgr.state:  # 如果没有隐藏
-            if ex_menu is None or not ex_menu.isVisible():  # 防多开
-                self.show_menu_signal.emit()
-            else:
-                self.activate_menu_signal.emit()
-        else:
-            mgr.show_windows()
-            self.finished.emit()
-
-    def show_menu(self):
-        global ex_menu
-        ex_menu = exact_menu.ExactMenu()
-        ex_menu.show()
-
-        # 完成信号
-        self.finished.emit()
-
-    def activate_menu(self):  # 重聚焦
-        ex_menu.raise_()
-        ex_menu.activateWindow()
-        self.finished.emit()
-
-
 class weatherReportThread(QThread):  # 获取最新天气信息
     weather_signal = pyqtSignal(dict)
 
@@ -681,6 +610,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.last_code = 101010100
         self.last_theme = conf.read_conf('General', 'theme')
         self.last_color_mode = conf.read_conf('General', 'color_mode')
+        self.menu = None
+        self.ex_menu = None
 
         init_config()
         self.init_ui(path)
@@ -948,14 +879,22 @@ class DesktopWidget(QWidget):  # 主要小组件
             logger.error(f'获取天气数据出错：{weather_data}')
 
     def open_settings(self):
-        self.settings_thread = SettingsThread()
-        self.settings_thread.finished.connect(lambda: logger.info('打开“设置”'))
-        self.settings_thread.start()
+        if self.menu is None or not self.menu.isVisible():
+            self.menu = menu.desktop_widget()
+            self.menu.show()
+            logger.info('打开“设置”')
+        else:
+            self.menu.raise_()
+            self.menu.activateWindow()
 
     def open_exact_menu(self):
-        self.exmenu_thread = ExMenuThread()
-        self.exmenu_thread.finished.connect(lambda: logger.info('打开“额外选项”'))
-        self.exmenu_thread.start()
+        if self.ex_menu is None or not self.ex_menu.isVisible():
+            self.ex_menu = exact_menu.ExactMenu()
+            self.ex_menu.show()
+            logger.info('打开“额外选项”')
+        else:
+            self.ex_menu.raise_()
+            self.ex_menu.activateWindow()
 
     def hide_show_widgets(self):  # 隐藏/显示主界面（全部隐藏）
         if mgr.state:
@@ -986,9 +925,9 @@ class DesktopWidget(QWidget):  # 主要小组件
         height = self.height()
         self.setFixedSize(width, height)  # 防止连续打断窗口高度变小
         if full:
-            self.animation.setEndValue(QRect(self.x(), -self.height(), self.width(), self.height()))
+            self.animation.setEndValue(QRect(self.x(), -height, self.width(), self.height()))
         else:
-            self.animation.setEndValue(QRect(self.x(), -self.height() + 40, self.width(), self.height()))
+            self.animation.setEndValue(QRect(self.x(), -height + 40, self.width(), self.height()))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
         self.animation.start()
 
@@ -1066,6 +1005,7 @@ def init():
     fw = FloatingWidget()
 
     theme = conf.read_conf('General', 'theme')  # 主题
+    logger.info(f'应用主题：{theme}')
     # 获取屏幕横向分辨率
     screen_geometry = app.primaryScreen().availableGeometry()
     screen_width = screen_geometry.width()
@@ -1095,7 +1035,6 @@ def init():
     first_start = False
 
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     share = QSharedMemory('ClassWidgets')
@@ -1105,7 +1044,7 @@ if __name__ == '__main__':
 
     if share.attach() and conf.read_conf('Other', 'multiple_programs') != '1':
         msg_box = Dialog('Class Widgets 正在运行', 'Class Widgets 正在运行！请勿打开多个实例，否则将会出现不可预知的问题。'
-                                                   '\n(若您需要打开多个实例，请在“设置”->“高级选项”中启用“允许程序多开”)')
+                         '\n(若您需要打开多个实例，请在“设置”->“高级选项”中启用“允许程序多开”)')
         msg_box.yesButton.setText('好')
         msg_box.cancelButton.hide()
         msg_box.buttonLayout.insertStretch(0, 1)
@@ -1120,6 +1059,10 @@ if __name__ == '__main__':
                 conf.write_conf('Other', 'initialstartup', '')
             except Exception as e:
                 logger.error(f'添加快捷方式失败：{e}')
+            try:
+                list.create_new_profile('新课表 - 1.json')
+            except Exception as e:
+                logger.error(f'创建新课表失败：{e}')
         theme = conf.read_conf('General', 'theme')  # 主题
         fw = FloatingWidget()
 
