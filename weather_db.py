@@ -11,10 +11,7 @@ api_config = json.load(open('config/data/weather_api.json', encoding='utf-8'))
 
 def update_path():
     global path
-    if conf.read_conf('Weather', 'api') == 'amap_weather' or conf.read_conf('Weather', 'api') == 'qq_weather':
-        path = 'config/data/amap_weather.db'
-    else:
-        path = 'config/data/xiaomi_weather.db'
+    path = f"config/data/{api_config['weather_api_parameters'][conf.read_conf('Weather', 'api')]['database']}"
 
 
 def search_by_name(search_term):
@@ -67,7 +64,7 @@ def search_by_num(search_term):
     return result
 
 
-def get_weather_by_code(code):
+def get_weather_by_code(code):  # 用代码获取天气描述
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     for weather in weather_status['weatherinfo']:
         if str(weather['code']) == code:
@@ -75,7 +72,7 @@ def get_weather_by_code(code):
     return '未知'
 
 
-def get_weather_icon_by_code(code):
+def get_weather_icon_by_code(code):  # 用代码获取天气图标
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     weather_code = None
     current_time = datetime.datetime.now()
@@ -98,7 +95,7 @@ def get_weather_icon_by_code(code):
     return f'img/weather/{weather_code}.svg'
 
 
-def get_weather_stylesheet(code):  # 天气样式
+def get_weather_stylesheet(code):  # 天气背景样式
     current_time = datetime.datetime.now()
     weather_status = json.load(open(f"config/data/{conf.read_conf('Weather', 'api')}_status.json", encoding="utf-8"))
     weather_code = '99'
@@ -131,7 +128,7 @@ def get_weather_code_by_description(value):
     return '99'
 
 
-def get_weather_data(key='temp', weather_data=None):
+def get_weather_data(key='temp', weather_data=None):  # 获取天气数据
     if weather_data is None:
         logger.error('weather_data is None!')
         return None
@@ -157,8 +154,9 @@ def get_weather_data(key='temp', weather_data=None):
                 return '错误'
     if key == 'temp':
         value += '°C'
-    elif conf.read_conf('Weather', 'api') == 'amap_weather' or conf.read_conf('Weather', 'api') == 'qq_weather' and key == 'icon':  # 修复此代码影响其他天气源的问题
-        value = get_weather_code_by_description(value)
+    elif key == 'icon':  # 修复此代码影响其他天气源的问题
+        if api_parameters['return_desc']:  # 如果此api返回的是天气描述而不是代码
+            value = get_weather_code_by_description(value)
     return value
 
 

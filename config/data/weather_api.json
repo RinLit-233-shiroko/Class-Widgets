@@ -8,19 +8,27 @@
   "weather_api_parameters": {
     "xiaomi_weather": {
       "temp": "current.temperature.value",
-      "icon": "current.weather"
+      "icon": "current.weather",
+      "database": "xiaomi_weather.db",
+      "return_desc": false
     },
     "qweather": {
       "temp": "now.temp",
-      "icon": "now.icon"
+      "icon": "now.icon",
+      "database": "xiaomi_weather.db",
+      "return_desc": false
     },
     "amap_weather": {
       "temp": "temperature",
-      "icon": "weather"
+      "icon": "weather",
+      "database": "amap_weather.db",
+      "return_desc": true
     },
     "qq_weather": {
       "temp": "temperature",
-      "icon": "weather"
+      "icon": "weather",
+      "database": "amap_weather.db",
+      "return_desc": true
     }
   },
   "weather_api_list": ["xiaomi_weather", "qweather", "amap_weather", "qq_weather"],
