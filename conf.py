@@ -1,6 +1,7 @@
 import json
 import os
 import configparser as config
+from pathlib import Path
 from shutil import copy
 
 from win32com.client import Dispatch
@@ -12,6 +13,8 @@ import list
 path = 'config.ini'
 conf = config.ConfigParser()
 name = 'Class Widgets'
+
+PLUGINS_DIR = 'plugins'
 
 # CONFIG
 # 读取config
@@ -103,6 +106,33 @@ def load_theme_config(theme):
     except Exception as e:
         logger.error(f"加载主题数据时出错: {e}")
         return None
+
+
+def load_plugin_config():
+    try:
+        if os.path.exists('config/plugin.json'):  # 如果配置文件存在
+            with open(f'config/plugin.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+        else:
+            with open(f'config/plugin.json', 'w', encoding='utf-8') as file:
+                data = {"enabled_plugins": []}
+                json.dump(data, file, ensure_ascii=False, indent=4)
+        return data
+    except Exception as e:
+        logger.error(f"加载启用插件数据时出错: {e}")
+        return None
+
+
+def save_plugin_config(data):
+    data_dict = load_plugin_config()
+    data_dict.update(data)
+    try:
+        with open(f'config/plugin.json', 'w', encoding='utf-8') as file:
+            json.dump(data_dict, file, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        logger.error(f"保存启用插件数据时出错: {e}")
+        return False
 
 
 def load_theme_width(theme):
@@ -289,6 +319,24 @@ def save_widget_conf_to_json(new_data):
         return e
 
 
+def load_plugins():  # 加载插件配置文件
+    plugin_dict = {}
+    for folder in Path(PLUGINS_DIR).iterdir():
+        if folder.is_dir() and (folder / 'plugin.json').exists():
+            try:
+                with open(f'plugins/{folder.name}/plugin.json', 'r', encoding='utf-8') as file:
+                    data = json.load(file)
+            except Exception as e:
+                logger.error(f"加载插件配置文件数据时出错，将跳过: {e}")  # 跳过奇怪的文件夹
+            plugin_dict[str(folder.name)] = {}
+            plugin_dict[str(folder.name)]['name'] = data['name']  # 名称
+            plugin_dict[str(folder.name)]['version'] = data['version']  # 插件版本号
+            plugin_dict[str(folder.name)]['author'] = data['author']  # 作者
+            plugin_dict[str(folder.name)]['description'] = data['description']  # 描述
+            plugin_dict[str(folder.name)]['plugin_ver'] = data['plugin_ver']  # 插件架构版本
+    return plugin_dict
+
+
 def check_config():
     conf = config.ConfigParser()
     with open(f'config/default_config.json', 'r', encoding='utf-8') as file:  # 加载默认配置
@@ -342,6 +390,7 @@ check_config()
 if __name__ == '__main__':
     print('AL_1S')
     print(get_week_type())
+    print(load_plugins())
     # save_data_to_json(test_data_dict, 'schedule-1.json')
     # loaded_data = load_from_json('schedule-1.json')
     # print(loaded_data)

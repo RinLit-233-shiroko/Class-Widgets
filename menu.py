@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from shutil import rmtree
 
 import requests
@@ -16,18 +17,22 @@ from qfluentwidgets import (
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
     CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, MessageBoxBase,
     SearchLineEdit, Slider, PlainTextEdit, ToolTipFilter, ToolTipPosition, RadioButton, HyperlinkLabel,
-    PrimaryDropDownPushButton, Action, RoundMenu
+    PrimaryDropDownPushButton, Action, RoundMenu, CardWidget, TransparentToolButton, ImageLabel, StrongBodyLabel,
+    TransparentDropDownToolButton
 )
 from copy import deepcopy
 from loguru import logger
 import datetime as dt
 import list
 import conf
-import tip_toast as toast
+import tip_toast
 import weather_db
 import weather_db as wd
 
 today = dt.date.today()
+
+plugin_dict = {}  # 插件字典
+enabled_plugins = {}  # 启用的插件列表
 
 morning_st = 0
 afternoon_st = 0
@@ -136,6 +141,123 @@ class licenseDialog(MessageBoxBase):  # 显示软件许可协议
         self.widget.setMinimumHeight(500)
 
 
+class PluginCard(CardWidget):  # 插件卡片
+    def __init__(
+            self, icon, title='Unknown', content='Unknown', version='1.0.0', plugin_dir='', author=None, parent=None):
+        super().__init__(parent)
+        icon_radius = 5
+        self.plugin_dir = plugin_dir
+        self.title = title
+        self.parent = parent
+
+        self.iconWidget = ImageLabel(icon)  # 插件图标
+        self.titleLabel = StrongBodyLabel(title, self)  # 插件名
+        self.versionLabel = BodyLabel(version, self)  # 插件版本
+        self.authorLabel = BodyLabel(author, self)  # 插件作者
+        self.contentLabel = CaptionLabel(content, self)  # 插件描述
+        self.enableButton = SwitchButton()
+        self.moreButton = TransparentDropDownToolButton()
+        self.moreMenu = RoundMenu(parent=self.moreButton)
+
+        self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout_Title = QHBoxLayout()
+        self.vBoxLayout = QVBoxLayout()
+
+        self.moreMenu.addActions([
+            Action(
+                fIcon.FOLDER, f'打开“{title}”插件文件夹',
+                triggered=lambda: os.startfile(os.path.join(os.getcwd(), conf.PLUGINS_DIR, self.plugin_dir))
+            ),
+            Action(
+                fIcon.DELETE, f'卸载“{title}”插件',
+                triggered=self.remove_plugin
+            )
+        ])
+
+        if plugin_dir in enabled_plugins['enabled_plugins']:  # 插件是否启用
+            self.enableButton.setChecked(True)
+
+        self.setFixedHeight(73)
+        self.iconWidget.setFixedSize(48, 48)
+        self.moreButton.setFixedSize(34, 34)
+        self.iconWidget.setBorderRadius(icon_radius, icon_radius, icon_radius, icon_radius)  # 圆角
+        self.contentLabel.setTextColor("#606060", "#d2d2d2")
+        self.versionLabel.setTextColor("#999999", "#999999")
+        self.authorLabel.setTextColor("#606060", "#d2d2d2")
+        self.enableButton.checkedChanged.connect(self.set_enable)
+        self.enableButton.setOffText('禁用')
+        self.enableButton.setOnText('启用')
+        self.moreButton.setMenu(self.moreMenu)
+
+        self.hBoxLayout.setContentsMargins(20, 11, 11, 11)
+        self.hBoxLayout.setSpacing(15)
+        self.hBoxLayout.addWidget(self.iconWidget)
+
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.addLayout(self.hBoxLayout_Title)
+        self.vBoxLayout.addWidget(self.contentLabel, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.hBoxLayout.addLayout(self.vBoxLayout)
+
+        self.hBoxLayout_Title.setSpacing(12)
+        self.hBoxLayout_Title.addWidget(self.titleLabel, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.hBoxLayout_Title.addWidget(self.authorLabel, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.hBoxLayout_Title.addWidget(self.versionLabel, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        self.hBoxLayout.addStretch(1)
+        self.hBoxLayout.addWidget(self.enableButton, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addWidget(self.moreButton, 0, Qt.AlignmentFlag.AlignRight)
+
+    def set_enable(self):
+        global enabled_plugins
+        if self.enableButton.isChecked():
+            enabled_plugins['enabled_plugins'].append(self.plugin_dir)
+            conf.save_plugin_config(enabled_plugins)
+        else:
+            enabled_plugins['enabled_plugins'].remove(self.plugin_dir)
+            conf.save_plugin_config(enabled_plugins)
+
+    def remove_plugin(self):
+        alert = MessageBox(f"您确定要删除插件“{self.title}”吗？", "删除此插件后，将无法恢复。", self.parent)
+        alert.yesButton.setText('永久删除')
+        alert.yesButton.setStyleSheet("""
+                PushButton{
+                    border-radius: 5px;
+                    padding: 5px 12px 6px 12px;
+                    outline: none;
+                }
+                PrimaryPushButton{
+                    color: white;
+                    background-color: #FF6167;
+                    border: 1px solid #FF8585;
+                    border-bottom: 1px solid #943333;
+                }
+                PrimaryPushButton:hover{
+                    background-color: #FF7E83;
+                    border: 1px solid #FF8084;
+                    border-bottom: 1px solid #B13939;
+                }
+                PrimaryPushButton:pressed{
+                    color: rgba(255, 255, 255, 0.63);
+                    background-color: #DB5359;
+                    border: 1px solid #DB5359;
+                }
+            """)
+        alert.cancelButton.setText('我再想想……')
+        if alert.exec():
+            global enabled_plugins
+            if self.plugin_dir in enabled_plugins:  # 移除启动项
+                enabled_plugins['enabled_plugins'].remove(self.plugin_dir)
+                conf.save_plugin_config(enabled_plugins)
+            try:
+                rmtree(os.path.join(os.getcwd(), conf.PLUGINS_DIR, self.plugin_dir))  # 删除插件
+                self.setParent(None)
+                self.deleteLater()  # 删除卡片
+            except Exception as e:
+                logger.error(f'删除插件“{self.title}”时发生错误：{e}')
+
+
 class desktop_widget(FluentWindow):
     def __init__(self):
         super().__init__()
@@ -161,6 +283,8 @@ class desktop_widget(FluentWindow):
             self.sdInterface.setObjectName("sdInterface")
             self.hdInterface = uic.loadUi('menu-help.ui')
             self.hdInterface.setObjectName("hdInterface")
+            self.plInterface = uic.loadUi('menu-plugin_mgr.ui')
+            self.plInterface.setObjectName("plInterface")
 
             self.init_nav()
             self.init_window()
@@ -182,14 +306,44 @@ class desktop_widget(FluentWindow):
         self.setup_configs_interface()
         self.setup_sound_interface()
         self.setup_help_interface()
+        self.setup_plugin_mgr_interface()
 
     # 初始化界面
+    def setup_plugin_mgr_interface(self):
+        global plugin_dict, enabled_plugins
+        enabled_plugins = conf.load_plugin_config()  # 加载启用的插件
+        plugin_dict = (conf.load_plugins())  # 加载插件信息
+
+        plugin_card_layout = self.findChild(QVBoxLayout, 'plugin_card_layout')
+        open_plugin_folder = self.findChild(HyperlinkLabel, 'open_plugin_folder')
+        open_plugin_folder.clicked.connect(lambda: os.startfile(os.path.join(os.getcwd(), conf.PLUGINS_DIR)))  # 打开插件目录
+        for plugin in plugin_dict:
+            if (Path(conf.PLUGINS_DIR) / plugin / 'icon.png').exists():  # 若插件目录存在icon.png
+                icon_path = f'plugins/{plugin}/icon.png'
+            else:
+                icon_path = 'img/settings/plugin-icon.png'
+            card = PluginCard(
+                icon=icon_path,
+                title=plugin_dict[plugin]['name'],
+                version=plugin_dict[plugin]['version'],
+                author=plugin_dict[plugin]['author'],
+                plugin_dir=plugin,
+                content=plugin_dict[plugin]['description'],
+                parent=self
+            )
+            plugin_card_layout.addWidget(card)
+
+        tips_plugin_empty = self.findChild(QLabel, 'tips_plugin_empty')
+        if plugin_dict:
+            tips_plugin_empty.hide()
+
     def setup_help_interface(self):
         help_docu = FramelessWebEngineView(self)
         help_docu.load(QUrl("https://www.yuque.com/rinlit/class-widgets_help"))
         help_docu.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         open_by_browser = self.findChild(PushButton, 'open_by_browser')
+        open_by_browser.setIcon(fIcon.LINK)
         open_by_browser.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(
             'https://www.yuque.com/rinlit/class-widgets_help'
         )))
@@ -223,15 +377,16 @@ class desktop_widget(FluentWindow):
         pre_toast_menu = RoundMenu(parent=preview_toast_button)
         pre_toast_menu.addActions([
             Action(fIcon.EDUCATION, '上课提醒',
-                   triggered=lambda: toast.main(1, lesson_name='信息技术')),
+                   triggered=lambda: tip_toast.push_notification(1, lesson_name='信息技术')),
             Action(fIcon.CAFE, '下课提醒',
-                   triggered=lambda: toast.main(0, lesson_name='信息技术')),
+                   triggered=lambda: tip_toast.push_notification(0, lesson_name='信息技术')),
             Action(fIcon.BOOK_SHELF, '预备提醒',
-                   triggered=lambda: toast.main(3, lesson_name='信息技术')),
+                   triggered=lambda: tip_toast.push_notification(3, lesson_name='信息技术')),
             Action(fIcon.CODE, '其他提醒',
-                   triggered=lambda: toast.main(4, title='通知', subtitle='测试通知示例', content='这是一条测试通知ヾ(≧▽≦*)o'))
+                   triggered=lambda: tip_toast.push_notification(4, title='通知', subtitle='测试通知示例',
+                                                content='这是一条测试通知ヾ(≧▽≦*)o'))
         ])
-        preview_toast_button.setMenu(pre_toast_menu)# 预览通知栏
+        preview_toast_button.setMenu(pre_toast_menu)  # 预览通知栏
 
         switch_wave_effect = self.findChild(SwitchButton, 'switch_enable_wave')
         switch_wave_effect.setChecked(int(conf.read_conf('Toast', 'wave')))
@@ -252,8 +407,16 @@ class desktop_widget(FluentWindow):
     def setup_customization_interface(self):
         self.ct_update_preview()
 
-        widgets_list = self.findChild(ListWidget, 'widgets_list')
-        widgets_list.addItems((list.widget_name[key] for key in list.get_widget_config()))
+        widgets_list_widgets = self.findChild(ListWidget, 'widgets_list')
+        widgets_list = []
+        for key in list.get_widget_config():
+            try:
+                widgets_list.append(list.widget_name[key])
+            except KeyError:
+                logger.warning(f'未知的组件：{key}')
+            except:
+                logger.error(f'获取组件名称时发生错误：{sys.exc_info()[0]}')
+        widgets_list_widgets.addItems(widgets_list)
 
         save_config_button = self.findChild(PrimaryPushButton, 'save_config')
         save_config_button.clicked.connect(self.ct_save_widget_config)
@@ -644,7 +807,7 @@ class desktop_widget(FluentWindow):
         conf.write_conf('Toast', 'prepare_minutes', str(prepare_time_spin.value()))
 
     def clear_log(self):  # 清空日志
-        def get_directory_size(path):  #计算目录大小
+        def get_directory_size(path):  # 计算目录大小
             total_size = 0
             for dirpath, dirnames, filenames in os.walk(path):
                 for filename in filenames:
@@ -1451,6 +1614,8 @@ class desktop_widget(FluentWindow):
         self.addSubInterface(self.cfInterface, fIcon.FOLDER, '配置文件')
         self.navigationInterface.addSeparator()
         self.addSubInterface(self.hdInterface, fIcon.QUESTION, '帮助')
+        self.addSubInterface(self.plInterface, fIcon.APPLICATION, '插件', NavigationItemPosition.BOTTOM)
+        self.navigationInterface.addSeparator(NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.ctInterface, fIcon.BRUSH, '自定义', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.sdInterface, fIcon.RINGER, '提醒', NavigationItemPosition.BOTTOM)
         self.addSubInterface(self.adInterface, fIcon.SETTING, '高级选项', NavigationItemPosition.BOTTOM)

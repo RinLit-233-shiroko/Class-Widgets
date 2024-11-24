@@ -287,10 +287,16 @@ def export_schedule(filepath, filename):  # 导出课表
 
 def get_widget_config():
     try:
-        with open(f'config/widget.json', 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            c = data
-        return c['widgets']
+        if os.path.exists(f'config/widget.json'):
+            with open(f'config/widget.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+        else:
+            with open(f'config/widget.json', 'w', encoding='utf-8') as file:
+                data = {'widgets': [
+                    'widget-weather.ui', 'widget-countdown.ui', 'widget-current-activity.ui', 'widget-next-activity.ui'
+                ]}
+                json.dump(data, file, indent=4)
+        return data['widgets']
     except Exception as e:
         logger.error(f'ReadWidgetConfigFAILD: {e}')
         return default_widgets

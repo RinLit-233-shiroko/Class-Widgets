@@ -5,7 +5,7 @@ import soundfile
 from PyQt6 import uic
 from PyQt6.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QTimer, QPoint, \
     pyqtProperty
-from PyQt6.QtGui import QColor, QPainter, QBrush
+from PyQt6.QtGui import QColor, QPainter, QBrush, QPixmap
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QFrame, QGraphicsDropShadowEffect, QGraphicsBlurEffect
 from loguru import logger
 from qfluentwidgets import setThemeColor, Theme, setTheme
@@ -17,6 +17,9 @@ prepare_class = conf.read_conf('Audio', 'prepare_class')
 attend_class = conf.read_conf('Audio', 'attend_class')
 finish_class = conf.read_conf('Audio', 'finish_class')
 
+pushed_notification = False
+notification_contents = {"state": None, "lesson_name": None, "title": None, "subtitle": None, "content": None}
+
 # 波纹效果
 normal_color = '#56CFD8'
 
@@ -25,7 +28,7 @@ window_list = []  # 窗口列表
 
 # 重写力
 class tip_toast(QWidget):
-    def __init__(self, pos, width, state=1, lesson_name='', title='', subtitle='', content=''):
+    def __init__(self, pos, width, state=1, lesson_name=None, title=None, subtitle=None, content=None, icon=None):
         super().__init__()
         uic.loadUi("widget-toast-bar.ui", self)
 
@@ -45,6 +48,12 @@ class tip_toast(QWidget):
         backgnd = self.findChild(QFrame, 'backgnd')
         lesson = self.findChild(QLabel, 'lesson')
         subtitle_label = self.findChild(QLabel, 'subtitle')
+        icon_label = self.findChild(QLabel, 'icon')
+
+        if icon:
+            pixmap = QPixmap(icon)
+            pixmap = pixmap.scaled(48, 48)
+            icon_label.setPixmap(pixmap)
 
         if state == 1:
             logger.info('上课铃声显示')
@@ -111,7 +120,7 @@ class tip_toast(QWidget):
         backgnd.setStyleSheet(f'font-weight: bold; border-radius: {radius}; '
                               'background-color: qlineargradient('
                               'spread:pad, x1:0, y1:0, x2:1, y2:1,'
-                              f' stop:0 {bg_color[1]},stop:0.15 {bg_color[0]}, stop:0.6 {bg_color[0]}, stop:1 {bg_color[2]}'
+                              f' stop:0 {bg_color[1]}, stop:0.5 {bg_color[0]}, stop:1 {bg_color[2]}'
                               ');'
                               )
 
@@ -181,6 +190,10 @@ class tip_toast(QWidget):
         self.opacity_animation_close.start()
         self.blur_animation_close.start()
         self.opacity_animation_close.finished.connect(self.close)
+
+    def closeEvent(self, event):
+        self.deleteLater()
+        event.accept()
 
 
 class wave_Effect(QWidget):
@@ -257,6 +270,10 @@ class wave_Effect(QWidget):
         loc = QPoint(center.x(), self.rect().top() + start_y + 50)
         painter.drawEllipse(loc, self._radius, self._radius)
 
+    def closeEvent(self, event):
+        self.deleteLater()
+        event.accept()
+
 
 def playsound(filename):
     try:
@@ -268,25 +285,30 @@ def playsound(filename):
         logger.error(f'读取音频文件出错：{e}')
 
 
-def generate_gradient_color(theme_color): # 计算渐变色
+def generate_gradient_color(theme_color):  # 计算渐变色
     def adjust_color(color, factor):
         r = max(0, min(255, int(color.red() * (1 + factor))))
         g = max(0, min(255, int(color.green() * (1 + factor))))
         b = max(0, min(255, int(color.blue() * (1 + factor))))
         # return QColor(r, g, b)
         return f'rgba({r}, {g}, {b}, 255)'
+
     color = QColor(theme_color)
     gradient = [adjust_color(color, 0), adjust_color(color, 0.24), adjust_color(color, -0.11)]
     return gradient
 
 
-
 def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
-         content='这是一条通知示例'):  # 0:下课铃声 1:上课铃声 2:放学铃声 3:预备铃 4:其他
+         content='这是一条通知示例', icon=None):  # 0:下课铃声 1:上课铃声 2:放学铃声 3:预备铃 4:其他
     if detect_enable_toast(state):
         return
 
     global start_x, start_y, total_width, height, radius, attend_class_color, finish_class_color, prepare_class_color
+
+    widgets = list.get_widget_config()
+    for widget in widgets:  # 检查组件
+        if widget not in list.widget_name:
+            widgets.remove(widget)  # 移除不存在的组件(确保移除插件后不会出错)
 
     attend_class_color = f"#{conf.read_conf('Color', 'attend_class')}"
     finish_class_color = f"#{conf.read_conf('Color', 'finish_class')}"
@@ -306,8 +328,17 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
     screen_geometry = QApplication.primaryScreen().geometry()
     screen_width = screen_geometry.width()
     spacing = conf.load_theme_config(theme)['spacing']
-    widgets = list.get_widget_config()
-    total_width = sum(conf.load_theme_width(theme)[key] for key in widgets) + spacing * (len(widgets) - 1)
+
+    widgets_width = 0
+    for widget in widgets:  # 计算总宽度(兼容插件)
+        try:
+            widgets_width += conf.load_theme_width(theme)[widget]
+        except KeyError:
+            widgets_width += list.widget_width[widget]
+        except:
+            widgets_width += 0
+
+    total_width = widgets_width + spacing * (len(widgets) - 1)
 
     start_x = int((screen_width - total_width) / 2)
     start_y = int(conf.read_conf('General', 'margin'))
@@ -315,7 +346,15 @@ def main(state=1, lesson_name='', title='通知示例', subtitle='副标题',
     if state != 4:
         window = tip_toast((start_x, start_y), total_width, state, lesson_name)
     else:
-        window = tip_toast((start_x, start_y), total_width, state, '', title, subtitle, content)
+        window = tip_toast(
+            (start_x, start_y),
+            total_width, state,
+            '',
+            title,
+            subtitle,
+            content,
+            icon
+        )
 
     window.show()
     window_list.append(window)
@@ -335,7 +374,28 @@ def detect_enable_toast(state=0):
         return True
 
 
+def push_notification(state=1, lesson_name='', title=None, subtitle=None,
+                      content=None):  # 推送通知
+    global pushed_notification, notification_contents
+    pushed_notification = True
+    notification_contents = {
+        "state": state,
+        "lesson_name": lesson_name,
+        "title": title,
+        "subtitle": subtitle,
+        "content": content
+    }
+    main(state, lesson_name, title, subtitle, content)
+    return notification_contents
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main(4, '', '测试通知喵', 'By Rin.', '欢迎使用 ClassWidgets')
+    main(
+        state=4,
+        title='测试通知喵',
+        subtitle='By Rin.',
+        content='欢迎使用 ClassWidgets',
+        icon='img/favicon.png'
+    )
     sys.exit(app.exec())
