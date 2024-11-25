@@ -35,7 +35,7 @@
    <item>
     <widget class="QFrame" name="backgnd">
      <property name="styleSheet">
-      <string notr="true">background-color: rgba(245, 245, 255, 245);
+      <string notr="true">background-color: rgba(10, 10, 15, 245);
 border-radius: 38px</string>
      </property>
      <property name="frameShape">
@@ -134,7 +134,7 @@ border-radius: 38px</string>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgba(0, 0, 0, 90);
+               <string notr="true">color: rgba(188, 188, 188, 200);
 background-color: rgba(0,0,0,0);
 font-weight: bold;</string>
               </property>
@@ -163,7 +163,7 @@ font-weight: bold;</string>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgba(37, 37, 37, 255);
+               <string notr="true">color: rgba(255, 255, 255, 255);
 background-color: rgba(0,0,0,0);
 font-weight: bold</string>
               </property>

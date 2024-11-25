@@ -392,10 +392,15 @@ class PluginMethod:  # 插件方法
         self.app_contexts['Widgets_Name'][widget_code] = widget_name
         self.app_contexts['Widgets_Code'][widget_name] = widget_code
 
+    def get_widget(self, widget_code):  # 获取小组件实例
+        for widget in mgr.widgets:
+            if widget.path == widget_code:
+                return widget
+
     def change_widget_content(self, widget_code, title, content):  # 修改小组件内容
         for widget in mgr.widgets:
             if widget.path == widget_code:
-                widget.update_widget_for_plugin(widget_code, [title, content])
+                widget.update_widget_for_plugin([title, content])
 
     def is_get_notification(self):  # 检查是否有通知
         if notification.pushed_notification:
@@ -554,7 +559,11 @@ class openProgressDialog(QWidget):
     def init_ui(self):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        uic.loadUi('ui/default/toast-open_dialog.ui', self)
+
+        if isDarkTheme():
+            uic.loadUi('ui/default/dark/toast-open_dialog.ui', self)
+        else:
+            uic.loadUi('ui/default/toast-open_dialog.ui', self)
 
         backgnd = self.findChild(QFrame, 'backgnd')
         shadow_effect = QGraphicsDropShadowEffect(self)
@@ -823,12 +832,11 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
             self.ac_title = self.findChild(QLabel, 'activity_countdown_title')
         elif path == 'widget-current-activity.ui':  # 当前活动
-            self.current_lesson_name_text = self.findChild(QPushButton, 'subject')
+            self.current_subject = self.findChild(QPushButton, 'subject')
             self.blur_effect_label = self.findChild(QLabel, 'blurEffect')
             # 模糊效果
             self.blur_effect = QGraphicsBlurEffect()
-            button = self.findChild(QPushButton, 'subject')
-            # button.clicked.connect(self.open_exact_menu)
+            self.current_subject.mouseReleaseEvent = self.rightReleaseEvent
 
             self.d_t_timer = QTimer(self)
             self.d_t_timer.setInterval(500)
@@ -870,12 +878,11 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.timer = QTimer(self)
         self.update_time()
 
-    def update_widget_for_plugin(self, plugin_path, context=['title', 'desc']):
-        if self.path == plugin_path:
-            title = self.findChild(QLabel, 'title')
-            desc = self.findChild(QLabel, 'content')
-            title.setText(context[0])
-            desc.setText(context[1])
+    def update_widget_for_plugin(self, context=['title', 'desc']):
+        title = self.findChild(QLabel, 'title')
+        desc = self.findChild(QLabel, 'content')
+        title.setText(context[0])
+        desc.setText(context[1])
 
     def update_time(self):
         if self.path == 'widget-current-activity.ui':
@@ -980,6 +987,11 @@ class DesktopWidget(QWidget):  # 主要小组件
             else:
                 mgr.show_windows()
 
+    def rightReleaseEvent(self, event):  # 右键事件
+        event.ignore()
+        if event.button() == Qt.MouseButton.RightButton:
+            self.open_exact_menu()
+
     def update_data(self, path=''):
         global current_time, current_week, filename, start_y, time_offset
 
@@ -1022,7 +1034,7 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.day_text.setText(f'{today.day} 日 {list.week[today.weekday()]}')
 
         elif path == 'widget-current-activity.ui':  # 当前活动
-            self.current_lesson_name_text.setText(f'  {current_lesson_name}')
+            self.current_subject.setText(f'  {current_lesson_name}')
             render = QSvgRenderer(list.get_subject_icon(current_lesson_name))
             pixmap = QPixmap(render.defaultSize())
             pixmap.fill(Qt.GlobalColor.transparent)
@@ -1032,7 +1044,7 @@ class DesktopWidget(QWidget):  # 主要小组件
                 painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
                 painter.fillRect(pixmap.rect(), QColor("#FFFFFF"))
             painter.end()
-            self.current_lesson_name_text.setIcon(QIcon(pixmap))
+            self.current_subject.setIcon(QIcon(pixmap))
             self.blur_effect.setBlurRadius(25)  # 模糊半径
             self.blur_effect_label.setStyleSheet(
                 f'background-color: rgba{list.subject_color(current_lesson_name)}, 200);'
@@ -1184,7 +1196,9 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.animation.start()
 
     # 点击自动隐藏
-    def mousePressEvent(self, event):
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            return  # 右键不执行
         if conf.read_conf('General', 'hide') != '2':  # 置顶
             if mgr.state:
                 mgr.decide_to_hide()
