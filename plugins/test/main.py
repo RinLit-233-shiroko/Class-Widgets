@@ -23,24 +23,25 @@ class Plugin:  # 插件类
         self.CONFIG_PATH = f'{cw_contexts["PLUGIN_PATH"]}/config.json'  # 配置文件路径
         self.PATH = cw_contexts['PLUGIN_PATH']  # 插件路径
 
-        self.method.register_widget(WIDGET_CODE, WIDGET_NAME, WIDGET_WIDTH)
+        self.method.register_widget(WIDGET_CODE, WIDGET_NAME, WIDGET_WIDTH)  # 注册小组件到CW
 
     def execute(self):  # 自启动执行部分
         # 小组件自定义（照PyQt的方法正常写）
         self.test_widget = self.method.get_widget(WIDGET_CODE)  # 获取小组件对象
 
-        contentLayout = self.test_widget.findChild(QHBoxLayout, 'contentLayout')  # 标题布局
-        contentLayout.setSpacing(1)  # 设置间距
+        if self.test_widget:  # 判断小组件是否存在
+            contentLayout = self.test_widget.findChild(QHBoxLayout, 'contentLayout')  # 标题布局
+            contentLayout.setSpacing(1)  # 设置间距
 
-        self.testimg = QLabel()  # 自定义图片
-        pixmap = QPixmap(f'{self.PATH}/img/favicon.png')  # 加载图片
-        pixmap = pixmap.scaled(
-            36, 30,
-            Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation
-        )  # 缩放图片
-        self.testimg.setPixmap(pixmap)  # 设置图片
+            self.testimg = QLabel()  # 自定义图片
+            pixmap = QPixmap(f'{self.PATH}/img/favicon.png')  # 加载图片
+            pixmap = pixmap.scaled(
+                36, 30,
+                Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation
+            )  # 缩放图片
+            self.testimg.setPixmap(pixmap)  # 设置图片
 
-        contentLayout.addWidget(self.testimg)  # 添加图片到布局
+            contentLayout.addWidget(self.testimg)  # 添加图片到布局
 
         # Others
 
@@ -54,12 +55,14 @@ class Plugin:  # 插件类
 
     def update(self, cw_contexts):  # 自动更新部分
         self.cw_contexts = cw_contexts
-        widget_title = f'天气:{self.cw_contexts["Weather"]}，当前秒:{datetime.now().second}'  # 标题内容
 
-        if self.cw_contexts['State']:  # 判断当前状态
-            self.method.change_widget_content(WIDGET_CODE, widget_title, '上课状态')
-        else:
-            self.method.change_widget_content(WIDGET_CODE, widget_title, '课间状态')
+        if self.test_widget:  # 判断小组件是否存在
+            widget_title = f'天气:{self.cw_contexts["Weather"]}，当前秒:{datetime.now().second}'  # 标题内容
+
+            if self.cw_contexts['State']:  # 判断当前状态
+                self.method.change_widget_content(WIDGET_CODE, widget_title, '上课状态')
+            else:
+                self.method.change_widget_content(WIDGET_CODE, widget_title, '课间状态')
 
         if self.method.is_get_notification():
             logger.warning('warning', f'Plugin1 got notification! Title: {self.cw_contexts["Notification"]["title"]}')

@@ -333,19 +333,22 @@ class PluginLoader:  # 插件加载器
         self.plugins = []
 
     def load_plugins(self):
-        for folder in Path(conf.PLUGINS_DIR).iterdir():
-            if folder.is_dir() and (folder / 'plugin.json').exists():
-                if folder.name not in conf.load_plugin_config()['enabled_plugins']:
-                    continue
-                module_name = f"{conf.PLUGINS_DIR}.{folder.name}"
-                try:
-                    module = importlib.import_module(module_name)
-                    if hasattr(module, 'Plugin'):
-                        plugin_class = getattr(module, "Plugin")  # 获取 Plugin 类
-                        self.plugins.append(plugin_class(p_mgr.get_app_contexts(folder.name), p_mgr.method))  # 实例化插件
-                    logger.success(f"加载插件成功：{module_name}")
-                except Exception as e:
-                    logger.error(f"加载插件失败：{e}")
+        try:
+            for folder in Path(conf.PLUGINS_DIR).iterdir():
+                if folder.is_dir() and (folder / 'plugin.json').exists():
+                    if folder.name not in conf.load_plugin_config()['enabled_plugins']:
+                        continue
+                    module_name = f"{conf.PLUGINS_DIR}.{folder.name}"
+                    try:
+                        module = importlib.import_module(module_name)
+                        if hasattr(module, 'Plugin'):
+                            plugin_class = getattr(module, "Plugin")  # 获取 Plugin 类
+                            self.plugins.append(plugin_class(p_mgr.get_app_contexts(folder.name), p_mgr.method))  # 实例化插件
+                        logger.success(f"加载插件成功：{module_name}")
+                    except Exception as e:
+                        logger.error(f"加载插件失败：{e}")
+        except Exception as e:
+            logger.error(f"加载插件失败!：{e}")
         return self.plugins
 
     def run_plugins(self):
