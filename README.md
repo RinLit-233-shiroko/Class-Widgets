@@ -13,11 +13,11 @@
 
 <div align="center">
 
-![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=flat&color=orange&label=星标)
-![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat&color=purple&label=当前版本)
-![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow)
-![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证)
-![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green)
+[![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=flat-square&color=orange&label=星标)](https://github.com/RinLit-233-shiroko/Class-Widgets)
+[![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat-square&color=purple&label=当前版本)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/latest)
+[![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases)
+[![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets)
+[![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets)
 
 ![Banner](img/Banner.png)
 
@@ -27,6 +27,7 @@
 
 
 ## 特性
+- *可加载Python语言的**插件**系统和插件广场（Plugin Plaza）——Coming Soon*
 - 将今日的课程安排以**小组件**的样式为你呈现；
 - 具有 [上下课提醒](https://www.yuque.com/rinlit/class-widgets_help/fv2ou1i1ngap0hrl) 和预备铃；
 - 拥有主题系统支持你高度自定义。
