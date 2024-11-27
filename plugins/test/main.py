@@ -29,7 +29,7 @@ class Plugin:  # 插件类
         # 小组件自定义（照PyQt的方法正常写）
         self.test_widget = self.method.get_widget(WIDGET_CODE)  # 获取小组件对象
 
-        if self.test_widget:  # 判断小组件是否存在
+        if hasattr(self, 'test_widget'):  # 判断小组件是否存在
             contentLayout = self.test_widget.findChild(QHBoxLayout, 'contentLayout')  # 标题布局
             contentLayout.setSpacing(1)  # 设置间距
 
@@ -56,7 +56,7 @@ class Plugin:  # 插件类
     def update(self, cw_contexts):  # 自动更新部分
         self.cw_contexts = cw_contexts
 
-        if self.test_widget:  # 判断小组件是否存在
+        if hasattr(self, 'test_widget'):  # 判断小组件是否存在
             widget_title = f'天气:{self.cw_contexts["Weather"]}，当前秒:{datetime.now().second}'  # 标题内容
 
             if self.cw_contexts['State']:  # 判断当前状态
