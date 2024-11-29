@@ -986,7 +986,7 @@ class DesktopWidget(QWidget):  # 主要小组件
     def on_tray_icon_clicked(self, reason):  # 点击托盘图标隐藏
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             if mgr.state:
-                mgr.hide_windows()
+                mgr.decide_to_hide()
             else:
                 mgr.show_windows()
 
