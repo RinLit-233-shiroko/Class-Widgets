@@ -3,13 +3,13 @@ from pathlib import Path
 from shutil import rmtree
 
 import requests
-from PyQt6 import uic, QtCore
-from PyQt6.QtCore import Qt, QTime, QUrl, QDate, QThread, pyqtSignal
+from PyQt5 import uic, QtCore
+from PyQt5.QtCore import Qt, QTime, QUrl, QDate, QThread, pyqtSignal
 from qframelesswindow.webengine import FramelessWebEngineView
 import sys
 
-from PyQt6.QtGui import QIcon, QDesktopServices, QPixmap, QColor
-from PyQt6.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, \
+from PyQt5.QtGui import QIcon, QDesktopServices, QPixmap, QColor
+from PyQt5.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, \
     QSpacerItem, QFileDialog, QVBoxLayout
 from qfluentwidgets import (
     Theme, setTheme, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
@@ -17,7 +17,7 @@ from qfluentwidgets import (
     FlyoutAnimationType, NavigationItemPosition, MessageBox, SubtitleLabel, PushButton, SwitchButton,
     CalendarPicker, BodyLabel, ColorDialog, isDarkTheme, TimeEdit, EditableComboBox, MessageBoxBase,
     SearchLineEdit, Slider, PlainTextEdit, ToolTipFilter, ToolTipPosition, RadioButton, HyperlinkLabel,
-    PrimaryDropDownPushButton, Action, RoundMenu, CardWidget, TransparentToolButton, ImageLabel, StrongBodyLabel,
+    PrimaryDropDownPushButton, Action, RoundMenu, CardWidget, ImageLabel, StrongBodyLabel,
     TransparentDropDownToolButton
 )
 from copy import deepcopy
@@ -261,8 +261,6 @@ class PluginCard(CardWidget):  # 插件卡片
 class desktop_widget(FluentWindow):
     def __init__(self):
         super().__init__()
-        # 设置窗口无边框和透明背景
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         try:
             # 创建子页面
             self.spInterface = uic.loadUi('menu-preview.ui')
@@ -1628,6 +1626,7 @@ class desktop_widget(FluentWindow):
         self.setMinimumHeight(400)
         self.navigationInterface.setExpandWidth(250)
         self.navigationInterface.setCollapsible(False)
+        self.setMicaEffectEnabled(True)
 
         # 修复设置窗口在各个屏幕分辨率DPI下的窗口大小
         screen_geometry = QApplication.primaryScreen().geometry()
@@ -1642,13 +1641,6 @@ class desktop_widget(FluentWindow):
 
         self.setWindowTitle('Class Widgets - 设置')
         self.setWindowIcon(QIcon('img/favicon-settings.ico'))
-
-        if conf.read_conf('General', 'color_mode') == '2':
-            setTheme(Theme.AUTO)
-        elif conf.read_conf('General', 'color_mode') == '1':
-            setTheme(Theme.DARK)
-        else:
-            setTheme(Theme.LIGHT)
 
         self.init_font()  # 设置字体
 
@@ -1671,5 +1663,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     settings = desktop_widget()
     settings.show()
-    settings.setMicaEffectEnabled(True)
+    # settings.setMicaEffectEnabled(True)
     sys.exit(app.exec())

@@ -2,11 +2,11 @@ import sys
 
 import sounddevice
 import soundfile
-from PyQt6 import uic
-from PyQt6.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QTimer, QPoint, \
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve, QTimer, QPoint, \
     pyqtProperty
-from PyQt6.QtGui import QColor, QPainter, QBrush, QPixmap
-from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QFrame, QGraphicsDropShadowEffect, QGraphicsBlurEffect
+from PyQt5.QtGui import QColor, QPainter, QBrush, QPixmap
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QFrame, QGraphicsDropShadowEffect, QGraphicsBlurEffect
 from loguru import logger
 from qfluentwidgets import setThemeColor, Theme, setTheme
 

@@ -4,13 +4,13 @@ import os
 from shutil import copy
 import pygetwindow
 import requests
-from PyQt6 import uic
-from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
+from PyQt5 import uic
+from PyQt5.QtSvg import QSvgRenderer
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QProgressBar, QGraphicsBlurEffect, QPushButton, \
     QGraphicsDropShadowEffect, QSystemTrayIcon, QFrame, QGraphicsOpacityEffect
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, \
+from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QEasingCurve, QSharedMemory, QThread, pyqtSignal, \
     QSize
-from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
+from PyQt5.QtGui import QColor, QIcon, QPixmap, QPainter
 from loguru import logger
 import sys
 from qfluentwidgets import Theme, setTheme, setThemeColor, SystemTrayMenu, Action, FluentIcon as FIcon, isDarkTheme, \
@@ -19,7 +19,7 @@ import datetime as dt
 import list
 import conf
 import tip_toast
-from PyQt6.QtGui import QFontDatabase
+from PyQt5.QtGui import QFontDatabase
 
 import menu
 import exact_menu
@@ -785,17 +785,17 @@ class FloatingWidget(QWidget):  # 浮窗
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.m_flag = True
-            self.m_Position = event.globalPosition().toPoint() - self.pos()  # 获取鼠标相对窗口的位置
-            self.p_Position = event.globalPosition().toPoint()  # 获取鼠标相对屏幕的位置
+            self.m_Position = event.globalPos() - self.pos()  # 获取鼠标相对窗口的位置
+            self.p_Position = event.globalPos()  # 获取鼠标相对屏幕的位置
             event.accept()
 
     def mouseMoveEvent(self, event):
         if Qt.MouseButton.LeftButton and self.m_flag:
-            self.move(event.globalPosition().toPoint() - self.m_Position)  # 更改窗口位置
+            self.move(event.globalPos() - self.m_Position)  # 更改窗口位置
             event.accept()
 
     def mouseReleaseEvent(self, event):
-        self.r_Position = event.globalPosition().toPoint()  # 获取鼠标相对窗口的位置
+        self.r_Position = event.globalPos()  # 获取鼠标相对窗口的位置
         self.m_flag = False
         if (self.r_Position == self.p_Position and not self.animating and
                 conf.read_conf('General', 'hide') == '0'):  # 开启自动隐藏忽略点击事件
