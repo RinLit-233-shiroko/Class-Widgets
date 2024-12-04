@@ -33,6 +33,7 @@ filename = conf.read_conf('General', 'schedule')
 
 # 存储窗口对象
 windows = []
+order = []
 
 current_lesson_name = '课程表未加载'
 current_state = 0  # 0：课间 1：上课
@@ -53,6 +54,9 @@ city = 101010100  # 默认城市
 
 time_offset = 0  # 时差偏移
 first_start = True
+
+settings = None
+ex_menu = None
 
 if conf.read_conf('Other', 'do_not_log') != '1':
     logger.add("log/ClassWidgets_main_{time}.log", rotation="1 MB", encoding="utf-8", retention="1 minute")
@@ -102,19 +106,20 @@ def get_start_time():
 
 
 def get_part():
+    def return_data():
+        c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
+        if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
+            return c_time, int(order[i])
+
     current_dt = dt.datetime.now()
     for i in range(len(parts_start_time)):  # 遍历每个Part
         if i == len(parts_start_time) - 1:  # 最后一个Part
             if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
-                c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
-                    return c_time, int(order[i])
+                return_data()
         else:
             if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
                     - dt.timedelta(minutes=30)):
-                c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
-                if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
-                    return c_time, int(order[i])
+                return_data()
     return parts_start_time[0] + dt.timedelta(seconds=time_offset), 0
 
 
@@ -343,7 +348,8 @@ class PluginLoader:  # 插件加载器
                         module = importlib.import_module(module_name)
                         if hasattr(module, 'Plugin'):
                             plugin_class = getattr(module, "Plugin")  # 获取 Plugin 类
-                            self.plugins.append(plugin_class(p_mgr.get_app_contexts(folder.name), p_mgr.method))  # 实例化插件
+                            # 实例化插件
+                            self.plugins.append(plugin_class(p_mgr.get_app_contexts(folder.name), p_mgr.method))
                         logger.success(f"加载插件成功：{module_name}")
                     except Exception as e:
                         logger.error(f"加载插件失败：{e}")
@@ -625,6 +631,8 @@ class FloatingWidget(QWidget):  # 浮窗
         self.position = None
         self.animating = False
         self.focusing = False
+        self.text_changed = False
+        self.zoom = 2
 
         self.current_lesson_name_text = self.findChild(QLabel, 'subject')
         self.activity_countdown = self.findChild(QLabel, 'activity_countdown')
@@ -705,7 +713,6 @@ class FloatingWidget(QWidget):  # 浮窗
 
     def showEvent(self, event):  # 窗口显示
         logger.info('显示浮窗')
-        self.zoom = 2
         self.move((screen_width - self.width()) // 2, 50)
         self.setMinimumSize(QSize(self.width() // self.zoom, self.height() // self.zoom))
         if self.position:  # 最小化为浮窗
@@ -809,8 +816,6 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.last_code = 101010100
         self.last_theme = conf.read_conf('General', 'theme')
         self.last_color_mode = conf.read_conf('General', 'color_mode')
-        self.menu = None
-        self.ex_menu = None
         self.w = 100
 
         try:
@@ -1117,22 +1122,34 @@ class DesktopWidget(QWidget):  # 主要小组件
             logger.error(f'获取天气数据出错：{weather_data}')
 
     def open_settings(self):
-        if self.menu is None or not self.menu.isVisible():
-            self.menu = menu.desktop_widget()
-            self.menu.show()
+        global settings
+        try:
+            if settings is None or not settings.isVisible():
+                settings = menu.desktop_widget()
+                settings.show()
+                logger.info('打开“设置”')
+            else:
+                settings.raise_()
+                settings.activateWindow()
+        except Exception as e:
+            settings = menu.desktop_widget()
+            settings.show()
             logger.info('打开“设置”')
-        else:
-            self.menu.raise_()
-            self.menu.activateWindow()
 
     def open_exact_menu(self):
-        if self.ex_menu is None or not self.ex_menu.isVisible():
-            self.ex_menu = exact_menu.ExactMenu()
-            self.ex_menu.show()
+        global ex_menu
+        try:
+            if ex_menu is None or not ex_menu.isVisible():
+                ex_menu = exact_menu.ExactMenu()
+                ex_menu.show()
+                logger.info('打开“额外选项”')
+            else:
+                ex_menu.raise_()
+                ex_menu.activateWindow()
+        except Exception as e:
+            ex_menu = exact_menu.ExactMenu()
+            ex_menu.show()
             logger.info('打开“额外选项”')
-        else:
-            self.ex_menu.raise_()
-            self.ex_menu.activateWindow()
 
     def hide_show_widgets(self):  # 隐藏/显示主界面（全部隐藏）
         if mgr.state:
@@ -1292,6 +1309,7 @@ def init():
         application.show()
 
     logger.info(f'Class Widgets 启动。版本: {conf.read_conf("Other", "version")}')
+    p_loader.run_plugins()  # 运行插件
 
     first_start = False
 
@@ -1324,14 +1342,15 @@ if __name__ == '__main__':
                 list.create_new_profile('新课表 - 1.json')
             except Exception as e:
                 logger.error(f'创建新课表失败：{e}')
+
         theme = conf.read_conf('General', 'theme')  # 主题
+
         fw = FloatingWidget()
         p_loader = PluginLoader()
         p_mgr = PluginManager()
 
         p_loader.load_plugins()
         init()
-        p_loader.run_plugins()
         get_start_time()
         get_current_lessons()
         get_current_lesson_name()

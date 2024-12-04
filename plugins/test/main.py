@@ -7,6 +7,7 @@ from datetime import datetime
 
 from PyQt6.QtWidgets import QHBoxLayout, QLabel
 from PyQt6.QtGui import QPixmap
+from qfluentwidgets import ImageLabel
 
 # 自定义小组件
 WIDGET_CODE = 'widget_test.ui'
@@ -33,13 +34,8 @@ class Plugin:  # 插件类
             contentLayout = self.test_widget.findChild(QHBoxLayout, 'contentLayout')  # 标题布局
             contentLayout.setSpacing(1)  # 设置间距
 
-            self.testimg = QLabel()  # 自定义图片
-            pixmap = QPixmap(f'{self.PATH}/img/favicon.png')  # 加载图片
-            pixmap = pixmap.scaled(
-                36, 30,
-                Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation
-            )  # 缩放图片
-            self.testimg.setPixmap(pixmap)  # 设置图片
+            self.testimg = ImageLabel(f'{self.PATH}/img/favicon.png')  # 自定义图片
+            self.testimg.setFixedSize(36, 30)
 
             contentLayout.addWidget(self.testimg)  # 添加图片到布局
 

@@ -104,7 +104,7 @@ background-color: rgba(255, 255, 255, 0);</string>
         <item>
          <widget class="QLabel" name="content">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
