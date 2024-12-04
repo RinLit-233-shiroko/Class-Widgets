@@ -30,7 +30,7 @@ class Plugin:  # 插件类
         # 小组件自定义（照PyQt的方法正常写）
         self.test_widget = self.method.get_widget(WIDGET_CODE)  # 获取小组件对象
 
-        if hasattr(self, 'test_widget'):  # 判断小组件是否存在
+        if self.test_widget:  # 判断小组件是否存在
             contentLayout = self.test_widget.findChild(QHBoxLayout, 'contentLayout')  # 标题布局
             contentLayout.setSpacing(1)  # 设置间距
 
