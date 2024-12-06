@@ -33,7 +33,8 @@
     "prepare_class": "#7065D8"
   },
   "Plugin": {
-    "version": 1
+    "version": 1,
+    "mirror": "gh_proxy"
   },
   "Date": {
     "start_date": "",

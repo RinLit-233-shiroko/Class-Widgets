@@ -26,6 +26,7 @@ import exact_menu
 import weather_db as db
 import importlib
 import subprocess
+import plugin_plaza as plaza
 from pathlib import Path
 
 today = dt.date.today()
@@ -57,6 +58,7 @@ first_start = True
 
 settings = None
 ex_menu = None
+plugin_plaza = None
 
 if conf.read_conf('Other', 'do_not_log') != '1':
     logger.add("log/ClassWidgets_main_{time}.log", rotation="1 MB", encoding="utf-8", retention="1 minute")
@@ -977,6 +979,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         ])
         self.tray_menu.addSeparator()
         self.tray_menu.addActions([
+            Action(FIcon.SHOPPING_CART, '插件广场', triggered=self.open_plaza),
             Action(FIcon.DEVELOPER_TOOLS, '额外选项', triggered=self.open_exact_menu),
             Action(FIcon.SETTING, '设置', triggered=self.open_settings)
         ])
@@ -1135,6 +1138,21 @@ class DesktopWidget(QWidget):  # 主要小组件
             settings = menu.desktop_widget()
             settings.show()
             logger.info('打开“设置”')
+
+    def open_plaza(self):
+        global plugin_plaza
+        try:
+            if plugin_plaza is None or not plugin_plaza.isVisible():
+                plugin_plaza = plaza.PluginPlaza()
+                plugin_plaza.show()
+                logger.info('打开“插件广场”')
+            else:
+                plugin_plaza.raise_()
+                plugin_plaza.activateWindow()
+        except Exception as e:
+            plugin_plaza = plaza.PluginPlaza()
+            plugin_plaza.show()
+            logger.info('打开“插件广场”')
 
     def open_exact_menu(self):
         global ex_menu

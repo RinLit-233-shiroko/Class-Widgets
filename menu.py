@@ -160,8 +160,8 @@ class PluginCard(CardWidget):  # 插件卡片
         self.moreMenu = RoundMenu(parent=self.moreButton)
 
         self.hBoxLayout = QHBoxLayout(self)
-        self.hBoxLayout_Title = QHBoxLayout()
-        self.vBoxLayout = QVBoxLayout()
+        self.hBoxLayout_Title = QHBoxLayout(self)
+        self.vBoxLayout = QVBoxLayout(self)
 
         self.moreMenu.addActions([
             Action(
@@ -263,25 +263,25 @@ class desktop_widget(FluentWindow):
         super().__init__()
         try:
             # 创建子页面
-            self.spInterface = uic.loadUi('menu-preview.ui')
+            self.spInterface = uic.loadUi('menu-preview.ui')  # 预览
             self.spInterface.setObjectName("spInterface")
             self.teInterface = uic.loadUi('menu-timeline_edit.ui')  # 时间线编辑
             self.teInterface.setObjectName("teInterface")
             self.seInterface = uic.loadUi('menu-schedule_edit.ui')  # 课程表编辑
             self.seInterface.setObjectName("seInterface")
-            self.adInterface = uic.loadUi('menu-advance.ui')
+            self.adInterface = uic.loadUi('menu-advance.ui')  # 高级选项
             self.adInterface.setObjectName("adInterface")
-            self.ifInterface = uic.loadUi('menu-about.ui')
+            self.ifInterface = uic.loadUi('menu-about.ui')  # 关于
             self.ifInterface.setObjectName("ifInterface")
-            self.ctInterface = uic.loadUi('menu-custom.ui')
+            self.ctInterface = uic.loadUi('menu-custom.ui')  # 自定义
             self.ctInterface.setObjectName("ctInterface")
-            self.cfInterface = uic.loadUi('menu-configs.ui')
+            self.cfInterface = uic.loadUi('menu-configs.ui')  # 配置文件
             self.cfInterface.setObjectName("cfInterface")
-            self.sdInterface = uic.loadUi('menu-sound.ui')
+            self.sdInterface = uic.loadUi('menu-sound.ui')  # 通知
             self.sdInterface.setObjectName("sdInterface")
-            self.hdInterface = uic.loadUi('menu-help.ui')
+            self.hdInterface = uic.loadUi('menu-help.ui')  # 帮助
             self.hdInterface.setObjectName("hdInterface")
-            self.plInterface = uic.loadUi('menu-plugin_mgr.ui')
+            self.plInterface = uic.loadUi('menu-plugin_mgr.ui')  # 插件
             self.plInterface.setObjectName("plInterface")
 
             self.init_nav()
@@ -415,6 +415,7 @@ class desktop_widget(FluentWindow):
             except:
                 logger.error(f'获取组件名称时发生错误：{sys.exc_info()[0]}')
         widgets_list_widgets.addItems(widgets_list)
+        widgets_list_widgets.sizePolicy().setVerticalPolicy(QSizePolicy.Policy.MinimumExpanding)
 
         save_config_button = self.findChild(PrimaryPushButton, 'save_config')
         save_config_button.clicked.connect(self.ct_save_widget_config)

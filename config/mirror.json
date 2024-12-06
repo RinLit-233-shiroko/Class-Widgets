@@ -1,0 +1,8 @@
+{
+    "gh_mirror": {
+        "original": "",
+        "gh_proxy": "https://ghp.ci/",
+        "fastgit": "https://raw.fastgit.org/",
+        "moeyy": "https://github.moeyy.xyz/"
+    }
+}

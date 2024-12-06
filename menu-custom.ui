@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>791</width>
-    <height>1388</height>
+    <height>1464</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -80,17 +80,23 @@
         <x>0</x>
         <y>0</y>
         <width>743</width>
-        <height>1187</height>
+        <height>1311</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
         <widget class="ListWidget" name="widgets_list">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
          </property>
          <property name="sizeAdjustPolicy">
           <enum>QAbstractScrollArea::AdjustToContents</enum>
