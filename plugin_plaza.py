@@ -1,10 +1,12 @@
 from PyQt5 import uic
-from PyQt5.QtCore import QSize, Qt, QTimer, QEventLoop
-from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy
+from PyQt5.QtCore import QSize, Qt, QTimer, QEventLoop, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QDesktopServices
+from PyQt5.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QWidget
 from qfluentwidgets import MSFluentWindow, FluentIcon as fIcon, NavigationItemPosition, TitleLabel, \
     ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
-    ElevatedCardWidget, InfoBar, InfoBarPosition, SplashScreen
+    ElevatedCardWidget, InfoBar, InfoBarPosition, SplashScreen, MessageBoxBase, TransparentToolButton, BodyLabel, \
+    PrimarySplitPushButton, RoundMenu, Action
+from qframelesswindow.webengine import FramelessWebEngineView
 
 from loguru import logger
 from datetime import datetime
@@ -26,16 +28,89 @@ PLAZA_REPO_DIR = "https://api.github.com/repos/Class-Widgets/plugin-plaza/conten
 plugins_data = []  # 存储插件信息
 
 
+class PluginDetailPage(MessageBoxBase):  # 插件详情页面
+    def __init__(self, icon, title, content, tag, version, author, url, parent=None):
+        super().__init__(parent)
+        self.url = url
+        self.install_url = f"{self.url}/releases/latest"
+        author_url = '/'.join(self.url.rsplit('/', 2)[:-1])
+        self.init_ui()
+
+        self.iconWidget = self.findChild(ImageLabel, 'pluginIcon')
+        self.iconWidget.setImage(icon)
+        self.iconWidget.setFixedSize(100, 100)
+        self.iconWidget.setBorderRadius(8, 8, 8, 8)
+
+        self.titleLabel = self.findChild(TitleLabel, 'titleLabel')
+        self.titleLabel.setText(title)
+
+        self.contentLabel = self.findChild(CaptionLabel, 'descLabel')
+        self.contentLabel.setText(content)
+
+        self.tagLabel = self.findChild(HyperlinkLabel, 'tagButton')
+        self.tagLabel.setText(tag)
+
+        self.versionLabel = self.findChild(BodyLabel, 'versionLabel')
+        self.versionLabel.setText(version)
+
+        self.authorLabel = self.findChild(HyperlinkLabel, 'authorButton')
+        self.authorLabel.setText(author)
+        self.authorLabel.setUrl(author_url)
+
+        self.installButton = self.findChild(PrimarySplitPushButton, 'installButton')
+        self.installButton.setText("  安装  ")
+        self.installButton.setIcon(fIcon.DOWNLOAD)
+        self.installButton.clicked.connect(self.install)
+        menu = RoundMenu(parent=self.installButton)
+        menu.addActions([
+            Action(fIcon.DOWNLOAD, "为 Class Widgets 安装", triggered=self.install),
+            Action(fIcon.LINK, "下载到本地", triggered=lambda: QDesktopServices.openUrl(QUrl(self.install_url)))
+        ])
+        self.installButton.setFlyout(menu)
+
+    def install(self):
+        InfoBar.warning(
+            title='安装失败……',
+            content="Coming s∞n~",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=1500,
+            parent=self.parent()
+        )
+
+    def init_ui(self):
+        # 加载ui文件
+        temp_widget = QWidget()
+        uic.loadUi('pp-plugin_detail.ui', temp_widget)
+        self.viewLayout.addWidget(temp_widget)
+        self.viewLayout.setContentsMargins(0, 0, 0, 0)
+        # 隐藏原有按钮
+        self.yesButton.hide()
+        self.cancelButton.hide()
+        self.buttonGroup.hide()
+
+        # 自定关闭按钮
+        self.closeButton = self.findChild(TransparentToolButton, 'closeButton')
+        self.closeButton.setIcon(fIcon.CLOSE)
+        self.closeButton.clicked.connect(self.close)
+
+        self.widget.setMinimumWidth(875)
+        self.widget.setMinimumHeight(625)
+
+
 class PluginCard_Horizontal(ElevatedCardWidget):  # 插件卡片（横向）
     def __init__(
             self, icon='img/settings/plugin-icon.png', title='Plugin Name', content='Description...', tag='Unknown',
             version='1.0.0', author="CW Support",
             url="https://github.com/RinLit-233-shiroko/cw-example-plugin", parent=None):
         super().__init__(parent)
-        icon_radius = 5
+        self.icon = icon
         self.title = title
         self.parent = parent
-        self.author_url = '/'.join(url.rsplit('/', 2)[:-1])
+        self.tag = tag
+        self.url = url
+        author_url = '/'.join(self.url.rsplit('/', 2)[:-1])
 
         self.iconWidget = ImageLabel(icon)  # 插件图标
         self.titleLabel = StrongBodyLabel(title, self)  # 插件名
@@ -53,10 +128,10 @@ class PluginCard_Horizontal(ElevatedCardWidget):  # 插件卡片（横向）
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setFixedHeight(110)
         self.authorLabel.setText(author)
-        self.authorLabel.setUrl(self.author_url)
+        self.authorLabel.setUrl(author_url)
         self.authorLabel.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
         self.iconWidget.setFixedSize(84, 84)
-        self.iconWidget.setBorderRadius(icon_radius, icon_radius, icon_radius, icon_radius)  # 圆角
+        self.iconWidget.setBorderRadius(5, 5, 5, 5)  # 圆角
         self.contentLabel.setTextColor("#606060", "#d2d2d2")
         self.versionLabel.setTextColor("#999999", "#999999")
         self.titleLabel.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
@@ -99,6 +174,14 @@ class PluginCard_Horizontal(ElevatedCardWidget):  # 插件卡片（横向）
             duration=1500,
             parent=self.parent
         )
+
+    def show_detail(self):
+        w = PluginDetailPage(
+            icon=self.icon, title=self.title, content=self.contentLabel.text(),
+            tag=self.tag, version=self.versionLabel.text(), author=self.authorLabel.text(),
+            url=self.url, parent=self.parent
+        )
+        w.exec()
 
 
 class PluginPlaza(MSFluentWindow):
@@ -152,6 +235,7 @@ class PluginPlaza(MSFluentWindow):
             plugin_card = PluginCard_Horizontal(icon=pixmap, title=data['name'], content=data['description'],
                                                 tag=data['tag'], version=data['version'], url=data['url'],
                                                 author=data['author'], parent=self)
+            plugin_card.clicked.connect(plugin_card.show_detail)  # 点击事件
             self.rec_plugin_grid.addWidget(plugin_card, plugin_num // 2, plugin_num % 2)  # 排列
 
             plugin_num += 1
@@ -227,6 +311,7 @@ class PluginPlaza(MSFluentWindow):
         self.setMicaEffectEnabled(True)
         self.setWindowTitle('插件广场')
         self.setWindowIcon(QIcon('img/pp_favicon.png'))
+        self.setMicaEffectEnabled(True)
 
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
