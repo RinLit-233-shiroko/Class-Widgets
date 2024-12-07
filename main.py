@@ -21,13 +21,19 @@ import conf
 import tip_toast
 from PyQt5.QtGui import QFontDatabase
 
-import menu
-import exact_menu
+from menu import SettingsMenu
+from exact_menu import ExactMenu
+from plugin_plaza import PluginPlaza
 import weather_db as db
 import importlib
 import subprocess
-import plugin_plaza as plaza
 from pathlib import Path
+
+# 适配高DPI缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 today = dt.date.today()
 filename = conf.read_conf('General', 'schedule')
@@ -1128,14 +1134,14 @@ class DesktopWidget(QWidget):  # 主要小组件
         global settings
         try:
             if settings is None or not settings.isVisible():
-                settings = menu.desktop_widget()
+                settings = SettingsMenu()
                 settings.show()
                 logger.info('打开“设置”')
             else:
                 settings.raise_()
                 settings.activateWindow()
         except Exception as e:
-            settings = menu.desktop_widget()
+            settings = SettingsMenu()
             settings.show()
             logger.info('打开“设置”')
 
@@ -1143,14 +1149,14 @@ class DesktopWidget(QWidget):  # 主要小组件
         global plugin_plaza
         try:
             if plugin_plaza is None or not plugin_plaza.isVisible():
-                plugin_plaza = plaza.PluginPlaza()
+                plugin_plaza = PluginPlaza()
                 plugin_plaza.show()
                 logger.info('打开“插件广场”')
             else:
                 plugin_plaza.raise_()
                 plugin_plaza.activateWindow()
         except Exception as e:
-            plugin_plaza = plaza.PluginPlaza()
+            plugin_plaza = PluginPlaza()
             plugin_plaza.show()
             logger.info('打开“插件广场”')
 
@@ -1158,14 +1164,14 @@ class DesktopWidget(QWidget):  # 主要小组件
         global ex_menu
         try:
             if ex_menu is None or not ex_menu.isVisible():
-                ex_menu = exact_menu.ExactMenu()
+                ex_menu = ExactMenu()
                 ex_menu.show()
                 logger.info('打开“额外选项”')
             else:
                 ex_menu.raise_()
                 ex_menu.activateWindow()
         except Exception as e:
-            ex_menu = exact_menu.ExactMenu()
+            ex_menu = ExactMenu()
             ex_menu.show()
             logger.info('打开“额外选项”')
 

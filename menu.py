@@ -29,6 +29,12 @@ import tip_toast
 import weather_db
 import weather_db as wd
 
+# 适配高DPI缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
 today = dt.date.today()
 
 plugin_dict = {}  # 插件字典
@@ -258,7 +264,7 @@ class PluginCard(CardWidget):  # 插件卡片
                 logger.error(f'删除插件“{self.title}”时发生错误：{e}')
 
 
-class desktop_widget(FluentWindow):
+class SettingsMenu(FluentWindow):
     def __init__(self):
         super().__init__()
         try:
@@ -1662,7 +1668,7 @@ def sp_get_class_num():  # 获取当前周课程数（未完成）
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    settings = desktop_widget()
+    settings = SettingsMenu()
     settings.show()
     # settings.setMicaEffectEnabled(True)
     sys.exit(app.exec())

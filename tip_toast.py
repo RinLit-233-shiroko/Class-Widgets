@@ -13,6 +13,12 @@ from qfluentwidgets import setThemeColor, Theme, setTheme
 import conf
 import list
 
+# 适配高DPI缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
 prepare_class = conf.read_conf('Audio', 'prepare_class')
 attend_class = conf.read_conf('Audio', 'attend_class')
 finish_class = conf.read_conf('Audio', 'finish_class')

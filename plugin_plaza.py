@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize, Qt, QTimer, QEventLoop
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy
 from qfluentwidgets import MSFluentWindow, FluentIcon as fIcon, NavigationItemPosition, TitleLabel, \
-    CardWidget, ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
+    ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
     ElevatedCardWidget, InfoBar, InfoBarPosition, SplashScreen
 
 from loguru import logger
@@ -12,6 +12,12 @@ from datetime import datetime
 import list as l
 import sys
 import network_thread as nt
+
+# 适配高DPI缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 MIRROR_PATH = "config/mirror.json"
 PLAZA_REPO_URL = "https://raw.githubusercontent.com/Class-Widgets/plugin-plaza/"
@@ -168,7 +174,7 @@ class PluginPlaza(MSFluentWindow):
                 pixmap = QPixmap()
                 pixmap.loadFromData(data)
                 self.banner_view.setItemImage(index, pixmap)
-            self.splashScreen.finish()
+            self.splashScreen.hide()
 
         def get_banner(data):
             try:
@@ -244,7 +250,7 @@ class PluginPlaza(MSFluentWindow):
 
     def closeEvent(self, event):
         event.ignore()
-        self.deleteLater()
+        # self.deleteLater()
         self.hide()
 
 

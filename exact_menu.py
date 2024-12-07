@@ -14,6 +14,12 @@ import conf
 import list
 import menu
 
+# 适配高DPI缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
 filename = conf.read_conf('General', 'schedule')
 current_week = dt.datetime.today().weekday()
 temp_schedule = {'schedule': {}, 'schedule_even': {}}
