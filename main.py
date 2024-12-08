@@ -49,6 +49,7 @@ current_week = dt.datetime.now().weekday()
 current_lessons = {}
 loaded_data = {}
 notification = tip_toast
+update_timer = QTimer()
 
 timeline_data = {}
 next_lessons = []
@@ -512,8 +513,12 @@ class WidgetsManager:
         init()
 
     def update_widgets(self):
+        c = 0
         for widget in self.widgets:
+            if c == 0:
+                get_countdown(True)
             widget.update_data(path=widget.path)
+            c += 1
         p_loader.update_plugins()
         if notification.pushed_notification:
             notification.pushed_notification = False
@@ -892,21 +897,12 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.resize(self.w, self.h)
 
         self.update_data('')
-        self.timer = QTimer(self)
-        self.update_time()
 
     def update_widget_for_plugin(self, context=['title', 'desc']):
         title = self.findChild(QLabel, 'title')
         desc = self.findChild(QLabel, 'content')
         title.setText(context[0])
         desc.setText(context[1])
-
-    def update_time(self):
-        if self.path == 'widget-current-activity.ui':
-            mgr.update_widgets()
-            next_second = (dt.datetime.now() + dt.timedelta(seconds=1)).replace(microsecond=0)
-            delay = (next_second - dt.datetime.now()).total_seconds() * 1000  # 转换为毫秒
-            self.timer.singleShot(int(delay), self.update_time)
 
     def init_ui(self, path):
         if conf.read_conf('General', 'color_mode') == '2':
@@ -1042,10 +1038,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         if not self.animation:
             self.setWindowOpacity(int(conf.read_conf('General', 'opacity')) / 100)  # 设置窗口透明度
 
-        if path != 'widget-current-activity.ui':  # 不是当前活动组件
-            cd_list = get_countdown()
-        else:
-            cd_list = get_countdown(toast=True)
+        cd_list = get_countdown()
 
         if path == 'widget-time.ui':  # 日期显示
             self.date_text.setText(f'{today.year} 年 {today.month} 月')
@@ -1087,6 +1080,7 @@ class DesktopWidget(QWidget):  # 主要小组件
         elif path == 'widget-countdown-custom.ui':  # 自定义倒计时
             self.custom_title.setText(f'距离 {conf.read_conf("Date", "cd_text_custom")} 还有')
             self.custom_countdown.setText(conf.get_custom_countdown())
+        self.update()
 
     def get_weather_data(self):
         logger.info('获取天气数据')
@@ -1262,7 +1256,6 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.deleteLater()  # 销毁内存
         event.accept()
 
-
 def check_windows_maximize():  # 检查窗口是否最大化
     for window in pygetwindow.getAllWindows():
         if window.isMaximized:  # 最大化或全屏(修复
@@ -1284,7 +1277,11 @@ def show_window(path, pos, enable_tray=False):
 
 
 def init():
-    global theme, radius, mgr, screen_width, first_start, fw
+    global theme, radius, mgr, screen_width, first_start, fw, update_timer
+    update_timer.timeout.connect(update_time)
+    update_timer.setInterval(1000)
+    update_time()
+
     mgr = WidgetsManager()
     fw = FloatingWidget()
 
@@ -1337,6 +1334,13 @@ def init():
     p_loader.run_plugins()  # 运行插件
 
     first_start = False
+
+
+def update_time():
+    mgr.update_widgets()
+    next_second = (dt.datetime.now() + dt.timedelta(seconds=1)).replace(microsecond=0)
+    delay = (next_second - dt.datetime.now()).total_seconds() * 1000  # 转换为毫秒
+    update_timer.singleShot(int(delay), update_time)
 
 
 if __name__ == '__main__':
