@@ -13,11 +13,11 @@
 
 <div align="center">
 
-[![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=flat-square&color=orange&label=星标)](https://github.com/RinLit-233-shiroko/Class-Widgets)
-[![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=flat-square&color=purple&label=当前版本)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/latest)
-[![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases)
-[![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets)
-[![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green&style=flat-square)](https://github.com/RinLit-233-shiroko/Class-Widgets)
+[![星标](https://img.shields.io/github/stars/RinLit-233-shiroko/Class-Widgets?style=for-the-badge&color=orange&label=星标)](https://github.com/RinLit-233-shiroko/Class-Widgets)
+[![当前版本](https://img.shields.io/github/v/release/RinLit-233-shiroko/Class-Widgets?style=for-the-badge&color=purple&label=当前版本)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases/latest)
+[![测试版](https://img.shields.io/github/v/tag/RinLit-233-shiroko/Class-Widgets?include_prereleases&label=当前测试版&color=yellow&style=for-the-badge)](https://github.com/RinLit-233-shiroko/Class-Widgets/releases)
+[![开源许可](https://img.shields.io/badge/license-GPLv3-blue.svg?label=开源许可证&style=for-the-badge)](https://github.com/RinLit-233-shiroko/Class-Widgets)
+[![下载量](https://img.shields.io/github/downloads/RinLit-233-shiroko/Class-Widgets/total.svg?label=下载量&color=green&style=for-the-badge)](https://github.com/RinLit-233-shiroko/Class-Widgets)
 
 ![Banner](img/Banner.png)
 
