@@ -31,7 +31,7 @@ from pathlib import Path
 
 # 适配高DPI缩放
 QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
@@ -123,11 +123,11 @@ def get_part():
     for i in range(len(parts_start_time)):  # 遍历每个Part
         if i == len(parts_start_time) - 1:  # 最后一个Part
             if parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt or current_dt > parts_start_time[i]:
-                return_data()
+                return return_data()
         else:
             if (parts_start_time[i] - dt.timedelta(minutes=30) <= current_dt < parts_start_time[i + 1]
                     - dt.timedelta(minutes=30)):
-                return_data()
+                return return_data()
     return parts_start_time[0] + dt.timedelta(seconds=time_offset), 0
 
 
@@ -541,7 +541,7 @@ class openProgressDialog(QWidget):
         self.screen_height = screen_geometry.height()
         self.init_ui()
         self.init_font()
-        self.move((self.screen_width - self.width())//2, self.screen_height - self.height() - 100)
+        self.move((self.screen_width - self.width()) // 2, self.screen_height - self.height() - 100)
 
         self.action_name = self.findChild(QLabel, 'action_name')
         self.action_name.setText(action_title)
@@ -614,10 +614,11 @@ class openProgressDialog(QWidget):
         self.animation_rect = QPropertyAnimation(self, b'geometry')
         self.animation_rect.setDuration(450)
         self.animation_rect.setStartValue(
-            QRect(self.x(), self.screen_height - 150, self.width()//2, self.height())
+            QRect(self.x(), self.screen_height - 150, self.width() // 2, self.height())
         )
         self.animation_rect.setEndValue(
-            self.geometry().adjusted(-(label_width - self.geometry().width()), 0, label_width - self.geometry().width(), 0)
+            self.geometry().adjusted(-(label_width - self.geometry().width()), 0, label_width - self.geometry().width(),
+                                     0)
         )
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
