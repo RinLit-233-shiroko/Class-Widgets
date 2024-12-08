@@ -128,6 +128,25 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="pagerLayout">
+         <item>
+          <widget class="HorizontalPipsPager" name="banner_pager">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="SubtitleLabel" name="SubtitleLabel_3">
          <property name="text">
           <string>推荐插件</string>
@@ -223,6 +242,11 @@
   </customwidget>
   <customwidget>
    <class>HorizontalFlipView</class>
+   <extends>QListWidget</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>HorizontalPipsPager</class>
    <extends>QListWidget</extends>
    <header>qfluentwidgets</header>
   </customwidget>

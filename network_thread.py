@@ -8,7 +8,6 @@ import conf
 
 headers = {}
 
-
 MIRROR_PATH = "config/mirror.json"
 PLAZA_REPO_URL = "https://raw.githubusercontent.com/Class-Widgets/plugin-plaza/"
 PLAZA_REPO_DIR = "https://api.github.com/repos/Class-Widgets/plugin-plaza/contents/"
@@ -128,3 +127,33 @@ class getImg(QThread):  # 获取图片
         except Exception as e:
             logger.error(f"获取图片失败：{e}")
             return None
+
+
+class getReadme(QThread):  # 获取README
+    html_signal = pyqtSignal(str)
+
+    def __init__(self, url='https://raw.githubusercontent.com/Class-Widgets/Class-Widgets/main/README.md'):
+        super().__init__()
+        self.download_url = url
+
+    def run(self):
+        try:
+            readme_data = self.get_readme()
+            self.html_signal.emit(readme_data)
+        except Exception as e:
+            logger.error(f"触发README失败: {e}")
+
+    def get_readme(self):
+        try:
+            mirror_url = mirror_dict[conf.read_conf('Plugin', 'mirror')]
+            url = f"{mirror_url}{self.download_url}"
+            print(url)
+            response = requests.get(url, proxies={'http': None, 'https': None})
+            if response.status_code == 200:
+                return response.text
+            else:
+                logger.error(f"获取README失败：{response.status_code}")
+                return ''
+        except Exception as e:
+            logger.error(f"获取README失败：{e}")
+            return ''

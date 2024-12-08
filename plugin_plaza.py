@@ -1,15 +1,17 @@
+import json
+
 from PyQt5 import uic
 from PyQt5.QtCore import QSize, Qt, QTimer, QEventLoop, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QDesktopServices
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QWidget
 from qfluentwidgets import MSFluentWindow, FluentIcon as fIcon, NavigationItemPosition, TitleLabel, \
     ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
     ElevatedCardWidget, InfoBar, InfoBarPosition, SplashScreen, MessageBoxBase, TransparentToolButton, BodyLabel, \
-    PrimarySplitPushButton, RoundMenu, Action
-from qframelesswindow.webengine import FramelessWebEngineView
+    PrimarySplitPushButton, RoundMenu, Action, PipsPager, TextBrowser, isDarkTheme, CardWidget
 
 from loguru import logger
 from datetime import datetime
+from markdown import markdown
 
 import list as l
 import sys
@@ -17,7 +19,7 @@ import network_thread as nt
 
 # 适配高DPI缩放
 QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
@@ -27,14 +29,22 @@ PLAZA_REPO_DIR = "https://api.github.com/repos/Class-Widgets/plugin-plaza/conten
 
 plugins_data = []  # 存储插件信息
 
+try:
+    with open("ui/html_style.json", 'r', encoding='utf-8') as file:
+        html_style = json.load(file)
+except Exception as e:
+    logger.error(f"读取Markdown样式失败: {e}")
+
 
 class PluginDetailPage(MessageBoxBase):  # 插件详情页面
-    def __init__(self, icon, title, content, tag, version, author, url, parent=None):
+    def __init__(self, icon, title, content, tag, version, author, url, data=None, parent=None):
         super().__init__(parent)
         self.url = url
-        self.install_url = f"{self.url}/releases/latest"
+        self.data = data
         author_url = '/'.join(self.url.rsplit('/', 2)[:-1])
         self.init_ui()
+        self.download_readme()
+        scroll_area_widget = self.findChild(QVBoxLayout, 'verticalLayout_9')
 
         self.iconWidget = self.findChild(ImageLabel, 'pluginIcon')
         self.iconWidget.setImage(icon)
@@ -57,6 +67,11 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
         self.authorLabel.setText(author)
         self.authorLabel.setUrl(author_url)
 
+        self.openGitHub = self.findChild(TransparentToolButton, 'openGitHub')
+        self.openGitHub.setIcon(fIcon.GITHUB)
+        self.openGitHub.setIconSize(QSize(24, 24))
+        self.openGitHub.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(self.url)))
+
         self.installButton = self.findChild(PrimarySplitPushButton, 'installButton')
         self.installButton.setText("  安装  ")
         self.installButton.setIcon(fIcon.DOWNLOAD)
@@ -64,9 +79,24 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
         menu = RoundMenu(parent=self.installButton)
         menu.addActions([
             Action(fIcon.DOWNLOAD, "为 Class Widgets 安装", triggered=self.install),
-            Action(fIcon.LINK, "下载到本地", triggered=lambda: QDesktopServices.openUrl(QUrl(self.install_url)))
+            Action(fIcon.LINK, "下载到本地",
+                   triggered=lambda: QDesktopServices.openUrl(QUrl(f"{self.url}/releases/latest")))
         ])
         self.installButton.setFlyout(menu)
+
+        self.readmePage = TextBrowser()
+        self.readmePage.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.readmePage.setReadOnly(True)
+        self.readmePage.setOpenExternalLinks(False)
+        # 隐藏底框
+        self.readmePage.setStyleSheet("""
+            QTextBrowser {
+                border: none;
+                background-color: transparent;
+                color: transparent;
+            }
+        """)
+        scroll_area_widget.addWidget(self.readmePage)
 
     def install(self):
         InfoBar.warning(
@@ -79,11 +109,27 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
             parent=self.parent()
         )
 
+    def download_readme(self):
+        def display_readme(markdown_text):
+            style = html_style.get('markdown')
+            if isDarkTheme():
+                style = style.get('dark')
+            else:
+                style = style.get('light')
+            html = style.format(contents=markdown(markdown_text))
+            self.readmePage.setHtml(html)
+        if self.data is None:
+            self.download_thread = nt.getReadme(f"{replace_to_file_server(self.url)}/README.md")
+        else:
+            self.download_thread = nt.getReadme(f"{replace_to_file_server(self.url, self.data['branch'])}/README.md")
+        self.download_thread.html_signal.connect(display_readme)
+        self.download_thread.start()
+
     def init_ui(self):
         # 加载ui文件
-        temp_widget = QWidget()
-        uic.loadUi('pp-plugin_detail.ui', temp_widget)
-        self.viewLayout.addWidget(temp_widget)
+        self.temp_widget = QWidget()
+        uic.loadUi('pp-plugin_detail.ui', self.temp_widget)
+        self.viewLayout.addWidget(self.temp_widget)
         self.viewLayout.setContentsMargins(0, 0, 0, 0)
         # 隐藏原有按钮
         self.yesButton.hide()
@@ -99,17 +145,18 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
         self.widget.setMinimumHeight(625)
 
 
-class PluginCard_Horizontal(ElevatedCardWidget):  # 插件卡片（横向）
+class PluginCard_Horizontal(CardWidget):  # 插件卡片（横向）
     def __init__(
             self, icon='img/settings/plugin-icon.png', title='Plugin Name', content='Description...', tag='Unknown',
             version='1.0.0', author="CW Support",
-            url="https://github.com/RinLit-233-shiroko/cw-example-plugin", parent=None):
+            url="https://github.com/RinLit-233-shiroko/cw-example-plugin", data=None, parent=None):
         super().__init__(parent)
         self.icon = icon
         self.title = title
         self.parent = parent
         self.tag = tag
         self.url = url
+        self.data = data
         author_url = '/'.join(self.url.rsplit('/', 2)[:-1])
 
         self.iconWidget = ImageLabel(icon)  # 插件图标
@@ -179,7 +226,7 @@ class PluginCard_Horizontal(ElevatedCardWidget):  # 插件卡片（横向）
         w = PluginDetailPage(
             icon=self.icon, title=self.title, content=self.contentLabel.text(),
             tag=self.tag, version=self.versionLabel.text(), author=self.authorLabel.text(),
-            url=self.url, parent=self.parent
+            url=self.url, data=self.data, parent=self.parent
         )
         w.exec()
 
@@ -222,6 +269,15 @@ class PluginPlaza(MSFluentWindow):
         self.auto_play_timer.timeout.connect(lambda: self.switch_banners())
         self.auto_play_timer.setInterval(2500)
 
+        # 翻页
+        self.banner_pager = self.homeInterface.findChild(PipsPager, 'banner_pager')
+        self.banner_pager.setVisibleNumber(5)
+        self.banner_pager.currentIndexChanged.connect(
+            lambda: (self.banner_view.scrollToIndex(self.banner_pager.currentIndex()),
+                     self.auto_play_timer.stop(),
+                     self.auto_play_timer.start(2500))
+        )
+
     def load_recommend_plugin(self, p_data):
         self.rec_plugin_grid = self.homeInterface.findChild(QGridLayout, 'rec_plugin_grid')  # 插件表格
         plugin_num = 0  # 计数
@@ -234,7 +290,7 @@ class PluginPlaza(MSFluentWindow):
             pixmap.loadFromData(img)
             plugin_card = PluginCard_Horizontal(icon=pixmap, title=data['name'], content=data['description'],
                                                 tag=data['tag'], version=data['version'], url=data['url'],
-                                                author=data['author'], parent=self)
+                                                author=data['author'], data=data, parent=self)
             plugin_card.clicked.connect(plugin_card.show_detail)  # 点击事件
             self.rec_plugin_grid.addWidget(plugin_card, plugin_num // 2, plugin_num % 2)  # 排列
 
@@ -243,8 +299,7 @@ class PluginPlaza(MSFluentWindow):
                 event_loop.quit()
 
         for plugin, data in p_data.items():  # 遍历插件data
-            img_thread = nt.getImg(f'{data["url"].replace("https://github.com/", "https://raw.githubusercontent.com/")}'
-                                   f'/{data["branch"]}/icon.png')
+            img_thread = nt.getImg(f"{replace_to_file_server(data['url'], branch=data['branch'])}/icon.png")
             img_thread.repo_signal.connect(load_plugin_card)
             img_thread.start()
 
@@ -262,6 +317,7 @@ class PluginPlaza(MSFluentWindow):
 
         def get_banner(data):
             try:
+                self.banner_pager.setPageNumber(len(data))
                 self.banners = ["img/plaza/banner_pre.png" for _ in range(len(data))]
                 if data:
                     self.banner_view.addImages(self.banners)
@@ -292,8 +348,10 @@ class PluginPlaza(MSFluentWindow):
     def switch_banners(self):  # 切换Banner
         if self.banner_view.currentIndex() == len(self.banners) - 1:
             self.banner_view.scrollToIndex(0)
+            self.banner_pager.setCurrentIndex(0)
         else:
             self.banner_view.scrollNext()
+            self.banner_pager.setCurrentIndex(self.banner_view.currentIndex())
 
     def init_nav(self):
         self.addSubInterface(self.homeInterface, fIcon.HOME, '首页', fIcon.HOME_FILL)
@@ -306,12 +364,11 @@ class PluginPlaza(MSFluentWindow):
         self.load_all_interface()
         self.init_font()
 
-        self.setMinimumWidth(700)
+        self.setMinimumWidth(950)
         self.setMinimumHeight(400)
         self.setMicaEffectEnabled(True)
         self.setWindowTitle('插件广场')
         self.setWindowIcon(QIcon('img/pp_favicon.png'))
-        self.setMicaEffectEnabled(True)
 
         screen_geometry = QApplication.primaryScreen().geometry()
         screen_width = screen_geometry.width()
@@ -337,6 +394,10 @@ class PluginPlaza(MSFluentWindow):
         event.ignore()
         # self.deleteLater()
         self.hide()
+
+def replace_to_file_server(url, branch='main'):
+    return (f'{url.replace("https://github.com/", "https://raw.githubusercontent.com/")}'
+            f'/{branch}')
 
 
 if __name__ == '__main__':
