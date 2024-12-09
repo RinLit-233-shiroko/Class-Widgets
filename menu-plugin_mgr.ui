@@ -189,13 +189,6 @@ FluentLabelBase{color:#7d000000}</string>
           </widget>
          </item>
          <item>
-          <widget class="HyperlinkLabel" name="open_plugin_folder">
-           <property name="text">
-            <string>打开“插件”文件夹</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="CardWidget" name="CardWidget_8">
            <property name="minimumSize">
             <size>
@@ -224,14 +217,14 @@ FluentLabelBase{color:#7d000000}</string>
               <item>
                <widget class="StrongBodyLabel" name="StrongBodyLabel_5">
                 <property name="text">
-                 <string>从本地导入插件</string>
+                 <string>管理插件文件夹</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_7">
                 <property name="text">
-                 <string>可导入下载的 .zip 格式的 Class Widgets 插件</string>
+                 <string>可在此文件夹添加、删除和修改您所安装的插件</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -255,7 +248,7 @@ FluentLabelBase{color:#7d000000}</string>
              </layout>
             </item>
             <item>
-             <widget class="PushButton" name="import_plugin">
+             <widget class="PushButton" name="open_plugin_folder">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -263,7 +256,7 @@ FluentLabelBase{color:#7d000000}</string>
                </sizepolicy>
               </property>
               <property name="text">
-               <string>从本地导入</string>
+               <string>使用“资源管理器”打开</string>
               </property>
              </widget>
             </item>
@@ -306,7 +299,7 @@ FluentLabelBase{color:#7d000000}</string>
               <item>
                <widget class="CaptionLabel" name="CaptionLabel_6">
                 <property name="text">
-                 <string>Coming S∞n.</string>
+                 <string>将跳转至“插件广场”</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -402,11 +395,6 @@ FluentLabelBase{color:#7d000000}</string>
   <customwidget>
    <class>TitleLabel</class>
    <extends>QLabel</extends>
-   <header>qfluentwidgets</header>
-  </customwidget>
-  <customwidget>
-   <class>HyperlinkLabel</class>
-   <extends>QPushButton</extends>
    <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>

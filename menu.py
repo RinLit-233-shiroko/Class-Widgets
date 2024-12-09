@@ -1,3 +1,4 @@
+import importlib
 import os
 from pathlib import Path
 from shutil import rmtree
@@ -10,7 +11,7 @@ import sys
 
 from PyQt5.QtGui import QIcon, QDesktopServices, QPixmap, QColor
 from PyQt5.QtWidgets import QApplication, QHeaderView, QTableWidgetItem, QLabel, QHBoxLayout, QSizePolicy, \
-    QSpacerItem, QFileDialog, QVBoxLayout
+    QSpacerItem, QFileDialog, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Theme, setTheme, FluentWindow, FluentIcon as fIcon, ToolButton, ListWidget, ComboBox, CaptionLabel,
     SpinBox, LineEdit, PrimaryPushButton, TableWidget, Flyout, InfoBarIcon,
@@ -147,9 +148,31 @@ class licenseDialog(MessageBoxBase):  # 显示软件许可协议
         self.widget.setMinimumHeight(500)
 
 
+class PluginSettingsDialog(MessageBoxBase):  # 插件设置对话框
+    def __init__(self, plugin_dir=None, parent=None):
+        super().__init__(parent)
+        self.plugin_dir = plugin_dir
+        self.parent = parent
+        self.init_ui()
+
+    def init_ui(self):
+        # 加载已定义的UI
+        self.plugin_widget = self.parent.plugins_settings[self.plugin_dir]
+        self.viewLayout.addWidget(self.plugin_widget)
+        self.viewLayout.setContentsMargins(0, 0, 0, 0)
+
+        self.cancelButton.hide()
+        self.buttonLayout.insertStretch(0, 1)
+
+        self.widget.setMinimumWidth(875)
+        self.widget.setMinimumHeight(625)
+
+
 class PluginCard(CardWidget):  # 插件卡片
     def __init__(
-            self, icon, title='Unknown', content='Unknown', version='1.0.0', plugin_dir='', author=None, parent=None):
+            self, icon, title='Unknown', content='Unknown', version='1.0.0', plugin_dir='', author=None, parent=None,
+            settings=None
+    ):
         super().__init__(parent)
         icon_radius = 5
         self.plugin_dir = plugin_dir
@@ -179,6 +202,9 @@ class PluginCard(CardWidget):  # 插件卡片
                 triggered=self.remove_plugin
             )
         ])
+        if settings:
+            self.moreMenu.addSeparator()
+            self.moreMenu.addAction(Action(fIcon.SETTING, f'“{title}”插件设置', triggered=self.show_settings))
 
         if plugin_dir in enabled_plugins['enabled_plugins']:  # 插件是否启用
             self.enableButton.setChecked(True)
@@ -224,6 +250,10 @@ class PluginCard(CardWidget):  # 插件卡片
             enabled_plugins['enabled_plugins'].remove(self.plugin_dir)
             conf.save_plugin_config(enabled_plugins)
 
+    def show_settings(self):
+        w = PluginSettingsDialog(self.plugin_dir, self.parent)
+        w.exec()
+
     def remove_plugin(self):
         alert = MessageBox(f"您确定要删除插件“{self.title}”吗？", "删除此插件后，将无法恢复。", self.parent)
         alert.yesButton.setText('永久删除')
@@ -267,6 +297,7 @@ class PluginCard(CardWidget):  # 插件卡片
 class SettingsMenu(FluentWindow):
     def __init__(self):
         super().__init__()
+        self.plugins_settings = {}
         try:
             # 创建子页面
             self.spInterface = uic.loadUi('menu-preview.ui')  # 预览
@@ -319,9 +350,19 @@ class SettingsMenu(FluentWindow):
         plugin_dict = (conf.load_plugins())  # 加载插件信息
 
         plugin_card_layout = self.findChild(QVBoxLayout, 'plugin_card_layout')
-        open_plugin_folder = self.findChild(HyperlinkLabel, 'open_plugin_folder')
+        open_plugin_folder = self.findChild(PushButton, 'open_plugin_folder')
         open_plugin_folder.clicked.connect(lambda: os.startfile(os.path.join(os.getcwd(), conf.PLUGINS_DIR)))  # 打开插件目录
         for plugin in plugin_dict:
+            try:
+                module = importlib.import_module(f'{conf.PLUGINS_DIR}.{plugin}')
+                if hasattr(module, 'Settings'):
+                    plugin_class = getattr(module, "Settings")  # 获取 Plugin 类
+                    # 实例化插件
+                    self.plugins_settings[plugin] = plugin_class(f'{conf.PLUGINS_DIR}/{plugin}')
+                logger.success(f"加载插件成功：{plugin}")
+            except Exception as e:
+                logger.error(f"加载插件失败：{e}")
+
             if (Path(conf.PLUGINS_DIR) / plugin / 'icon.png').exists():  # 若插件目录存在icon.png
                 icon_path = f'plugins/{plugin}/icon.png'
             else:
@@ -333,6 +374,7 @@ class SettingsMenu(FluentWindow):
                 author=plugin_dict[plugin]['author'],
                 plugin_dir=plugin,
                 content=plugin_dict[plugin]['description'],
+                settings=plugin_dict[plugin]['settings'],
                 parent=self
             )
             plugin_card_layout.addWidget(card)

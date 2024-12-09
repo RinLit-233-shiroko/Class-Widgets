@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>688</width>
-        <height>713</height>
+        <height>778</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -142,6 +142,16 @@
            <item/>
            <item/>
            <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
+           <item/>
           </widget>
          </item>
         </layout>
@@ -155,6 +165,35 @@
        </item>
        <item>
         <layout class="QGridLayout" name="rec_plugin_grid" rowstretch="0" columnstretch="0"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="progressRingLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>12</number>
+         </property>
+         <property name="bottomMargin">
+          <number>12</number>
+         </property>
+         <item>
+          <widget class="IndeterminateProgressRing" name="load_plugin_progress">
+           <property name="minimumSize">
+            <size>
+             <width>45</width>
+             <height>45</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>45</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="BodyLabel" name="BodyLabel">
@@ -238,6 +277,11 @@
   <customwidget>
    <class>TitleLabel</class>
    <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>IndeterminateProgressRing</class>
+   <extends>QProgressBar</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

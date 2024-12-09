@@ -334,6 +334,7 @@ def load_plugins():  # 加载插件配置文件
             plugin_dict[str(folder.name)]['author'] = data['author']  # 作者
             plugin_dict[str(folder.name)]['description'] = data['description']  # 描述
             plugin_dict[str(folder.name)]['plugin_ver'] = data['plugin_ver']  # 插件架构版本
+            plugin_dict[str(folder.name)]['settings'] = data['settings']  # 设置
     return plugin_dict
 
 

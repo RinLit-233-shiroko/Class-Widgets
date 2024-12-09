@@ -6,8 +6,9 @@ from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QWidget
 from qfluentwidgets import MSFluentWindow, FluentIcon as fIcon, NavigationItemPosition, TitleLabel, \
     ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
-    ElevatedCardWidget, InfoBar, InfoBarPosition, SplashScreen, MessageBoxBase, TransparentToolButton, BodyLabel, \
-    PrimarySplitPushButton, RoundMenu, Action, PipsPager, TextBrowser, isDarkTheme, CardWidget
+    InfoBar, InfoBarPosition, SplashScreen, MessageBoxBase, TransparentToolButton, BodyLabel, \
+    PrimarySplitPushButton, RoundMenu, Action, PipsPager, TextBrowser, isDarkTheme, CardWidget, \
+    IndeterminateProgressRing
 
 from loguru import logger
 from datetime import datetime
@@ -296,6 +297,8 @@ class PluginPlaza(MSFluentWindow):
 
             plugin_num += 1
             if plugin_num == total_plugins:
+                load_plugin_progress = self.homeInterface.findChild(IndeterminateProgressRing, 'load_plugin_progress')
+                load_plugin_progress.hide()
                 event_loop.quit()
 
         for plugin, data in p_data.items():  # 遍历插件data

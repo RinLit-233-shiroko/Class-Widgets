@@ -609,7 +609,8 @@ class openProgressDialog(QWidget):
                 """)
 
     def intro_animation(self):  # 弹出动画
-        label_width = self.action_name.sizeHint().width() + 180
+        self.setMinimumWidth(300)
+        label_width = self.action_name.sizeHint().width() - 120
         self.animation = QPropertyAnimation(self, b'windowOpacity')
         self.animation.setDuration(400)
         self.animation.setStartValue(0)
@@ -619,11 +620,13 @@ class openProgressDialog(QWidget):
         self.animation_rect = QPropertyAnimation(self, b'geometry')
         self.animation_rect.setDuration(450)
         self.animation_rect.setStartValue(
-            QRect(self.x(), self.screen_height - 150, self.width() // 2, self.height())
+            QRect(self.x(), self.screen_height, self.width(), self.height())
         )
         self.animation_rect.setEndValue(
-            self.geometry().adjusted(-(label_width - self.geometry().width()), 0, label_width - self.geometry().width(),
-                                     0)
+            QRect((self.screen_width - (self.width()+label_width)) // 2,
+                  self.screen_height - 250,
+                  self.width()+label_width,
+                  self.height())
         )
         self.animation_rect.setEasingCurve(QEasingCurve.Type.InOutCirc)
 
