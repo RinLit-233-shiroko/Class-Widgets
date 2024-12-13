@@ -2,7 +2,6 @@ import ctypes
 import json
 import os
 from shutil import copy
-import pygetwindow
 import requests
 from PyQt5 import uic
 from PyQt5.QtSvg import QSvgRenderer
@@ -28,6 +27,10 @@ import weather_db as db
 import importlib
 import subprocess
 from pathlib import Path
+
+
+if os.name == 'nt':
+    import pygetwindow
 
 # 适配高DPI缩放
 QApplication.setHighDpiScaleFactorRoundingPolicy(
@@ -1260,6 +1263,8 @@ class DesktopWidget(QWidget):  # 主要小组件
         event.accept()
 
 def check_windows_maximize():  # 检查窗口是否最大化
+    if os.name != 'nt':
+        return
     for window in pygetwindow.getAllWindows():
         if window.isMaximized:  # 最大化或全屏(修复
             if window.title != 'ResidentSideBar':  # 修复了误检测希沃侧边栏的Bug
