@@ -598,9 +598,11 @@ class SettingsMenu(FluentWindow):
         switch_startup = self.findChild(SwitchButton, 'switch_startup')
         switch_startup.setChecked(int(conf.read_conf('General', 'auto_startup')))
         switch_startup.checkedChanged.connect(self.switch_startup)  # 开机自启
+        if os.name != 'nt':
+            switch_startup.setEnabled(False)
 
         hide_mode_combo = self.findChild(ComboBox, 'hide_mode_combo')
-        hide_mode_combo.addItems(list.hide_mode)
+        hide_mode_combo.addItems(list.hide_mode if os.name == 'nt' else list.non_nt_hide_mode)
         hide_mode_combo.setCurrentIndex(int(conf.read_conf('General', 'hide')))
         hide_mode_combo.currentIndexChanged.connect(
             lambda: conf.write_conf('General', 'hide', str(hide_mode_combo.currentIndex()))
@@ -609,6 +611,8 @@ class SettingsMenu(FluentWindow):
         hide_method_default = self.findChild(RadioButton, 'hide_method_default')
         hide_method_default.setChecked(conf.read_conf('General', 'hide_method') == '0')
         hide_method_default.toggled.connect(lambda: conf.write_conf('General', 'hide_method', '0'))
+        if os.name != 'nt':
+            hide_method_default.setEnabled(False)
         # 默认隐藏
 
         hide_method_all = self.findChild(RadioButton, 'hide_method_all')

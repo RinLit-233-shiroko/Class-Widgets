@@ -122,6 +122,7 @@ def get_part():
         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
         if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
             return c_time, int(order[i])
+        return c_time, 0
 
     current_dt = dt.datetime.now()
     for i in range(len(parts_start_time)):  # 遍历每个Part
@@ -318,6 +319,8 @@ class RECT(ctypes.Structure):
 
 
 def check_fullscreen():  # 检查是否全屏
+    if os.name != 'nt':
+        return
     user32 = ctypes.windll.user32
     hwnd = user32.GetForegroundWindow()
     # 获取桌面窗口的矩形
@@ -1193,7 +1196,10 @@ class DesktopWidget(QWidget):  # 主要小组件
         # 创建位置动画
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(525)  # 持续时间
-        self.animation.setStartValue(QRect(target_pos[0], -self.height(), self.w, self.h))
+        if os.name == 'nt':
+            self.animation.setStartValue(QRect(target_pos[0], -self.height(), self.w, self.h))
+        else:
+            self.animation.setStartValue(QRect(target_pos[0], 0, self.w, self.h))
         self.animation.setEndValue(QRect(target_pos[0], target_pos[1], self.w, self.h))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
         self.animation.start()
@@ -1204,10 +1210,18 @@ class DesktopWidget(QWidget):  # 主要小组件
         width = self.width()
         height = self.height()
         self.setFixedSize(width, height)  # 防止连续打断窗口高度变小
-        if full:
+
+        if full and os.name == 'nt':
+            '''全隐藏 windows'''
             self.animation.setEndValue(QRect(self.x(), -height, self.width(), self.height()))
-        else:
+        elif os.name == 'nt':
+            '''半隐藏 windows'''
             self.animation.setEndValue(QRect(self.x(), -height + 40, self.width(), self.height()))
+        else:
+            '''其他系统'''
+            self.animation.setEndValue(QRect(self.x(), 0, self.width(), self.height()))
+            self.animation.finished.connect(lambda: self.hide())
+
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
         self.animation.start()
 
@@ -1238,6 +1252,9 @@ class DesktopWidget(QWidget):  # 主要小组件
         self.animation.setEndValue(
             QRect(self.x(), int(conf.read_conf('General', 'margin')), self.width(), self.height()))
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCirc)  # 设置动画效果
+        if os.name != 'nt':
+            self.show()
+
         self.animation.start()
 
     # 点击自动隐藏
