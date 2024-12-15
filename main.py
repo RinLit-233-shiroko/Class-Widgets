@@ -119,6 +119,8 @@ def get_part():
         c_time = parts_start_time[i] + dt.timedelta(seconds=time_offset)
         if any(f'a{int(order[i])}' in key or f'f{int(order[i])}' in key for key in timeline_data.keys()):
             return c_time, int(order[i])
+        else:
+            return c_time, 0  # 默认
 
     current_dt = dt.datetime.now()
     for i in range(len(parts_start_time)):  # 遍历每个Part
