@@ -86,6 +86,7 @@ jobs:
       - name: 创建虚拟环境
         run: |
           python -m venv venv
+          chmod +x ./venv/bin/activate
           ./venv/bin/activate
           pip install -r requirements.linux.txt
           pip install pyinstaller
