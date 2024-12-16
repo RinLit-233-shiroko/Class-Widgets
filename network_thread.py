@@ -6,17 +6,22 @@ from loguru import logger
 
 import conf
 
-headers = {}
+headers = {"User-Agent": "Mozilla/5.0"}
 
 MIRROR_PATH = "config/mirror.json"
 PLAZA_REPO_URL = "https://raw.githubusercontent.com/Class-Widgets/plugin-plaza/"
 PLAZA_REPO_DIR = "https://api.github.com/repos/Class-Widgets/plugin-plaza/contents/"
 
+# 读取镜像配置
+mirror_list = []
 try:
     with open(MIRROR_PATH, 'r', encoding='utf-8') as file:
         mirror_dict = json.load(file).get('gh_mirror')
 except Exception as e:
     logger.error(f"读取镜像配置失败: {e}")
+
+for name in mirror_dict:
+    mirror_list.append(name)
 
 
 class getRepoFileList(QThread):  # 获取仓库文件目录
@@ -109,7 +114,7 @@ class getImg(QThread):  # 获取图片
             if banner_data is not None:
                 self.repo_signal.emit(banner_data)
             else:
-                with open("img/settings/plugin-icon.png", 'rb') as default_img:  # 读取默认图片
+                with open("img/plaza/banner_pre.png", 'rb') as default_img:  # 读取默认图片
                     self.repo_signal.emit(default_img.read())
         except Exception as e:
             logger.error(f"触发图片失败: {e}")

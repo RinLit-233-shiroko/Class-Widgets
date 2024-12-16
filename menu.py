@@ -26,6 +26,7 @@ from loguru import logger
 import datetime as dt
 import list
 import conf
+from plugin_plaza import PluginPlaza
 import tip_toast
 import weather_db
 import weather_db as wd
@@ -37,6 +38,7 @@ QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 today = dt.date.today()
+plugin_plaza = None
 
 plugin_dict = {}  # 插件字典
 enabled_plugins = {}  # 启用的插件列表
@@ -53,6 +55,22 @@ schedule_dict = {}  # 对应时间线的课程表
 schedule_even_dict = {}  # 对应时间线的课程表（双周）
 
 timeline_dict = {}  # 时间线字典
+
+
+def open_plaza(self):
+    global plugin_plaza
+    try:
+        if plugin_plaza is None or not plugin_plaza.isVisible():
+            plugin_plaza = PluginPlaza()
+            plugin_plaza.show()
+            logger.info('打开“插件广场”')
+        else:
+            plugin_plaza.raise_()
+            plugin_plaza.activateWindow()
+    except Exception as e:
+        plugin_plaza = PluginPlaza()
+        plugin_plaza.show()
+        logger.info('打开“插件广场”')
 
 
 def get_timeline():
@@ -348,6 +366,14 @@ class SettingsMenu(FluentWindow):
         global plugin_dict, enabled_plugins
         enabled_plugins = conf.load_plugin_config()  # 加载启用的插件
         plugin_dict = (conf.load_plugins())  # 加载插件信息
+
+        open_pp = self.findChild(PushButton, 'open_plugin_plaza')
+        open_pp.clicked.connect(open_plaza)  # 打开插件广场
+
+        auto_delay = self.findChild(SpinBox, 'auto_delay')
+        auto_delay.setValue(int(conf.read_conf('Plugin', 'auto_delay')))
+        auto_delay.valueChanged.connect(lambda: conf.write_conf('Plugin', 'auto_delay', str(auto_delay.value())))
+        # 设置自动化延迟
 
         plugin_card_layout = self.findChild(QVBoxLayout, 'plugin_card_layout')
         open_plugin_folder = self.findChild(PushButton, 'open_plugin_folder')
