@@ -1,5 +1,3 @@
-import json
-
 from PyQt5 import uic
 from PyQt5.QtCore import QSize, Qt, QTimer, QEventLoop, QUrl
 from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
@@ -8,12 +6,12 @@ from qfluentwidgets import MSFluentWindow, FluentIcon as fIcon, NavigationItemPo
     ImageLabel, StrongBodyLabel, HyperlinkLabel, CaptionLabel, PrimaryPushButton, HorizontalFlipView, \
     InfoBar, InfoBarPosition, SplashScreen, MessageBoxBase, TransparentToolButton, BodyLabel, \
     PrimarySplitPushButton, RoundMenu, Action, PipsPager, TextBrowser, isDarkTheme, CardWidget, \
-    IndeterminateProgressRing
+    IndeterminateProgressRing, ComboBox
 
 from loguru import logger
 from datetime import datetime
-from markdown import markdown
 
+import conf
 import list as l
 import sys
 import network_thread as nt
@@ -29,12 +27,6 @@ PLAZA_REPO_URL = "https://raw.githubusercontent.com/Class-Widgets/plugin-plaza/"
 PLAZA_REPO_DIR = "https://api.github.com/repos/Class-Widgets/plugin-plaza/contents/Plugins"
 
 plugins_data = []  # 存储插件信息
-
-try:
-    with open("ui/html_style.json", 'r', encoding='utf-8') as file:
-        html_style = json.load(file)
-except Exception as e:
-    logger.error(f"读取Markdown样式失败: {e}")
 
 
 class PluginDetailPage(MessageBoxBase):  # 插件详情页面
@@ -88,15 +80,6 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
         self.readmePage = TextBrowser()
         self.readmePage.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.readmePage.setReadOnly(True)
-        self.readmePage.setOpenExternalLinks(False)
-        # 隐藏底框
-        self.readmePage.setStyleSheet("""
-            QTextBrowser {
-                border: none;
-                background-color: transparent;
-                color: transparent;
-            }
-        """)
         scroll_area_widget.addWidget(self.readmePage)
 
     def install(self):
@@ -112,13 +95,8 @@ class PluginDetailPage(MessageBoxBase):  # 插件详情页面
 
     def download_readme(self):
         def display_readme(markdown_text):
-            style = html_style.get('markdown')
-            if isDarkTheme():
-                style = style.get('dark')
-            else:
-                style = style.get('light')
-            html = style.format(contents=markdown(markdown_text))
-            self.readmePage.setHtml(html)
+            self.readmePage.setMarkdown(markdown_text)
+
         if self.data is None:
             self.download_thread = nt.getReadme(f"{replace_to_file_server(self.url)}/README.md")
         else:
@@ -252,6 +230,15 @@ class PluginPlaza(MSFluentWindow):
 
     def load_all_interface(self):
         self.setup_homeInterface()
+        self.setup_settingsInterface()
+
+    def setup_settingsInterface(self):  # 初始化设置
+        # 选择代理
+        select_mirror = self.settingsInterface.findChild(ComboBox, 'select_proxy')
+        select_mirror.addItems(nt.mirror_list)
+        select_mirror.setCurrentIndex(nt.mirror_list.index(conf.read_conf('Plugin', 'mirror')))
+        select_mirror.currentIndexChanged.connect(
+            lambda: conf.write_conf('Plugin', 'mirror', select_mirror.currentText()))
 
     def setup_homeInterface(self):  # 初始化首页
         # 标题和副标题
@@ -397,6 +384,7 @@ class PluginPlaza(MSFluentWindow):
         event.ignore()
         # self.deleteLater()
         self.hide()
+
 
 def replace_to_file_server(url, branch='main'):
     return (f'{url.replace("https://github.com/", "https://raw.githubusercontent.com/")}'

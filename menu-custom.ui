@@ -80,14 +80,14 @@
         <x>0</x>
         <y>0</y>
         <width>743</width>
-        <height>1311</height>
+        <height>1205</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
         <widget class="ListWidget" name="widgets_list">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -95,7 +95,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>0</height>
           </size>
          </property>
          <property name="sizeAdjustPolicy">
@@ -106,6 +106,18 @@
          </property>
          <property name="defaultDropAction">
           <enum>Qt::MoveAction</enum>
+         </property>
+         <property name="flow">
+          <enum>QListView::LeftToRight</enum>
+         </property>
+         <property name="isWrapping" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+         <property name="layoutMode">
+          <enum>QListView::Batched</enum>
          </property>
         </widget>
        </item>
