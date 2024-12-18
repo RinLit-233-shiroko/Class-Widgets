@@ -3,9 +3,8 @@ import os
 from pathlib import Path
 from shutil import rmtree
 
-import requests
 from PyQt5 import uic, QtCore
-from PyQt5.QtCore import Qt, QTime, QUrl, QDate, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QTime, QUrl, QDate
 from qframelesswindow.webengine import FramelessWebEngineView
 import sys
 
@@ -22,6 +21,7 @@ from qfluentwidgets import (
     TransparentDropDownToolButton
 )
 from copy import deepcopy
+from network_thread import VersionThread
 from loguru import logger
 import datetime as dt
 import list
@@ -57,7 +57,7 @@ schedule_even_dict = {}  # 对应时间线的课程表（双周）
 timeline_dict = {}  # 时间线字典
 
 
-def open_plaza(self):
+def open_plaza():
     global plugin_plaza
     try:
         if plugin_plaza is None or not plugin_plaza.isVisible():
@@ -77,29 +77,6 @@ def get_timeline():
     global loaded_data
     loaded_data = conf.load_from_json(filename)
     return loaded_data['timeline']
-
-
-class VersionThread(QThread):  # 获取最新版本号
-    version_signal = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-
-    def run(self):
-        version = self.get_latest_version()
-        self.version_signal.emit(version)
-
-    def get_latest_version(self):
-        url = "https://api.github.com/repos/RinLit-233-shiroko/Class-Widgets/releases/latest"
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("tag_name")
-            else:
-                return f"无法获取版本信息 错误代码：{response.status_code}"
-        except requests.exceptions.RequestException as e:
-            return f"请求失败: {e}"
 
 
 class selectCity(MessageBoxBase):  # 选择城市
@@ -1467,6 +1444,17 @@ class SettingsMenu(FluentWindow):
         class_activity = self.findChild(ComboBox, 'class_activity')
         spin_time = self.findChild(SpinBox, 'spin_time')
         time_period = self.findChild(ComboBox, 'time_period')
+        if time_period.currentText() == "":  # 时间段不能为空 修复 #184
+            Flyout.create(
+                icon=InfoBarIcon.WARNING,
+                title='无法添加时间线 o(TヘTo)',
+                content='在添加时间线前，先任意添加一个节点',
+                target=self.findChild(ToolButton, 'add_button'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
+            )
+            return  # 时间段不能为空
         te_timeline_list.addItem(
             f'{class_activity.currentText()} - {spin_time.value()}分钟 - {time_period.currentText()}'
         )
@@ -1476,9 +1464,19 @@ class SettingsMenu(FluentWindow):
         te_part_list = self.findChild(ListWidget, 'part_list')
         te_name_part = self.findChild(EditableComboBox, 'name_part_combo')
         te_part_time = self.findChild(TimeEdit, 'part_time')
-        if te_part_list.count() < 9:
+        if te_part_list.count() < 10:
             te_part_list.addItem(
                 f'{te_name_part.currentText()} - {te_part_time.time().toString("h:mm")}'
+            )
+        else:  # 最多只能添加9个节点
+            Flyout.create(
+                icon=InfoBarIcon.WARNING,
+                title='没办法继续添加了 o(TヘTo)',
+                content='Class Widgets 最多只能添加10个“节点”！',
+                target=self.findChild(ToolButton, 'add_part_button'),
+                parent=self,
+                isClosable=True,
+                aniType=FlyoutAnimationType.PULL_UP
             )
         self.te_detect_item()
         self.te_detect_part()

@@ -162,3 +162,34 @@ class getReadme(QThread):  # 获取README
         except Exception as e:
             logger.error(f"获取README失败：{e}")
             return ''
+
+
+class VersionThread(QThread):  # 获取最新版本号
+    version_signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        version = self.get_latest_version()
+        self.version_signal.emit(version)
+
+    def get_latest_version(self):
+        url = "https://api.github.com/repos/RinLit-233-shiroko/Class-Widgets/releases/latest"
+        try:
+            response = requests.get(url, proxies={'http': None, 'https': None})
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("tag_name")
+            else:
+                logger.error(f"无法获取版本信息 错误代码：{response.status_code}")
+                return "请求失败"
+        except requests.exceptions.RequestException as e:
+            logger.error(f"请求失败，错误代码：{e}")
+            return f"请求失败"
+
+
+if __name__ == '__main__':
+    version_thread = VersionThread()
+    version_thread.version_signal.connect(lambda data: print(data))
+    version_thread.start()
