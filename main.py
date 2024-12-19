@@ -1017,8 +1017,9 @@ class DesktopWidget(QWidget):  # 主要小组件
             self.open_exact_menu()
 
     def update_data(self, path=''):
-        global current_time, current_week, filename, start_y, time_offset
+        global current_time, current_week, filename, start_y, time_offset, today
 
+        today = dt.date.today()
         current_time = dt.datetime.now().strftime('%H:%M:%S')
         filename = conf.read_conf('General', 'schedule')
         time_offset = conf.get_time_offset()
