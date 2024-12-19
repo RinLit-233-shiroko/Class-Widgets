@@ -135,6 +135,17 @@ def save_plugin_config(data):
         return False
 
 
+def save_installed_plugin(data):
+    data = {"plugins": data}
+    try:
+        with open(f'plugins/plugins_from_pp.json', 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        logger.error(f"保存已安装插件数据时出错: {e}")
+        return False
+
+
 def load_theme_width(theme):
     try:
         with open(f'ui/{theme}/theme.json', 'r', encoding='utf-8') as file:

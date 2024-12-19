@@ -1,4 +1,5 @@
 import importlib
+import json
 import os
 from pathlib import Path
 from shutil import rmtree
@@ -281,6 +282,14 @@ class PluginCard(CardWidget):  # 插件卡片
             if self.plugin_dir in enabled_plugins:  # 移除启动项
                 enabled_plugins['enabled_plugins'].remove(self.plugin_dir)
                 conf.save_plugin_config(enabled_plugins)
+            try:
+                with open("plugins/plugins_from_pp.json", 'r', encoding='utf-8') as f:  # 移除插件广场安装记录
+                    installed_plugins = json.load(f).get('plugins')
+                    installed_plugins.remove(self.plugin_dir)
+                with open("plugins/plugins_from_pp.json", 'w', encoding='utf-8') as f2:  # 移除插件广场安装记录
+                    json.dump({"plugins": installed_plugins}, f2, ensure_ascii=False, indent=4)
+            except Exception as e:
+                logger.error(f"保存已安装插件失败：{e}")
             try:
                 rmtree(os.path.join(os.getcwd(), conf.PLUGINS_DIR, self.plugin_dir))  # 删除插件
                 self.setParent(None)

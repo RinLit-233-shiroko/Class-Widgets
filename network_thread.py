@@ -1,4 +1,8 @@
 import json
+import os
+import time
+import zipfile  # 解压插件zip
+from datetime import datetime
 
 import requests
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -60,7 +64,7 @@ class getRepoFileList(QThread):  # 获取仓库文件目录
                     return json_files
             elif response.status_code == 403 or response.status_code == 429:
                 logger.warning("到达Github API限制，请稍后再试")
-                return []
+                return ['banner_1.png']
             else:
                 logger.error(f"获取{self.path}目录失败：{response.status_code}")
                 return []
@@ -187,6 +191,102 @@ class VersionThread(QThread):  # 获取最新版本号
         except requests.exceptions.RequestException as e:
             logger.error(f"请求失败，错误代码：{e}")
             return f"请求失败"
+
+
+class getDownloadUrl(QThread):
+    # 定义信号，通知下载进度或完成
+    geturl_signal = pyqtSignal(str)
+
+    def __init__(self, username, repo):
+        super().__init__()
+        self.username = username
+        self.repo = repo
+
+    def run(self):
+        try:
+            url = f"https://api.github.com/repos/{self.username}/{self.repo}/releases/latest"
+            response = requests.get(url, proxies={'http': None, 'https': None})
+            if response.status_code == 200:
+                data = response.json()
+                for asset in data['assets']:  # 遍历下载链接
+                    if isinstance(asset, dict) and 'browser_download_url' in asset:
+                        asset_url = asset['browser_download_url']
+                        self.geturl_signal.emit(asset_url)
+            elif response.status_code == 403:  # 触发API限制
+                logger.warning("到达Github API限制，请稍后再试")
+                response = requests.get('https://api.github.com/users/octocat', proxies={'http': None, 'https': None})
+                reset_time = response.headers.get('X-RateLimit-Reset')
+                reset_time = datetime.fromtimestamp(int(reset_time))
+                self.geturl_signal.emit(f"ERROR: 由于请求次数过多，到达Github API限制，请在{reset_time.minute}分钟后再试")
+            else:
+                logger.error(f"网络连接错误：{response.status_code}")
+        except Exception as e:
+            logger.error(f"获取下载链接错误: {e}")
+            self.geturl_signal.emit(f"获取下载链接错误: {e}")
+
+
+class DownloadAndExtract(QThread):  # 下载并解压插件
+    progress_signal = pyqtSignal(float)  # 进度
+    status_signal = pyqtSignal(str)  # 状态
+
+    def __init__(self, url, plugin_name='test_114'):
+        super().__init__()
+        self.download_url = url
+        print(self.download_url)
+        self.cache_dir = "cache"
+        self.plugin_name = plugin_name
+        self.extract_dir = f'Plugins/{plugin_name}'
+
+    def run(self):
+        try:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            os.makedirs(self.extract_dir, exist_ok=True)
+
+            zip_path = os.path.join(self.cache_dir, f'{self.plugin_name}.zip')
+
+            self.status_signal.emit("DOWNLOADING")
+            self.download_file(zip_path)
+            self.status_signal.emit("EXATRACTING")
+            self.extract_zip(zip_path)
+            os.remove(zip_path)
+            self.status_signal.emit("DONE")
+        except Exception as e:
+            self.status_signal.emit(f"错误: {e}")
+            logger.error(f"插件下载/解压失败: {e}")
+
+    def stop(self):
+        self.terminate()
+
+    def download_file(self, file_path):
+        # time.sleep(555)  # 模拟下载时间
+        try:
+            self.download_url = mirror_dict[conf.read_conf('Plugin', 'mirror')] + self.download_url
+            print(self.download_url)
+            response = requests.get(self.download_url, stream=True, proxies={'http': None, 'https': None})
+            if response.status_code != 200:
+                logger.error(f"插件下载失败，错误代码: {response.status_code}")
+                self.status_signal.emit(f'ERROR: 网络连接错误：{response.status_code}')
+                return
+
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded_size = 0
+
+            with open(file_path, 'wb') as file:
+                for chunk in response.iter_content(1024):
+                    file.write(chunk)
+                    downloaded_size += len(chunk)
+                    progress = (downloaded_size / total_size) * 100 if total_size > 0 else 0  # 计算进度
+                    self.progress_signal.emit(progress)
+        except Exception as e:
+            self.status_signal.emit(f'ERROR: {e}')
+            logger.error(f"插件下载错误: {e}")
+
+    def extract_zip(self, zip_path):
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(self.extract_dir)
+        except Exception as e:
+            logger.error(f"解压失败: {e}")
 
 
 if __name__ == '__main__':
